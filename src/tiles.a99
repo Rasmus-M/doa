@@ -1,0 +1,400 @@
+*********************************************************************
+*
+* Tiles
+*
+*********************************************************************
+
+**
+* Master tile list
+TFLOOR EQU  0                          ; Floor
+TSTONE EQU  1                          ; Stone wall
+TWALL  EQU  2                          ; Brick wall
+TPERM  EQU  3                          ; Permanent rock
+TORE   EQU  4                          ; Ore
+TRUBBL EQU  5                          ; Rubble
+TDOORC EQU  6                          ; Closed door
+TDOORO EQU  7                          ; Open door
+TSTAIR EQU  8                          ; Staircase down
+TSTAIU EQU  9                          ; Staircase up
+TGOLD  EQU  10                         ; Coins
+TCHEST EQU  11                         ; Chest
+TPOTI  EQU  12                         ; Potion
+TSCRL  EQU  13                         ; Scroll
+TBOOK  EQU  14                         ; Book
+TFOOD  EQU  15                         ; Food
+TTORCH EQU  16                         ; Torch
+TLAMP  EQU  17                         ; Lamp
+TSWORD EQU  18                         ; Sword
+TAXE   EQU  19                         ; Axe
+TDGGR  EQU  20                         ; Dagger
+TMACE  EQU  21                         ; Mace
+TRING  EQU  22                         ; Ring
+TARMR  EQU  23                         ; Armor
+TMARM  EQU  24                         ; Mail armor
+TPARM  EQU  25                         ; Plate armor
+THELM  EQU  26                         ; Helm
+TBOOT  EQU  27                         ; Boots
+TGLVS  EQU  28                         ; Gloves
+TROBE  EQU  29                         ; Robes
+TSHLD  EQU  30                         ; Shield
+TGNTL  EQU  31                         ; Gauntlets
+TMYST  EQU  32                         ; Mystery?
+T33    EQU  33                         ;
+T34    EQU  34                         ;
+T35    EQU  35                         ;
+T36    EQU  36                         ;
+T37    EQU  37                         ;
+T38    EQU  38                         ;
+T39    EQU  39                         ;
+T40    EQU  40                         ;
+T41    EQU  41                         ;
+T42    EQU  42                         ;
+T43    EQU  43                         ;
+T44    EQU  44                         ;
+T45    EQU  45                         ;
+T46    EQU  46                         ;
+T47    EQU  47                         ;
+T48    EQU  48                         ;
+T49    EQU  49                         ;
+T50    EQU  50                         ;
+T51    EQU  51                         ;
+T52    EQU  52                         ;
+T53    EQU  53                         ;
+T54    EQU  54                         ;
+T55    EQU  55                         ;
+T56    EQU  56                         ;
+T57    EQU  57                         ;
+T58    EQU  58                         ;
+T59    EQU  59                         ;
+TTREE  EQU  60                         ; Tree
+TSHOP  EQU  61                         ; Shop
+TFOUNT EQU  62                         ; Fountain
+TGRASS EQU  63                         ; Grass
+TMONS1 EQU  64                         ; Monster 1
+TMONS2 EQU  65                         ; Monster 2
+TMONS3 EQU  66                         ; Monster 3
+TMONS4 EQU  67                         ; Monster 4
+TMONS5 EQU  68                         ; Monster 5
+TMONS6 EQU  69                         ; Monster 6
+TMONS7 EQU  70                         ; Monster 7
+TMONS8 EQU  71                         ; Monster 8
+
+**
+* Tile names
+TNAMES DATA TXFLR                      ; 0: Floor
+       DATA TXSTWL                     ; 1: Stone wall
+       DATA TXBTWL                     ; 2: Brick wall
+       DATA TXPERM                     ; 3: Permament rock
+       DATA TXORE                      ; 4: Ore
+       DATA TXRBBL                     ; 5: Rubble
+       DATA TXCLDR                     ; 6: Closed door
+       DATA TXOPDR                     ; 7: Open door
+       DATA TXSTDN                     ; 8: Staircase down
+       DATA TXSTUP                     ; 9: Staircase up
+       DATA TXCOIN                     ; 10: Coins
+       DATA TXCHST                     ; 11: Chest
+       DATA TXPOTI                     ; 12: Potion
+       DATA TXSCRL                     ; 13: Scroll
+       DATA TXBOOK                     ; 14: Book
+       DATA TXFOOD                     ; 15: Food
+       DATA TXTRCH                     ; 16: Torch
+       DATA TXLAMP                     ; 17: Lamp
+       DATA TXSWRD                     ; 18: Sword
+       DATA TXAXE                      ; 19: Axe
+       DATA TXDGGR                     ; 20: Dagger
+       DATA TXMACE                     ; 21: Mace
+       DATA TXRING                     ; 22: Ring
+       DATA TXARMR                     ; 23: Armor
+       DATA TXMARM                     ; 24: Mail armor
+       DATA TXPARM                     ; 25: Plate armor
+       DATA TXHELM                     ; 26: Helm
+       DATA TXBOOT                     ; 27: Boots
+       DATA TXGLVS                     ; 28: Gloves
+       DATA TXROBE                     ; 29: Robes
+       DATA TXSHLD                     ; 30: Shield
+       DATA TXGNTL                     ; 31: Gauntlets
+       DATA TXMYST                     ; 32: Mystery?
+       DATA TXNONE                     ; 33:
+       DATA TXNONE                     ; 34:
+       DATA TXNONE                     ; 35:
+       DATA TXNONE                     ; 36:
+       DATA TXNONE                     ; 37:
+       DATA TXNONE                     ; 38:
+       DATA TXNONE                     ; 39:
+       DATA TXNONE                     ; 40:
+       DATA TXNONE                     ; 41:
+       DATA TXNONE                     ; 42:
+       DATA TXNONE                     ; 43:
+       DATA TXNONE                     ; 44:
+       DATA TXNONE                     ; 45:
+       DATA TXNONE                     ; 46:
+       DATA TXNONE                     ; 47:
+       DATA TXNONE                     ; 48:
+       DATA TXNONE                     ; 49:
+       DATA TXNONE                     ; 50:
+       DATA TXNONE                     ; 51:
+       DATA TXNONE                     ; 52:
+       DATA TXNONE                     ; 53:
+       DATA TXNONE                     ; 54:
+       DATA TXNONE                     ; 55:
+       DATA TXNONE                     ; 56:
+       DATA TXNONE                     ; 57:
+       DATA TXNONE                     ; 58:
+       DATA TXNONE                     ; 59:
+       DATA TXTREE                     ; 60: Tree
+       DATA TXSHOP                     ; 61: Shop
+       DATA TXFOUN                     ; 62: Fountain
+       DATA TXGRAS                     ; 63: Grass
+       DATA TXMONS                     ; 64: Monster 1
+       DATA TXMONS                     ; 65: Monster 2
+       DATA TXMONS                     ; 66: Monster 3
+       DATA TXMONS                     ; 67: Monster 4
+       DATA TXMONS                     ; 68: Monster 5
+       DATA TXMONS                     ; 69: Monster 6
+       DATA TXMONS                     ; 70: Monster 7
+       DATA TXMONS                     ; 71: Monster 8
+
+**
+* Tile to character map
+* Order same as master tile list
+TCMAP  BYTE PFLOOR                     ; 0: Floor
+       BYTE PSTONE                     ; 1: Stone wall
+       BYTE PWALL                      ; 2: Brick wall
+       BYTE PSTONE                     ; 3: Permanent rock
+       BYTE PORE                       ; 4: Ore
+       BYTE PRUBBL                     ; 5: Rubble
+       BYTE PDOORC                     ; 6: Closed door
+       BYTE PDOORO                     ; 7: Open door
+       BYTE PSTAIR                     ; 8: Staircase down
+       BYTE PSTAIU                     ; 9: Staircase up
+       BYTE PCOINS                     ; 10: Coins
+       BYTE PCHEST                     ; 11: Chest
+       BYTE PPOTI                      ; 12: Potion
+       BYTE PSCRL                      ; 13: Scroll
+       BYTE PBOOK                      ; 14: Book
+       BYTE PAPPLE                     ; 15: Food
+       BYTE PTORCH                     ; 16: Torch
+       BYTE PTORCH                     ; 17: Lamp
+       BYTE PSWORD                     ; 18: Sword
+       BYTE PAXE                       ; 19: Axe
+       BYTE PDGGR                      ; 20: Dagger
+       BYTE PMACE                      ; 21: Mace
+       BYTE PRING                      ; 22: Ring
+       BYTE PARMR                      ; 23: Armor
+       BYTE PARMR                      ; 24: Mail armor
+       BYTE PARMR                      ; 25: Plate armor
+       BYTE PHELM                      ; 26: Helm
+       BYTE PBOOT                      ; 27: Boots
+       BYTE PGLVS                      ; 28: Gloves
+       BYTE PROBE                      ; 29: Robes
+       BYTE PSHLD                      ; 30: Shield
+       BYTE PGLVS                      ; 31: Gauntlets
+       BYTE PQUEST                     ; 32: Mystery?
+       BYTE PFLOOR                     ; 33:
+       BYTE PFLOOR                     ; 34:
+       BYTE PFLOOR                     ; 35:
+       BYTE PFLOOR                     ; 36:
+       BYTE PFLOOR                     ; 37:
+       BYTE PFLOOR                     ; 38:
+       BYTE PFLOOR                     ; 39:
+       BYTE PFLOOR                     ; 40:
+       BYTE PFLOOR                     ; 41:
+       BYTE PFLOOR                     ; 42:
+       BYTE PFLOOR                     ; 43:
+       BYTE PFLOOR                     ; 44:
+       BYTE PFLOOR                     ; 45:
+       BYTE PFLOOR                     ; 46:
+       BYTE PFLOOR                     ; 47:
+       BYTE PFLOOR                     ; 48:
+       BYTE PFLOOR                     ; 49:
+       BYTE PFLOOR                     ; 50:
+       BYTE PFLOOR                     ; 51:
+       BYTE PFLOOR                     ; 52:
+       BYTE PFLOOR                     ; 53:
+       BYTE PFLOOR                     ; 54:
+       BYTE PFLOOR                     ; 55:
+       BYTE PFLOOR                     ; 56:
+       BYTE PFLOOR                     ; 57:
+       BYTE PFLOOR                     ; 58:
+       BYTE PFLOOR                     ; 59:
+       BYTE PTREE                      ; 60: Tree
+       BYTE PFTILE                     ; 61: Shop
+       BYTE PFOUNT                     ; 62: Fountain
+       BYTE PGRASS                     ; 63: Grass
+       BYTE PMONS1                     ; 64: Monster 1
+       BYTE PMONS2                     ; 65: Monster 2
+       BYTE PMONS3                     ; 66: Monster 3
+       BYTE PMONS4                     ; 67: Monster 4
+       BYTE PMONS5                     ; 68: Monster 5
+       BYTE PMONS6                     ; 69: Monster 6
+       BYTE PMONS7                     ; 70: Monster 7
+       BYTE PMONS8                     ; 71: Monster 8
+
+**
+* Tile to metatile map
+* Order same as master tile list
+TMMAP  DATA MFLOOR                     ; 0: Floor
+       DATA MSTONE                     ; 1: Stone wall
+       DATA MWALL                      ; 2: Brick wall
+       DATA MSTONE                     ; 3: Permament rock
+       DATA MORE                       ; 4: Ore
+       DATA MRUBBL                     ; 5: Rubble
+       DATA MDOORC                     ; 6: Closed door
+       DATA MDOORO                     ; 7: Open door
+       DATA MSTAIR                     ; 8: Staircase down
+       DATA MSTAIU                     ; 9: Staircase up
+       DATA MCOINS                     ; 10: Coins
+       DATA MCHEST                     ; 11: Chest
+       DATA MPOTI                      ; 12: Potion
+       DATA MSCRL                      ; 13: Scroll
+       DATA MBOOK                      ; 14: Book
+       DATA MAPPLE                     ; 15: Food
+       DATA MTORCH                     ; 16: Torch
+       DATA MTORCH                     ; 17: Lamp
+       DATA MSWRD                      ; 18: Sword
+       DATA MAXE                       ; 19: Axe
+       DATA MDGGR                      ; 20: Dagger
+       DATA MMACE                      ; 21: Mace
+       DATA MRING                      ; 22: Ring
+       DATA MARMR                      ; 23: Armor
+       DATA MARMR                      ; 24: Mail armor
+       DATA MARMR                      ; 25: Plate armor
+       DATA MHELM                      ; 26: Helm
+       DATA MBOOT                      ; 27: Boots
+       DATA MGLVS                      ; 28: Gloves
+       DATA MROBE                      ; 29: Robes
+       DATA MSHLD                      ; 30: Shield
+       DATA MGLVS                      ; 31: Gauntlets
+       DATA MQUEST                     ; 32: Mystery
+       DATA MFLOOR                     ; 33:
+       DATA MFLOOR                     ; 34:
+       DATA MFLOOR                     ; 35:
+       DATA MFLOOR                     ; 36:
+       DATA MFLOOR                     ; 37:
+       DATA MFLOOR                     ; 38:
+       DATA MFLOOR                     ; 39:
+       DATA MFLOOR                     ; 40:
+       DATA MFLOOR                     ; 41:
+       DATA MFLOOR                     ; 42:
+       DATA MFLOOR                     ; 43:
+       DATA MFLOOR                     ; 44:
+       DATA MFLOOR                     ; 45:
+       DATA MFLOOR                     ; 46:
+       DATA MFLOOR                     ; 47:
+       DATA MFLOOR                     ; 48:
+       DATA MFLOOR                     ; 49:
+       DATA MFLOOR                     ; 50:
+       DATA MFLOOR                     ; 51:
+       DATA MFLOOR                     ; 52:
+       DATA MFLOOR                     ; 53:
+       DATA MFLOOR                     ; 54:
+       DATA MFLOOR                     ; 55:
+       DATA MFLOOR                     ; 56:
+       DATA MFLOOR                     ; 57:
+       DATA MFLOOR                     ; 58:
+       DATA MFLOOR                     ; 59:
+       DATA MTREE                      ; 60: Tree
+       DATA MFTILE                     ; 61: Shop
+       DATA MFOUNT                     ; 62: Fountain
+       DATA MGRASS                     ; 63: Grass
+       DATA MMONS1                     ; 64: Monster 1
+       DATA MMONS2                     ; 65: Monster 2
+       DATA MMONS3                     ; 66: Monster 3
+       DATA MMONS4                     ; 67: Monster 4
+       DATA MMONS5                     ; 68: Monster 5
+       DATA MMONS6                     ; 69: Monster 6
+       DATA MMONS7                     ; 70: Monster 7
+       DATA MMONS8                     ; 71: Monster 8
+
+* Graphics patterns
+PDARK  EQU  32                         ; Darkness
+PFLOOR EQU  0                          ; Floor
+PSTONE EQU  1                          ; Stone wall
+PWALL  EQU  2                          ; Brick wall
+PRUBBL EQU  3                          ; Rubble
+PDOORC EQU  4                          ; Closed door
+PDOORO EQU  5                          ; Open door
+PSTAIR EQU  6                          ; Starcase down
+PSTAIU EQU  7                          ; Staircase up
+PORE   EQU  8                          ; Gold ore
+PCOINS EQU  9                          ; Gold coins
+PCHEST EQU  10                         ; Chest
+PPOTI  EQU  11                         ; Potion
+PSCRL  EQU  12                         ; Scroll
+PBOOK  EQU  13                         ; Book
+PAPPLE EQU  14                         ; Apple
+PTORCH EQU  15                         ; Torch
+PSWORD EQU  16                         ; Sword
+PAXE   EQU  17                         ; Axe
+PDGGR  EQU  18                         ; Dagger
+PMACE  EQU  19                         ; Mace
+PRING  EQU  20                         ; Ring
+PARMR  EQU  21                         ; Armor
+PHELM  EQU  22                         ; Helm
+PBOOT  EQU  23                         ; Boots
+PGLVS  EQU  24                         ; Gloves
+PROBE  EQU  25                         ; Robes
+PSHLD  EQU  26                         ; Shield
+PQUEST EQU  27                         ; Question mark
+PMONS1 EQU  96                         ; Monster 1
+PMONS2 EQU  97                         ; Monster 2
+PMONS3 EQU  98                         ; Monster 3
+PMONS4 EQU  99                         ; Monster 4
+PMONS5 EQU  100                        ; Monster 5
+PMONS6 EQU  101                        ; Monster 6
+PMONS7 EQU  102                        ; Monster 7
+PMONS8 EQU  103                        ; Monster 8
+PTREE  EQU  100                        ; Tree (shared with monster 5)
+PFTILE EQU  101                        ; Floor tiles (shared with monster 6)
+PFOUNT EQU  102                        ; Fountain (shared with monster 7)
+PGRASS EQU  103                        ; Grass (shared with monster 8)
+PHL    EQU  104                        ; Horizontal line
+PVL    EQU  105                        ; Vertical line
+PTL    EQU  106                        ; Top left corner
+PTR    EQU  107                        ; Top right corner
+PBR    EQU  108                        ; Bottom right corner
+PBL    EQU  109                        ; Bottom left corner
+
+* Metatile definitions
+MTILES
+MTDARK BYTE >20,>20,>20,>20            ; Darkness
+MFLOOR BYTE >80,>81,>88,>89            ; Floor
+MSTONE BYTE >82,>83,>8A,>8B            ; Stone wall
+MWALL  BYTE >84,>85,>8C,>8D            ; Brick wall
+MRUBBL BYTE >86,>87,>8E,>8F            ; Rubble
+MDOORC BYTE >90,>91,>98,>99            ; Closed door
+MDOORO BYTE >92,>93,>9A,>9B            ; Open door
+MSTAIR BYTE >94,>95,>9C,>9D            ; Staircase down
+MSTAIU BYTE >96,>97,>9E,>9F            ; Staircase up
+MORE   BYTE >A0,>A1,>A8,>A9            ; Ore
+MCOINS BYTE >A2,>A3,>AA,>AB            ; Gold coins
+MCHEST BYTE >A4,>A5,>AC,>AD            ; Chest
+MPOTI  BYTE >A6,>A7,>AE,>AF            ; Potion
+MSCRL  BYTE >B0,>B1,>B8,>B9            ; Scroll
+MBOOK  BYTE >B2,>B3,>BA,>BB            ; Book
+MAPPLE BYTE >B4,>B5,>BC,>BD            ; Apple
+MTORCH BYTE >B6,>B7,>BE,>BF            ; Torch
+MSWRD  BYTE >C0,>C1,>C8,>C9            ; Sword
+MAXE   BYTE >C2,>C3,>CA,>CB            ; Axe
+MDGGR  BYTE >C4,>C5,>CC,>CD            ; Dagger
+MMACE  BYTE >C6,>C7,>CE,>CF            ; Mace
+MRING  BYTE >D0,>D1,>D8,>D9            ; Ring
+MARMR  BYTE >D2,>D3,>DA,>DB            ; Armor
+MHELM  BYTE >D4,>D5,>DC,>DD            ; Helm
+MBOOT  BYTE >D6,>D7,>DE,>DF            ; Boots
+MGLVS  BYTE >70,>71,>78,>79            ; Gloves
+MROBE  BYTE >72,>73,>7A,>7B            ; Robes
+MSHLD  BYTE >74,>75,>7C,>7D            ; Shield
+MQUEST BYTE >76,>77,>7E,>7F            ; Question mark
+MMONS1 BYTE >E0,>E1,>E8,>E9            ; Monster 1
+MMONS2 BYTE >E2,>E3,>EA,>EB            ; Monster 2
+MMONS3 BYTE >E4,>E5,>EC,>ED            ; Monster 3
+MMONS4 BYTE >E6,>E7,>EE,>EF            ; Monster 4
+MMONS5 BYTE >F0,>F1,>F8,>F9            ; Monster 5
+MMONS6 BYTE >F2,>F3,>FA,>FB            ; Monster 6
+MMONS7 BYTE >F4,>F5,>FC,>FD            ; Monster 7
+MMONS8 BYTE >F6,>F7,>FE,>FF            ; Monster 8
+MTREE  BYTE >F0,>F1,>F8,>F9            ; Tree (shared with monster 5)
+MFTILE BYTE >F2,>F3,>FA,>FB            ; Floor tiles (shared with monster 6)
+MFOUNT BYTE >F4,>F5,>FC,>FD            ; Fountain (shared with monster 7)
+MGRASS BYTE >F6,>F7,>FE,>FF            ; Grass (shared with monster 8)

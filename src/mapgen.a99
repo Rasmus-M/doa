@@ -1,0 +1,1443 @@
+*********************************************************************
+*
+* Map genaration data structure
+*
+* Any code using the ROOMS data structure at >E000 + dependencies
+* must be in this file.
+*
+
+* Room data structure
+HSPLIT EQU  1                          ; Type horizontal split
+VSPLIT EQU  2                          ; Type vertical split
+LEAF   EQU  -1                         ; Type leaf/unknown
+
+TYPE   EQU  0                          ; 1=Horizontal, 2=Vertical, -1=Leaf/unknown
+ROOMX  EQU  2                          ; X coordinate of top left corner (byte)
+ROOMY  EQU  3                          ; Y coordinate of top left corner (byte)
+ROOMW  EQU  4                          ; Width (byte)
+ROOMH  EQU  5                          ; Height (byte)
+RLEFT  EQU  6                          ; Pointer to left child room
+RRIGHT EQU  8                          ; Pointer to right child room
+ROOMSZ EQU  10                         ; Structure size
+
+*********************************************************************
+*
+* Generate town
+*
+GENTWN MOV  R11,*R10+                  ; Push return address onto the stack
+*      Init random number seed
+       MOV  @TWNRND,R0
+       JNE  GENTW1
+       MOV  @RANDNO,@TWNRND
+GENTW1 MOV  @RANDNO,@TMPRND
+       MOV  @TWNRND,@RANDNO
+*      Fill map with trees
+       CLR  R0                         ; X
+       CLR  R1                         ; Y
+       LI   R2,MAPW                    ; Width
+       LI   R3,MAPH                    ; Height
+       MOVB @BYTES+TTREE,R4            ; Tile
+       BL   @SRECT                     ; Set rectangle
+*      Fill interior with floor
+       LI   R0,TOWNX                   ; X
+       LI   R1,TOWNY                   ; Y
+       LI   R2,TOWNW                   ; Width
+       LI   R3,TOWNH                   ; Height
+       MOVB @BYTES+TGRASS,R4           ; Tile
+       BL   @SRECT                     ; Set rectangle
+*      Border with permanent rock
+       LI   R0,TOWNX-1                 ; X
+       LI   R1,TOWNY-1                 ; Y
+       LI   R2,TOWNW+2                 ; Width
+       LI   R3,TOWNH+2                 ; Height
+       MOVB @BYTES+TPERM,R4            ; Tile
+       BL   @SBOX                      ; Set box
+*      Clear the room list
+       LI   R0,ROOMS
+       CLR  R1
+       LI   R2,>FFFF-ROOMS+1
+       BL   @FILL
+*      Setup root level room
+       LI   R9,ROOMS                   ; R9 points to next room to be split
+       LI   R0,LEAF                    ; Type value of leaf
+       MOV  R0,@TYPE(R9)               ; Record type
+       LI   R0,TOWNX*256               ; X coordinate of top left corner
+       MOVB R0,@ROOMX(R9)
+       LI   R0,TOWNY*256               ; Y coordinate of top left corner
+       MOVB R0,@ROOMY(R9)
+       LI   R0,TOWNW*256               ; Width
+       MOVB R0,@ROOMW(R9)
+       LI   R0,TOWNH*256               ; Height
+       MOVB R0,@ROOMH(R9)
+       LI   R0,ROOMS+ROOMSZ            ; Next available room list address
+       MOV  R0,@ROOMPT
+       CLR  @NROOMS
+       INC  @NROOMS
+*      Loop
+*      Check for enough RAM to split room
+GENTW2 MOV  @ROOMPT,R8
+       CI   R8,>FFFF-(2*ROOMSZ)
+       JH   GENTW6                     ; No, finalize room
+*      Enough room to split
+       CLR  R1
+       MOVB @ROOMW(R9),@R1LB           ; Get width
+       CLR  R2
+       MOVB @ROOMH(R9),@R2LB           ; Get height
+       CI   R1,TOWNW                   ; Compare width to maximum size
+       JLT  GENTW3
+       CI   R2,TOWNH                   ; Compare height to maximum size
+       JLT  GENTW5
+*      Neither width or height OK: roll the dice
+       BL   @RAND
+       JGT  GENTW4                     ; Split vertically
+       JLT  GENTW5                     ; Split horizontally
+       JMP  GENTW6                     ; No split
+*      Width OK, check height
+GENTW3 CI   R2,TOWNH/2                   ; Compare height to maximum size
+       JLT  GENTW6
+*      Width OK, but height not OK: split vertically in top and bottom rooms
+GENTW4 BL   @SPLITV
+       JMP  GENTW7
+*      Height OK, but width not OK: split horizontally in left and right rooms
+GENTW5 BL   @SPLITH
+       JMP  GENTW7
+*      No more splitting, finalize room
+GENTW6 LI   R4,TWALL*256+TSHOP
+       BL   @GENRM
+*      Next room
+GENTW7 AI   R9,ROOMSZ                  ; Advance room pointer
+       MOV  *R9,R0                     ; Get the room TYPE, if null we're done
+       JNE  GENTW2
+*      Connect rooms
+       LI   R9,ROOMS                   ; Reset room pointer
+GENTW8 MOV  @TYPE(R9),R0               ; Get room type
+       JEQ  GENTW0                     ; Break out if null
+       JLT  GENTW9                     ; Skip if leaf
+       BL   @CONNCT                    ; Connect child subtrees
+GENTW9 AI   R9,ROOMSZ                  ; Next room
+       JMP  GENTW8                     ; Loop
+*      Place the down stairs
+GENTW0 LI   R1,TOWNY+2
+       LI   R2,TOWNY+TOWNH-3
+       BL   @RANDI
+       MOV  R0,@STAIRY
+       LI   R1,TOWNX+2
+       LI   R2,TOWNX+TOWNW-3
+       BL   @RANDI
+       MOV  R0,@STAIRX
+       MOV  @STAIRY,R1
+       BL   @GTILE
+       CB   R1,@BYTES+TFLOOR
+       JNE  GENTW0
+       MOV  @STAIRX,R0
+       MOV  @STAIRY,R1
+       MOVB @BYTES+TSTAIR,R2
+       BL   @STILE
+*      Place fountains
+       LI   R8,ROOMS
+       LI   R2,TFOUNT*256
+       BL   @SRTILE
+       BL   @SRTILE
+*      Init monsters
+       LI   R0,MILIST
+       CLR  R1
+       LI   R2,MAXMON*MISIZE
+       BL   @FILL
+*      Restore random number seed
+       MOV  @TMPRND,@RANDNO
+*      Return
+       DECT R10                        ; Pop return address off the stackh
+       MOV  *R10,R11
+       B    *R11
+*// GENTWN
+
+*********************************************************************
+*
+* Generate dungeon
+*
+GENDGN MOV  R11,*R10+                  ; Push return address onto the stack
+*      Surround the map with permanent rock
+       CLR  R0                         ; X
+       CLR  R1                         ; Y
+       LI   R2,MAPW                    ; Width
+       LI   R3,MAPH                    ; Height
+       MOVB @BYTES+TPERM,R4            ; Tile
+       BL   @SBOX                      ; Set box
+*      Fill interiour with stone
+       LI   R0,1                       ; X
+       LI   R1,1                       ; Y
+       LI   R2,MAPW-2                  ; Width
+       LI   R3,MAPH-2                  ; Height
+       MOVB @BYTES+TSTONE,R4           ; Tile
+       BL   @SRECT                     ; Set rectangle
+*      Clear the room list
+       LI   R0,ROOMS
+       CLR  R1
+       LI   R2,>FFFF-ROOMS+1
+       BL   @FILL
+*      Setup root level room
+       LI   R9,ROOMS                   ; R9 points to next room to be split
+       LI   R0,LEAF                    ; Type value of leaf
+       MOV  R0,@TYPE(R9)               ; Record type
+       LI   R0,2*256                   ; X coordinate of top left corner
+       MOVB R0,@ROOMX(R9)
+       LI   R0,2*256                   ; Y coordinate of top left corner
+       MOVB R0,@ROOMY(R9)
+       LI   R0,(MAPW-3)*256            ; Width
+       MOVB R0,@ROOMW(R9)
+       LI   R0,(MAPH-3)*256            ; Height
+       MOVB R0,@ROOMH(R9)
+       LI   R0,ROOMS+ROOMSZ            ; Next available room list address
+       MOV  R0,@ROOMPT
+       CLR  @NROOMS
+       INC  @NROOMS
+*      Loop
+*      Check for enough RAM to split room
+GENDG1 MOV  @ROOMPT,R8
+       CI   R8,>FFFF-(2*ROOMSZ)
+       JH   GENDG5                     ; No, finalize room
+*      Enough room to split
+       CLR  R1
+       MOVB @ROOMW(R9),@R1LB           ; Get width
+       CLR  R2
+       MOVB @ROOMH(R9),@R2LB           ; Get height
+       CI   R1,MAXRSZ                  ; Compare width to maximum size
+       JLT  GENDG2
+       CI   R2,MAXRSZ                  ; Compare height to maximum size
+       JLT  GENDG4
+*      Neither width or height OK: roll the dice
+       BL   @RAND
+       JGT  GENDG3                     ; Split vertically
+       JLT  GENDG4                     ; Split horizontally
+       JMP  GENDG5                     ; No split
+*      Width OK, check height
+GENDG2 CI   R2,MAXRSZ                  ; Compare height to maximum size
+       JLT  GENDG5
+*      Width OK, but height not OK: split vertically in top and bottom rooms
+GENDG3 BL   @SPLITV
+       JMP  GENDG6
+*      Height OK, but width not OK: split horizontally in left and right rooms
+GENDG4 BL   @SPLITH
+       JMP  GENDG6
+*      No more splitting, finalize room
+GENDG5 LI   R4,TWALL*256+TFLOOR
+       BL   @GENRM
+*      Next room
+GENDG6 AI   R9,ROOMSZ                  ; Advance room pointer
+       MOV  *R9,R0                     ; Get the room TYPE, if null we're done
+       JNE  GENDG1
+*      Connect rooms
+       LI   R9,ROOMS                   ; Reset room pointer
+GENDG7 MOV  @TYPE(R9),R0               ; Get room type
+       JEQ  GENDG9                     ; Break out if null
+       JLT  GENDG8                     ; Skip if leaf
+       BL   @CONNCT                    ; Connect child subtrees
+GENDG8 AI   R9,ROOMSZ                  ; Next room
+       JMP  GENDG7                     ; Loop
+*      Place stairs
+GENDG9 BL   @PLCSTR
+*      Place items
+       BL   @PLCITM
+*      Place ore
+       BL   @PLCORE
+*      Place monsters in rooms
+       BL   @PLCMON
+*      Set the 'hidden' bit on whole map
+       BL   @HIDMAP
+*      Return
+       DECT R10                        ; Pop return address off the stackh
+       MOV  *R10,R11
+       B    *R11
+*// GENDGN
+
+*********************************************************************
+*
+* Place stairs
+*
+PLCSTR MOV  R11,*R10+                  ; Push return address onto the stack
+*      Place the up stairs
+       BL   @RLEAF                     ; Get a random room
+       MOVB @ROOMW(R8),R0
+       SRL  R0,1
+       AB   @ROOMX(R8),R0              ; Room center x
+       SRL  R0,8
+       MOV  R0,@STAIRX
+       MOVB @ROOMH(R8),R1
+       SRL  R1,1
+       AB   @ROOMY(R8),R1              ; Room center y
+       SRL  R1,8
+       MOV  R1,@STAIRY
+       MOVB @BYTES+TSTAIU,R2
+       BL   @STILE
+*      Place the down stairs
+       LI   R9,3                       ; Number of stairs
+PLCST1 BL   @RLEAF                     ; Get a random room
+       MOVB @ROOMW(R8),R0
+       SRL  R0,1
+       AB   @ROOMX(R8),R0              ; Room center x
+       SRL  R0,8
+       MOVB @ROOMH(R8),R1
+       SRL  R1,1
+       AB   @ROOMY(R8),R1              ; Room center y
+       SRL  R1,8
+       MOVB @BYTES+TSTAIR,R2
+       BL   @STILE
+       DEC  R9
+       JNE  PLCST1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// PLCSTR
+
+*********************************************************************
+*
+* Place items
+*
+PLCITM MOV  R11,*R10+                  ; Push return address onto the stack
+*      Note that items are not allocated until the tiles are picked up.
+       LI   R9,MAXITM/2
+PLCIT1 LI   R1,1
+       LI   R2,11
+       BL   @RANDI                     ; Generate a rarity level (1-10)
+       SWPB R0
+       MOV  R0,R7                      ; Save it
+PLCIT4 LI   R1,OBJLST-OBJ1ST+1         ; Number of object tiles
+       BL   @RANDL                     ; Choose a random tile
+       MOV  R0,R2
+       CB   @RARITY(R2),R7             ; Check tile's rarity against level
+       JGT  PLCIT4                     ; Try again if higher
+       AI   R2,OBJ1ST
+       SWPB R2                         ; Set tile parameter
+       BL   @RLEAF                     ; Get a random room
+       BL   @SRTILE                    ; Set at random room position
+       DEC  R9
+       JNE  PLCIT1
+*      Rubble
+       LI   R9,MAXITM/2
+PLCIT2 BL   @RLEAF                     ; Get a random room
+       LI   R2,TRUBBL*256              ; Tile
+       BL   @SRTILE                    ; Set at random room position
+       DEC  R9
+       JNE  PLCIT2
+*      Return
+PLCIT3 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// PLCITM
+
+*********************************************************************
+*
+* Place ore
+*
+PLCORE MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R3,64
+PLCOR1 LI   R1,MAPH
+       BL   @RANDL
+       MOV  R0,R2
+       LI   R1,MAPW
+       BL   @RANDL
+       MOV  R2,R1
+       BL   @GTILE
+       CB   R1,@BYTES+TSTONE
+       JNE  PLCOR1
+       MOVB @BYTES+TORE,*R0            ; Set tile
+       DEC  R3
+       JNE  PLCOR1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// PLCORE
+
+*********************************************************************
+*
+* Place monsters
+*
+PLCMON MOV  R11,*R10+                  ; Push return address onto the stack
+*      Allocate monsters
+       LI   R3,MALIST
+       LI   R4,NMONAL
+PLCMO0 LI   R1,NMONST
+       BL   @RANDL
+       LI   R1,MOSIZE
+       MPY  R1,R0
+       AI   R1,MONSTR
+       CLR  R5
+       MOVB @MOLVL(R1),@R5LB
+       S    @DEPTH,R5                  ; Difference between monster level and dungeon level
+       CI   R5,1                       ; Try again if > 1
+       JGT  PLCMO0
+       MOV  R1,*R3+
+       DEC   R4
+       JNE   PLCMO0
+*      Init monsters
+       LI   R0,MILIST
+       CLR  R1
+       LI   R2,MAXMON*MISIZE
+       BL   @FILL
+*      Place monsters in random rooms
+       LI   R9,MAXMON/2
+PLCMO1 BL   @RLEAF                     ; Get a random room
+       LI   R1,NMONAL
+       BL   @RANDL
+       SLA  R0,1
+       AI   R0,MALIST
+       BL   @GENMON
+       DEC  R9
+       JNE  PLCMO1
+*      Return
+PLCMO3 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// PLCMON
+
+*********************************************************************
+*
+* Set the hidden bit on the whole map
+*
+HIDMAP MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R4,>8080
+       LI   R3,16
+       LI   R0,>1000
+HIDMA1 MOVB R0,@AMSREG
+       LI   R2,4096/2
+       LI   R1,AMSBUF
+HIDMA2 SOC  R4,*R1+
+       SOC  R4,*R1+
+       DECT R2
+       JNE  HIDMA2
+       AI   R0,>0100
+       DEC  R3
+       JNE  HIDMA1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// HIDMAP
+
+*********************************************************************
+*
+* Split room horizontally into a left and a right room
+*
+* R9: Points to the room structure
+*
+SPLITH MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R0,HSPLIT                  ; Type value of horizontal split
+       MOV  R0,@TYPE(R9)               ; Record in parent room
+       LI   R1,MINRSZ                  ; Start of random split interval: MINRSZ
+       CLR  R2
+       MOVB @ROOMW(R9),@R2LB           ; Get width
+       AI   R2,-MINRSZ                 ; End of random split interval: width - MINRSZ
+       BL   @RANDI                     ; Get random split position in R0
+       SWPB R0                         ; Swap to MSB
+*      Generate left room
+       MOV  @ROOMPT,R8                 ; Point to new room structure
+       LI   R1,LEAF                    ; Type value of leaf/unknown
+       MOV  R1,@TYPE(R8)               ; Record type
+       MOVB @ROOMX(R9),@ROOMX(R8)
+       MOVB @ROOMY(R9),@ROOMY(R8)
+       MOVB R0,@ROOMW(R8)
+       MOVB @ROOMH(R9),@ROOMH(R8)
+       MOV  R8,@RLEFT(R9)              ; Set left pointer in parent room
+       AI   R8,ROOMSZ
+*      Generate right room
+       LI   R1,LEAF                    ; Type value of leaf/unknown
+       MOV  R1,@TYPE(R8)               ; Record type
+       MOVB @ROOMX(R9),R1
+       AB   R0,R1
+       MOVB R1,@ROOMX(R8)
+       MOVB @ROOMY(R9),@ROOMY(R8)
+       MOVB @ROOMW(R9),R1
+       SB   R0,R1
+       MOVB R1,@ROOMW(R8)
+       MOVB @ROOMH(R9),@ROOMH(R8)
+       MOV  R8,@RRIGHT(R9)             ; Set right pointer in parent room
+       AI   R8,ROOMSZ
+*      Update rooms pointer and counter
+       MOV  R8,@ROOMPT                 ; Set new room list end pointer
+       INCT  @NROOMS
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SPLITH
+
+*********************************************************************
+*
+* Split room vertically into a top and a bottom room
+*
+* R9: Points to the room structure
+*
+SPLITV MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R0,VSPLIT                  ; Type value of vertical split
+       MOV  R0,@TYPE(R9)               ; Record in parent room
+       LI   R1,MINRSZ                  ; Start of random split interval: MINRSZ
+       CLR  R2
+       MOVB @ROOMH(R9),@R2LB           ; Get height
+       AI   R2,-MINRSZ                 ; End of random split interval: height - MINRSZ
+       BL   @RANDI                     ; Get random split position in R0
+       SWPB R0                         ; Swap to MSB
+*      Generate top room
+       MOV  @ROOMPT,R8                 ; Point to new room structure
+       LI   R1,LEAF                    ; Type value of leaf/unknown
+       MOV  R1,@TYPE(R8)               ; Record type
+       MOVB @ROOMX(R9),@ROOMX(R8)
+       MOVB @ROOMY(R9),@ROOMY(R8)
+       MOVB @ROOMW(R9),@ROOMW(R8)
+       MOVB R0,@ROOMH(R8)
+       MOV  R8,@RLEFT(R9)              ; Set left pointer in parent room
+       AI   R8,ROOMSZ                  ; Advance room list end pointer
+*      Generate bottom room
+       LI   R1,LEAF                    ; Type value of leaf/unknown
+       MOV  R1,@TYPE(R8)               ; Record type
+       MOVB @ROOMX(R9),@ROOMX(R8)
+       MOVB @ROOMY(R9),R1
+       AB   R0,R1
+       MOVB R1,@ROOMY(R8)
+       MOVB @ROOMW(R9),@ROOMW(R8)
+       MOVB @ROOMH(R9),R1
+       SB   R0,R1
+       MOVB R1,@ROOMH(R8)
+       MOV  R8,@RRIGHT(R9)             ; Set right pointer in parent room
+       AI   R8,ROOMSZ                  ; Advance room list end pointer
+*      Update rooms pointer and counter
+       MOV  R8,@ROOMPT                 ; Set new room list end pointer
+       INCT  @NROOMS
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SPLITV
+
+*********************************************************************
+*
+* Generate finalized room
+*
+* R9: Points to the room structure, which at this point holds a
+* bounding box for the final room
+*
+* R4: MSB contains tile to use for the walls, and LSB contains tile to use for interior
+*
+GENRM  MOV  R11,*R10+                  ; Push return address onto the stack
+*      New width
+       LI   R1,2                       ; Minimum width = 2
+       CLR  R2                         ; Clear MSB
+       MOVB @ROOMW(R9),@R2LB           ; Get old width (min MINRSZ)
+       MOV  R2,R3                      ; Save old width
+       AI   R2,-3                      ; Old width - 3
+       BL   @RANDI                     ; R0 = rand[2; old width - 3[
+       MOVB @R0LB,@ROOMW(R9)           ; Record new width
+*      New X
+       LI   R1,2                       ; Minimum dx = 2
+       MOV  R3,R2                      ; Get old width
+       S    R0,R2                      ; old width - new width
+       DEC  R2                         , -1
+       BL   @RANDI                     ; R0 = rand[2; old width - new width - 1[
+       AB   @R0LB,@ROOMX(R9)           ; Add to old X
+*      New height
+       LI   R1,2                       ; Minimum height = 2
+       CLR  R2                         ; Clear MSB
+       MOVB @ROOMH(R9),@R2LB           ; Get old height (min MINRSZ)
+       MOV  R2,R3                      ; Save old height
+       AI   R2,-3                      ; Old height - 3
+       BL   @RANDI                     ; R0 = rand[2; old height - 3[
+       MOVB @R0LB,@ROOMH(R9)           ; Record new height
+*      New Y
+       LI   R1,2                       ; Minimum dy = 2
+       MOV  R3,R2                      ; Get old height
+       S    R0,R2                      ; old height - new height
+       DEC  R2                         , -1
+       BL   @RANDI                     ; R0 = rand[2; old height - new height -1[
+       AB   @R0LB,@ROOMY(R9)           ; Add to old Y
+*      Write room to map
+GENRM1 CLR  R0
+       MOVB @ROOMX(R9),@R0LB           ; Get X
+       DEC  R0
+       CLR  R1
+       MOVB @ROOMY(R9),@R1LB           ; Get Y
+       DEC  R1
+       CLR  R2
+       MOVB @ROOMW(R9),@R2LB           ; Get width
+       INCT R2
+       CLR  R3
+       MOVB @ROOMH(R9),@R3LB           ; Get height
+       INCT R3
+;      MOVB @BYTES+TWALL,R4            ; Get tile
+       BL   @SBOX                      ; Set box
+*      Inner space
+       CLR  R0
+       MOVB @ROOMX(R9),@R0LB           ; Get X
+       CLR  R1
+       MOVB @ROOMY(R9),@R1LB           ; Get Y
+       CLR  R2
+       MOVB @ROOMW(R9),@R2LB           ; Get width
+       CLR  R3
+       MOVB @ROOMH(R9),@R3LB           ; Get height
+       SWPB R4
+;      MOVB @BYTES+TFLOOR,R4           ; Get tile
+       BL   @SRECT                     ; Set rectangle
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// GENRM
+
+*********************************************************************
+*
+* Connect left and right child subtrees
+*
+* R9: Points to the room structure, which is not a leaf
+*
+CONNCT MOV  R11,*R10+                  ; Push return address onto the stack
+*      Get left leaf in R7
+       MOV  @RLEFT(R9),R8
+       BL   @GLEAF
+       MOV  R8,R7
+*      Get right leaf in R8
+       MOV  @RRIGHT(R9),R8
+       BL   @GLEAF
+*      Connect depending on split type
+       MOV  @TYPE(R9),R0
+       CI   R0,HSPLIT
+       JNE  CONNC1
+*      Horizontal connect
+       BL   @HCONN
+       JMP  CONNC2
+*      Vertical connect
+CONNC1 BL   @VCONN
+*      Return
+CONNC2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*      Temporary variables used by HCONN and VCONN
+CONNX0 DATA >0000
+CONNY0 DATA >0000
+CONNX1 DATA >0000
+CONNY1 DATA >0000
+CONNX2 DATA >0000
+CONNY2 DATA >0000
+*// CONNCT
+
+*********************************************************************
+*
+* Horizontal connect
+*
+HCONN  MOV  R11,*R10+                  ; Push return address onto the stack
+       CLR  R0
+       MOVB @ROOMX(R7),@R0LB           ; Left room x
+       AB   @ROOMW(R7),@R0LB           ; Left room right edge + 1
+       CLR  R1
+       MOVB @ROOMH(R7),@R1LB           ; Left room height
+       SRL  R1,1                       ; Left room half height
+       AB   @ROOMY(R7),@R1LB           ; Left room vertical center
+       MOV  R0,@CONNX0                 ; Save start x
+       MOV  R1,@CONNY0                 ; Save start y
+       MOV  R0,@CONNX1                 ; Save start x
+       MOV  R1,@CONNY1                 ; Save start y
+       CLR  R2
+       MOVB @ROOMX(R8),@R2LB           ; Right room x
+       DEC  R2                         ; Right room left edge - 1
+       CLR  R3
+       MOVB @ROOMH(R8),@R3LB           ; Right room height
+       SRL  R3,1                       ; Right room half height
+       AB   @ROOMY(R8),@R3LB           ; Right room vertical center
+       MOV  R2,@CONNX2                 ; Save end x
+       MOV  R3,@CONNY2                 ; Save end y
+*      Draw first horizontal segment
+       S    R0,R2                      ; x distance
+       JLT  HCONN6
+       INC  R2                         ; Width
+       SRA  R2,1                       ; Width / 2
+       JEQ  HCONN3
+       A    R2,@CONNX1                 ; Save new position
+       LI   R3,1                       ; Height
+       MOVB @BYTES+TFLOOR,R4           ; Use floor tile
+       BL   @SRECT                     ; Draw rectangle
+*      Draw vertical segment
+HCONN3 MOV  @CONNX1,R0                 ; Restore start x
+       MOV  @CONNY1,R1                 ; Restore start y
+       LI   R2,1                       ; Width
+       MOV  @CONNY2,R3                 ; Restore end y
+       S    R1,R3                      ; y distance
+       A    R3,@CONNY1                 ; Save new position
+       MOV  R3,R3
+       JEQ  HCONN2                     ; Skip segment if distance is zero
+       JGT  HCONN1                     ; Jump ahead if distance positive
+       A    R3,R1                      ; Change start point
+       NEG  R3                         ; Make distance positive
+HCONN1 INC  R3                         ; Height
+       JEQ  HCONN2
+       BL   @SRECT                     ; Draw rectangle
+*      Draw second horizontal segment
+HCONN2 MOV  @CONNX1,R0                 ; Restore start x
+       MOV  @CONNY1,R1                 ; Restore start y
+       MOV  @CONNX2,R2                 ; Restore end x
+       S    R0,R2                      ; x distance
+       INC  R2                         ; Width
+       JEQ  HCONN4
+       LI   R3,1                       ; Height
+       BL   @SRECT                     ; Draw rectangle
+*      Draw doors
+HCONN4 MOV  @CONNX0,R0                 ; Restore start x
+       MOV  @CONNY0,R1                 ; Restore start y
+       DEC  R1                         ; Look above
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  HCONN5
+       MOV  @CONNX0,R0                 ; Restore start x
+       MOV  @CONNY0,R1                 ; Restore start y
+       INC  R1                         ; Look below
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  HCONN5
+       MOV  @CONNX0,R0                 ; Restore start x
+       MOV  @CONNY0,R1                 ; Restore start y
+       MOVB @BYTES+TDOORO,R2
+       BL   @STILE                     ; Draw door
+HCONN5 MOV  @CONNX2,R0                 ; Restore start x
+       MOV  @CONNY2,R1                 ; Restore start y
+       DEC  R1                         ; Look above
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  HCONN6
+       MOV  @CONNX2,R0                 ; Restore start x
+       MOV  @CONNY2,R1                 ; Restore start y
+       INC  R1                         ; Look below
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  HCONN6
+       MOV  @CONNX2,R0                 ; Restore end x
+       MOV  @CONNY2,R1                 ; Restore end y
+       MOVB @BYTES+TDOORC,R2
+       BL   @STILE                     ; Draw door
+*      Return
+HCONN6 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// HCONN
+
+*********************************************************************
+*
+* Vertical connect
+*
+VCONN  MOV  R11,*R10+                  ; Push return address onto the stack
+       CLR  R0
+       MOVB @ROOMW(R7),@R0LB           ; Top room width
+       SRL  R0,1                       ; Top room half width
+       AB   @ROOMX(R7),@R0LB           ; Top room horizontal center
+       CLR  R1
+       MOVB @ROOMY(R7),@R1LB           ; Top room y
+       AB   @ROOMH(R7),@R1LB           ; Top room bottom edge + 1
+       MOV  R0,@CONNX0                 ; Save start x
+       MOV  R1,@CONNY0                 ; Save start y
+       MOV  R0,@CONNX1                 ; Save start x
+       MOV  R1,@CONNY1                 ; Save start y
+       CLR  R2
+       MOVB @ROOMW(R8),@R2LB           ; Bottom room width
+       SRL  R2,1                       ; Bottom room half width
+       AB   @ROOMX(R8),@R2LB           ; Bottom room horizontal center
+       CLR  R3
+       MOVB @ROOMY(R8),@R3LB           ; Bottom room y
+       DEC  R3                         ; Bottom room top edge - 1
+       MOV  R2,@CONNX2                 ; Save end x
+       MOV  R3,@CONNY2                 ; Save end y
+*      Draw first vertical segment
+       S    R1,R3                      ; y distance
+       JLT  VCONN6
+       INC  R3                         ; Height
+       SRA  R3,1                       ; Height / 2
+       JEQ  VCONN3
+       A    R3,@CONNY1                 ; Save new position
+       LI   R2,1                       ; Width
+       MOVB @BYTES+TFLOOR,R4           ; Use floor tile
+       BL   @SRECT                     ; Draw rectangle
+*      Draw horizontal segment
+VCONN3 MOV  @CONNX1,R0                 ; Restore start x
+       MOV  @CONNY1,R1                 ; Restore start y
+       MOV  @CONNX2,R2                 ; Restore end x
+       S    R0,R2                      ; x distance
+       A    R2,@CONNX1                 ; Save new position
+       MOV  R2,R2
+       JEQ  VCONN2                     ; Skip segment if distance is zero
+       JGT  VCONN1                     ; Jump ahead if distance positive
+       A    R2,R0                      ; Change start point
+       NEG  R2                         ; Make distance positive
+VCONN1 INC  R2                         ; Width
+       JEQ  VCONN2
+       LI   R3,1                       ; Height
+       BL   @SRECT                     ; Draw rectangle
+*      Draw second vertical segment
+VCONN2 MOV  @CONNX1,R0                 ; Restore start x
+       MOV  @CONNY1,R1                 ; Restore start y
+       LI   R2,1                       ; Width
+       MOV  @CONNY2,R3                 ; Restore end y
+       S    R1,R3                      ; y distance
+       INC  R3                         ; Height
+       JEQ  VCONN4
+       BL   @SRECT                     ; Draw rectangle
+*      Draw doors
+VCONN4 MOV  @CONNX0,R0                 ; Restore start x
+       MOV  @CONNY0,R1                 ; Restore start y
+       DEC  R0                         ; Look left
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  VCONN5                     ; CHANGED FROM HCONN5
+       MOV  @CONNX0,R0                 ; Restore start x
+       MOV  @CONNY0,R1                 ; Restore start y
+       INC  R0                         ; Look right
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  VCONN5                     ; CHANGED FROM HCONN5
+       MOV  @CONNX0,R0                 ; Restore start x
+       MOV  @CONNY0,R1                 ; Restore start y
+       MOVB @BYTES+TDOORC,R2
+       BL   @STILE                     ; Draw door
+VCONN5 MOV  @CONNX2,R0                 ; Restore start x
+       MOV  @CONNY2,R1                 ; Restore start y
+       DEC  R0                         ; Look left
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  VCONN6                     ; CHANGED FROM HCONN6
+       MOV  @CONNX2,R0                 ; Restore start x
+       MOV  @CONNY2,R1                 ; Restore start y
+       INC  R0                         ; Look right
+       BL   @GTILE
+       CB   @BYTES+TWALL,R1            ; Look for wall
+       JNE  VCONN6                     ; CHANGED FROM HCONN6
+       MOV  @CONNX2,R0                 ; Restore end x
+       MOV  @CONNY2,R1                 ; Restore end y
+       MOVB @BYTES+TDOORO,R2
+       BL   @STILE                     ; Draw door
+*      Return
+VCONN6 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// VCONN
+
+*********************************************************************
+*
+* Get a random leaf of a subtree
+* Note that this routine favours rooms with low depth in the tree.
+*
+* R8: Points to the room structure
+*
+* On return R8 contains a pointer to the leaf
+*
+GLEAF  MOV  R11,*R10+                  ; Push return address onto the stack
+GLEAF1 MOV  @TYPE(R8),R0
+       CI   R0,LEAF
+       JEQ  GLEAF3
+;       JLT  GLEAF3                     ; Leaf = -1
+;       JEQ  GLEAF3                     ; Null
+       BL   @RAND
+       JGT  GLEAF2
+       MOV  @RLEFT(R8),R8
+       JMP  GLEAF1
+GLEAF2 MOV  @RRIGHT(R8),R8
+       JMP  GLEAF1
+*      Return
+GLEAF3 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// GLEAF
+
+*********************************************************************
+*
+* Get a random leaf room.
+*
+* On return R8 contains a pointer to the leaf
+*
+RLEAF  MOV  R11,*R10+                  ; Push return address onto the stack
+RLEAF1 MOV  @NROOMS,R1
+       BL   @RANDL
+       LI   R1,ROOMSZ
+       MPY  R1,R0
+       MOV  @ROOMS+TYPE(R1),R8
+       CI   R8,LEAF
+       JNE  RLEAF1
+       LI   R8,ROOMS
+       A    R1,R8
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// RLEAF
+
+*********************************************************************
+*
+* Set a tile at a random position in a room
+*
+* R8: Points to the room structure
+* R2: MSB contains tile to set
+*
+* On return R3,R4 contain the coordinates where the tile was set.
+*
+SRTILE MOV  R11,*R10+                  ; Push return address onto the stack
+       CLR  R1
+       MOVB @ROOMH(R8),@R1LB
+       BL   @RANDL
+       MOV  R0,R4
+       MOVB @ROOMW(R8),@R1LB
+       BL   @RANDL
+       MOV  R0,R3
+       MOV  R4,R1
+       AB   @ROOMX(R8),@R0LB
+       AB   @ROOMY(R8),@R1LB
+       BL   @STILE
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SRTILE
+
+*********************************************************************
+*
+* Allocate monster to level
+*
+* R0: Points to monster definition
+*
+* On return
+*
+ALCMON MOV  R11,*R10+                  ; Push return address onto the stack
+
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// ALCMON
+
+*********************************************************************
+*
+* Generate monster instance at a random position in a room
+*
+* R0: Points to entry in monster allocation list
+* R8: Points to the room structure
+*
+GENMON MOV  R11,*R10+                  ; Push return address onto the stack
+*      Find an empty slot
+       LI   R2,MAXMON
+       LI   R3,MILIST
+GENMO1 MOV  *R3,R4
+       JEQ  GENMO2
+       AI   R3,MISIZE
+       DEC  R2
+       JNE  GENMO1
+       JMP  GENMO3
+*      Found one
+GENMO2 MOV  *R0,R4                     ; Get pointer to monster
+       MOV  R0,@MIMONA(R3)
+       CLR  R1
+       MOVB @ROOMW(R8),@R1LB
+       BL   @RANDL
+       AB   @ROOMX(R8),@R0LB
+       MOVB @R0LB,@MIX(R3)
+       MOVB @ROOMH(R8),@R1LB
+       BL   @RANDL
+       AB   @ROOMY(R8),@R0LB
+       MOVB @R0LB,@MIY(R3)
+       MOVB @MOHP(R4),@MIHP(R3)
+*      Return
+GENMO3 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// GENMON
+
+*********************************************************************
+*
+* Get the tile at the specified position
+*
+* R0: Horizontal position (x)
+* R1: Vertical position (y)
+*
+* On return R1 MSB contains the tile number, R0 contains the address
+* R14 is modified
+*
+GTILE  MOV  R1,R14                     ; Save vertical position
+       ANDI R1,>00F0                   ; Isolate AMS bank number
+       SLA  R1,4                       ; Shift to MSB
+       AI   R1,>1000                   ; Add base bank number
+       MOVB R1,@AMSREG                 ; Map bank to >2000
+       ANDI R14,>000F                  ; Isolate row number
+       SWPB R14                        ; Multiply by 256
+       A    R14,R0                     ; Add to horizontal
+       AI   R0,AMSBUF                  ; Add AMS buffer base
+       MOVB *R0,R1                     ; Get tile at position
+*      Return
+       B    *R11
+*// GTILE
+
+*********************************************************************
+*
+* Set the tile at the specified position
+*
+* R0: Horizontal position (x)
+* R1: Vertical position (y)
+* R2: MSB contains tile number to set
+*
+* On return R0 contains the map address
+* R14 is modified
+*
+STILE  MOV  R1,R14                     ; Save vertical position
+       ANDI R1,>00F0                   ; Isolate AMS bank number
+       SLA  R1,4                       ; Shift to MSB
+       AI   R1,>1000                   ; Add base bank number
+       MOVB R1,@AMSREG                 ; Map bank to >2000
+       ANDI R14,>000F                  ; Isolate row number
+       SWPB R14                        ; Multiply by 256
+       A    R14,R0                     ; Add to horizontal
+       AI   R0,AMSBUF                  ; Add AMS buffer base
+       MOVB R2,*R0                     ; Set tile at position
+*      Return
+       B    *R11
+*// STILE
+
+*********************************************************************
+*
+* Get a rectangle of tiles from the specified position
+* with the given width and height
+*
+* R0: Horizontal position
+* R1: Vertical position
+* R2: Width
+* R3: Height
+* R4: Address of destination buffer in CPU RAM
+*
+* R14-R15 are modified
+*
+GRECT  MOV  R1,R14                     ; Save vertical position
+       MOV  R2,R15                     ; Save width
+       SLA  R1,4                       ; Move bank number into MSB
+       AI   R1,>1000                   ; Add base bank number
+       ANDI R14,>000F                  ; Isolate row number
+       SWPB R14                        ; Multiply by 256
+       A    R14,R0                     ; Add to horizontal
+       AI   R0,AMSBUF                  ; Add AMS buffer base
+       LI   R14,MAPW                   ; Map width
+       S    R2,R14                     ; Map width - rect width
+GRECT2 MOVB R1,@AMSREG                 ; Map bank to >2000
+GRECT1 MOVB *R0+,*R4+                  ; Read tile
+       DEC  R2                         ; Column counter
+       JNE  GRECT1                     ; Column loop
+       MOV  R15,R2                     ; Restore width
+       A    R14,R0                     ; Next row
+       ANDI R0,>2FFF                   ; Limit to >2000 - 2FFF
+       AI   R1,>0010                   ; Add 1/16 to bank number
+       DEC  R3                         ; Row counter
+       JNE  GRECT2                     ; Row loop
+*      Return
+       B    *R11
+*// GRECT
+
+*********************************************************************
+*
+* Set a rectangle of identical tiles at the specified position
+* with the given width and height
+*
+* R0: Horizontal position
+* R1: Vertical position
+* R2: Width
+* R3: Height
+* R4: MSB contains tile number to set
+*
+* R14-R15 are modified
+*
+SRECT  MOV  R1,R14                     ; Save vertical position
+       MOV  R2,R15                     ; Save width
+       JEQ  SRECT3                     ; Return if zero
+       JLT  SRECT3                     ; Return if negative
+       MOV  R3,R3                      ; Test height
+       JEQ  SRECT3                     ; Return if zero
+       JLT  SRECT3                     ; Return if negative
+       SLA  R1,4                       ; Move bank number into MSB
+       AI   R1,>1000                   ; Add base bank number
+       ANDI R14,>000F                  ; Isolate row number
+       SWPB R14                        ; Multiply by 256
+       A    R14,R0                     ; Add to horizontal
+       AI   R0,AMSBUF                  ; Add AMS buffer base
+       LI   R14,MAPW                   ; Map width
+       S    R2,R14                     ; Map width - rect width
+SRECT2 MOVB R1,@AMSREG                 ; Map bank to >2000
+SRECT1 MOVB R4,*R0+                    ; Write tile
+       DEC  R2                         ; Column counter
+       JNE  SRECT1                     ; Column loop
+       MOV  R15,R2                     ; Restore width
+       A    R14,R0                     ; Next row
+       ANDI R0,>2FFF                   ; Limit to >2000 - 2FFF
+       AI   R1,>0010                   ; Add 1/16 to bank number
+       DEC  R3                         ; Row counter
+       JNE  SRECT2                     ; Row loop
+*      Return
+SRECT3 B    *R11
+*// SRECT
+
+*********************************************************************
+*
+* Set a hollow box of identical tiles at the specified position
+* with the given width and height
+*
+* R0: Horizontal position
+* R1: Vertical position
+* R2: Width
+* R3: Height
+* R4: MSB contains tile number to set
+*
+* R14-R15 are modified
+*
+SBOX   MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R0,@BX
+       MOV  R1,@BY
+       MOV  R2,@BW
+       JEQ  SBOX1                      ; Return if zero
+       JLT  SBOX1                      ; or negative
+       MOV  R3,@BH
+       JEQ  SBOX1                      ; Return if zero
+       JLT  SBOX1                      ; or negative
+*      Top edge
+       LI   R3,1
+       BL   @SRECT
+*      Bottom edge
+       MOV  @BX,R0
+       MOV  @BY,R1
+       A    @BH,R1
+       DEC  R1
+       MOV  @BW,R2
+       LI   R3,1
+       BL   @SRECT
+*      Left edge
+       MOV  @BX,R0
+       MOV  @BY,R1
+       INC  R1
+       LI   R2,1
+       MOV  @BH,R3
+       DECT R3
+       BL   @SRECT
+*      Right edge
+       MOV  @BX,R0
+       A    @BW,R0
+       DEC  R0
+       MOV  @BY,R1
+       INC  R1
+       LI   R2,1
+       MOV  @BH,R3
+       DECT R3
+       BL   @SRECT
+*      Return
+SBOX1  DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+BX     DATA 0
+BY     DATA 0
+BW     DATA 0
+BH     DATA 0
+*// SBOX
+
+*********************************************************************
+*
+* AND a rectangle of tiles at the specified position
+* with the given width and height with a mask of the same size
+* Boundary checked!
+*
+* R0: Horizontal position
+* R1: Vertical position
+* R2: Width
+* R3: Height
+* R4: Address of mask rectangle to AND with the existing tiles
+*
+* R14-R15 are modified
+*
+ARECT  MOV  R0,R5                      ; Column index
+       MOV  R1,R6                      ; Row index
+       MOV  R1,R14                     ; Save vertical position
+       MOV  R2,R15                     ; Save width
+       SLA  R1,4                       ; Move bank number into MSB
+       AI   R1,>1000                   ; Add base bank number
+       ANDI R14,>000F                  ; Isolate row number
+       SWPB R14                        ; Multiply by 256
+       A    R14,R0                     ; Add to horizontal
+       AI   R0,AMSBUF                  ; Add AMS buffer base
+       LI   R14,MAPW                   ; Map width
+       S    R2,R14                     ; Map width - rect width
+*      Row loop
+ARECT2 MOV  R6,R6
+       JLT  ARECT4                     ; Skip row
+       CI   R6,MAPH-1
+       JGT  ARECT4
+       MOVB R1,@AMSREG                 ; Map bank to >2000
+*      Column loop
+ARECT1 MOV  R5,R5
+       JLT  ARECT5
+       CI   R5,MAPW-1
+       JGT  ARECT5
+       SZCB *R4+,*R0+                  ; AND tile with mask
+       JMP  ARECT6
+*      Columns out of map
+ARECT5 INC  R0                         ; Skip map byte
+       INC  R4                         ; Skip mask byte
+*      Next column
+ARECT6 INC  R5                         ; Increment column index
+       DEC  R2                         ; Column counter
+       JNE  ARECT1                     ; Column loop
+       JMP  ARECT3
+*      Row out of map
+ARECT4 A    R15,R0                     ; Skip map row
+       A    R15,R4                     ; Skip mask row
+*      Next row
+ARECT3 INC  R6                         ; Increment row index
+       S    R15,R5                     ; Restore column index
+       MOV  R15,R2                     ; Restore width
+       A    R14,R0                     ; Next row
+       ANDI R0,>2FFF                   ; Limit to >2000 - 2FFF
+       AI   R1,>0010                   ; Add 1/16 to bank number
+       DEC  R3                         ; Row counter
+       JNE  ARECT2                     ; Row loop
+*      Return
+       B    *R11
+*// ARECT
+
+*********************************************************************************
+*
+* Map 8K AMS for ROOMS structure at >C000->FFFF
+*
+ARMENA MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R0,>0000
+       LI   R1,ROOMS
+       BL   @AMSMAP
+       LI   R0,>0100
+       LI   R1,ROOMS+>1000
+       BL   @AMSMAP
+*      Enable AMS mapper
+       BL   @AMSERG
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// ARMENA
+
+*********************************************************************************
+*
+* Remove mapping of 8K AMS for ROOMS structure at >E000->FFFF
+*
+ARMDIS MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R0,>0C00
+       LI   R1,ROOMS
+       BL   @AMSMAP
+       LI   R0,>0D00
+       LI   R1,ROOMS+>1000
+       BL   @AMSMAP
+*      Enable AMS mapper
+       BL   @AMSERG
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// ARMDIS
+
+***************************************************************************
+*
+* Map an AMS bank to a given memory segment
+*
+* R0 MSB contains the AMS bank number to map
+* R1 contains the memory segment to map into (>2000, >3000, >A000, ...)
+*
+* Call AMSMP1 if R1 contains the register number (>0002, >0003, >000A, ...) instead
+*
+* Note: This disables access to the AMS mapping registers again
+*
+AMSMAP SRL  R1,12                      ; Top 4 bits select register
+AMSMP1 SLA  R1,1                       ; Registers are 2 bytes apart
+       LI   R12,>1E00                  ; AMS CRU address
+       SBO  0                          ; Enable access to AMS mapping registers
+       MOVB R0,@>4000(R1)              ; Write register
+       SBZ  0                          ; Disable access to AMS mapping registers
+       B    *R11                       ; Return
+*// AMSMAP
+
+***************************************************************************
+*
+* Enable access to AMS registers
+*
+AMSERG LI   R12,>1E00                  ; AMS CRU address
+       SBO  0                          ; Enable access to AMS registers
+       B    *R11                       ; Return
+*// AMSERG
+
+***************************************************************************
+*
+* Disable access to AMS registers
+*
+AMSDRG LI   R12,>1E00                  ; AMS CRU address
+       SBZ  0                          ; Disable access to AMS registers
+       B    *R11                       ; Return
+*// AMSDRG
+
+***************************************************************************
+*
+* Enable AMS
+*
+AMSENA LI   R12,>1E00                  ; AMS CRU address
+       SBO  1                          ; Enable AMS mapper
+       B    *R11                       ; Return
+*// AMSENA
+
+***************************************************************************
+*
+* Disable AMS
+*
+AMSDIS LI   R12,>1E00                  ; AMS CRU address
+       SBZ  1                          ; Disable AMS mapper
+       B    *R11                       ; Return
+*// AMSDIS
+
+*********************************************************************
+*
+* Generate a pseudo random number within the given interval
+*
+* R1: Start of interval (0 - 255) inclusive
+* R2: End of interval (0 - 255) exclusive
+*
+* On return R0 contains the number [R1; R2[
+*
+* R1 is unchanged, R2 contains end - start, R14 and R15 are modified
+*
+RANDI  MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @RAND                      ; Generate a random number in R0
+       ANDI R0,>00FF                   ; Clear MSB: [0-255]
+       MOV  R0,R14                     ; Copy to R14
+       S    R1,R2                      ; width = end - start
+       MPY  R2,R14                     ; width * [0-255]
+       SRL  R15,8                      ; (width * [0-255]) / 256
+       MOV  R15,R0                     ; Copy result back
+       A    R1,R0                      ; Add start of interval
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// RANDI
+
+*********************************************************************
+*
+* Generate a pseudo random number within the given limit
+*
+* R1: Maximum number (0 - 255) exclusive
+*
+* On return R0 contains the number [0; R1[
+*
+* R1 is unchanged. R14 and R15 are modified
+*
+RANDL  MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @RAND                      ; Generate a random number in R0
+       ANDI R0,>00FF                   ; Clear MSB: [0-255]
+       MOV  R0,R14                     ; Copy to R14
+       MPY  R1,R14                     ; width * [0-255]
+       SRL  R15,8                      ; (width * [0-255]) / 256
+       MOV  R15,R0                     ; Copy result back
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// RANDL
+
+*********************************************************************
+*
+* Generate a pseudo random number
+*
+* On return R0 contains the number, which is also stored at @RANDNO
+*
+* R14 and R15 are modified
+*
+RAND   LI   R14,28643                  ; A prime number to multiply by
+       MPY  @RANDNO,R14                ; Multiply by last random number
+       AI   R15,31873                  ; Add a prime number
+       SRC  R15,7                      ; Mix up the number to break odd/even pattern
+       MOV  R15,@RANDNO                ; Save this number for next time
+       MOV  R15,R0
+       B    *R11
+*// RAND
+
+*********************************************************************
+*
+* Fill RAM with the same value
+*
+* R0: start address
+* R1 MSB: byte to fill with
+* R2: length
+*
+FILL   MOVB R1,@R1LB
+FILL1  MOV  R1,*R0+
+       DECT R2
+       JGT  FILL1
+       JEQ  FILL2
+       MOVB R1,*R0+
+FILL2  B    *R11
+
+*********************************************************************
+*
+* Data section
+*
+BYTES  BYTE >00,>01,>02,>03,>04,>05,>06,>07,>08,>09,>0A,>0B,>0C,>0D,>0E,>0F
+       BYTE >10,>11,>12,>13,>14,>15,>16,>17,>18,>19,>1A,>1B,>1C,>1D,>1E,>1F
+       BYTE >20,>21,>22,>23,>24,>25,>26,>27,>28,>29,>2A,>2B,>2C,>2D,>2E,>2F
+       BYTE >30,>31,>32,>33,>34,>35,>36,>37,>38,>39,>3A,>3B,>3C,>3D,>3E,>3F
+       BYTE >40,>41,>42,>43,>44,>45,>46,>47,>48,>49,>4A,>4B,>4C,>4D,>4E,>4F
+       BYTE >50,>51,>52,>53,>54,>55,>56,>57,>58,>59,>5A,>5B,>5C,>5D,>5E,>5F
+       BYTE >60,>61,>62,>63,>64,>65,>66,>67,>68,>69,>6A,>6B,>6C,>6D,>6E,>6F
+       BYTE >70,>71,>72,>73,>74,>75,>76,>77,>78,>79,>7A,>7B,>7C,>7D,>7E,>7F
+
+NROOMS DATA >0000                      ; Number of rooms
+STAIRX DATA >0080                      ; Staircase position
+STAIRY DATA >0080
+TWNRND DATA >0000                      ; Random number seed for generating the town
+TMPRND DATA >0000                      ; For saving random number seed
+
+* Rarity of each object tile
+RARITY
+RGOLD  BYTE 1                          ; Coins
+RCHEST BYTE 3                          ; Chest
+RPOTI  BYTE 2                          ; Potion
+RSCRL  BYTE 3                          ; Scroll
+RBOOK  BYTE 8                          ; Book
+RFOOD  BYTE 1                          ; Food
+RTORCH BYTE 1                          ; Torch
+RLAMP  BYTE 3                          ; Lamp
+RSWORD BYTE 6                          ; Sword
+RAXE   BYTE 5                          ; Axe
+RDGGR  BYTE 3                          ; Dagger
+RMACE  BYTE 5                          ; Mace
+RRING  BYTE 9                          ; Ring
+RARMR  BYTE 4                          ; Armor
+RMARM  BYTE 6                          ; Mail armor
+RPARM  BYTE 7                          ; Plate armor
+RHELM  BYTE 4                          ; Helm
+RBOOT  BYTE 4                          ; Boots
+RGLVS  BYTE 4                          ; Gloves
+RROBE  BYTE 4                          ; Robes
+RSHLD  BYTE 5                          ; Shield
+RGNTL  BYTE 4                          ; Gauntlets
+RMYST  BYTE 10                         ; Mystery?
+       EVEN
+
+* Monsters
+
+* Base list of monsters allocated to current level
+
+MALIST BSS  NMONAL*2
+
+* Monster state
+MSLEEP EQU  0                          ; Sleeping
+MAWAKE EQU  1                          ; Awake
+MANGRY EQU  2                          ; Angry
+
+* Monster instances
+MIMONA EQU  0                          ; Pointer to monster allocation
+MIX    EQU  2                          ; X position
+MIY    EQU  3                          ; Y position
+MIHP   EQU  4                          ; Hit points
+MISTAT EQU  5                          ; State (0=sleeping, 1=awake, 2=angry)
+MISIZE EQU  6                          ; Structure size
+
+*      A slot is deallocated if first word is null
+;      TODO: This could be moved to AMS
+MILIST BSS  MAXMON*MISIZE
+MILISE
+

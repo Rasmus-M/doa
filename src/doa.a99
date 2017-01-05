@@ -1,0 +1,3681 @@
+*********************************************************************
+*
+* Dungeons of Asgard
+*
+* Rogue-like game utilizing SASM memory
+* For the TI-99/4A home computer
+*
+* October 2016
+* Rasmus Moustgaard <rasmus.moustgaard@gmail.com>
+*
+*********************************************************************
+
+       DEF  MAIN
+
+**
+* Memory mapped addresses
+VDPWD  EQU  >8C00                      ; VDP write data
+VDPWA  EQU  >8C02                      ; VDP set read/write address
+VDPRD  EQU  >8800                      ; VDP read data
+VDPSTA EQU  >8802                      ; VDP status
+SOUND  EQU  >8400
+
+**
+* VDP memory map
+PTRNTB EQU  >0000                      ; Pattern table base
+SPRPTB EQU  >1800                      ; Sprite pattern table base
+COLRTB EQU  >2000                      ; Color table base
+NAMET1 EQU  >2800                      ; Name table base 1
+SPRATB EQU  >2B00                      ; Sprite attribute table base
+NAMET2 EQU  >2C00                      ; Name table base 2
+PAB    EQU  >2F00                      ; PAB location
+FBUF   EQU  >3000                      ; VDP file buffer
+
+**
+* Constants
+MINAMS EQU  128                        ; Minimum KB or AMS required
+AMSBUF EQU  >2000                      ; AMS buffer address
+AMSREG EQU  >4004                      ; AMS register for mapping to buffer
+MAPW   EQU  256                        ; Map width in tiles
+MAPH   EQU  192                        ; Map height in tiles
+MAXRSZ EQU  32                         ; Maximum room size/dimension
+MINRSZ EQU  10                         ; Minimum room size/dimension
+TOWNW  EQU  64                         ; Town width
+TOWNH  EQU  48                         ; Town height
+TOWNX  EQU  MAPW-TOWNW/2               ; Town X
+TOWNY  EQU  MAPH-TOWNH/2               ; Town Y
+MSGW   EQU  32                         ; Message area width
+MBUFH  EQU  8                          ; Message buffer height
+MAXITM EQU  128                        ; Max item instances
+MAXINV EQU  32                         ; Max inventory size
+MAXEQU EQU  8                          ; Max equipment size
+OBJ1ST EQU  10                         ; Number of first object tile
+OBJLST EQU  32                         ; Number of last object tile
+NMONST EQU  12                         ; Number of unique monsters
+NMONAL EQU  8                          ; Number of monsters allocated per level
+MAXMON EQU  128                        ; Max monster instances
+RECSPD EQU  50                         ; Base recovering speed
+
+* Commands
+CMDNON EQU  0                          ; None
+CMDTL1 EQU  1                          ; Tile size 1
+CMDTL2 EQU  2                          ; Tile size 2
+CMDMS2 EQU  3                          ; Message size 2
+CMDMS4 EQU  4                          ; Message size 4
+CMDST0 EQU  5                          ; Stats off
+CMDST1 EQU  6                          ; Stats on
+CMDMAP EQU  7                          ; Map
+CMDINV EQU  8                          ; Inventory
+CMDEQU EQU  9                          ; Equipment
+CMDSAV EQU  10                         ; Save
+CMDLOA EQU  11                         ; Load
+* Commands that spend player time
+CMDMOV EQU  12                         ; Move
+CMDGET EQU  13                         ; Get
+CMDOPN EQU  14                         ; Open
+CMDCLS EQU  15                         ; Close
+CMDLOK EQU  16                         ; Look
+CMDUPS EQU  17                         ; Go upstairs
+CMDDNS EQU  18                         ; Go downstairs
+CMDTNL EQU  19                         ; Tunnel
+CMDATT EQU  20                         ; Attack
+
+**
+* Scratch pad
+*
+* The interrupt handler might update the timer at >8379 or the VDP status byte at >837B.
+*
+RNDSD  EQU  >83C0                      ; Random number seed
+PAD    EQU  >8300
+WRKSP  EQU  PAD                        ; Workspace
+R0LB   EQU  WRKSP+1                    ; R0 low byte required for VDP routines
+R1LB   EQU  WRKSP+3
+R2LB   EQU  WRKSP+5
+R3LB   EQU  WRKSP+7
+R4LB   EQU  WRKSP+9
+R5LB   EQU  WRKSP+11
+R6LB   EQU  WRKSP+13
+R7LB   EQU  WRKSP+15
+R8LB   EQU  WRKSP+17
+R9LB   EQU  WRKSP+19
+PLYRWS EQU  >8320
+STACK  EQU  >8340
+PADVAR EQU  STACK+>10
+* PAD variables
+* Save file start
+DEPTH  EQU  PADVAR+2                   ; Dungeon depth
+LEVEL  EQU  DEPTH+2                    ; Player level
+XP     EQU  LEVEL+2                    ; Experience points
+XPNXT  EQU  XP+2                       ; Experience points remaining for next level
+HP     EQU  XPNXT+2                    ; Current hit points
+HPMAX  EQU  HP+2                       ; Max hit points
+AC     EQU  HPMAX+2                    ; Armor class
+GOLD   EQU  AC+2                       ; Gold
+LGTSRC EQU  GOLD+2                     ; Light source
+STR    EQU  LGTSRC+2                   ; Strength
+INT    EQU  STR+2                      ; Intelligence
+WIS    EQU  INT+2                      ; Wisdom
+DEX    EQU  WIS+2                      ; Dexterity
+CON    EQU  DEX+2                      ; Constitution
+STRMOD EQU  CON+2                      ; Strength modifier
+INTMOD EQU  STRMOD+2                   ; Intelligence modifier
+WISMOD EQU  INTMOD+2                   ; Wisdom modifier
+DEXMOD EQU  WISMOD+2                   ; Dexterity modifier
+CONMOD EQU  DEXMOD+2                   ; Constitution modifier
+STATUS EQU  CONMOD+2                   ; Status
+STATON EQU  STATUS+2                   ; Stats panel on
+MSGH   EQU  STATON+2                   ; Message window height in rows
+DRWMTL EQU  MSGH+2                     ; Draw meta tiles?
+* Save file end
+COMMND EQU  DRWMTL+2                   ; Command
+RECCNT EQU  COMMND+2                   ; HP recovering counter
+RANDNO EQU  RECCNT+2                   ; Pseudo random number
+ROOMPT EQU  RANDNO+2                   ; Room pointer
+MWINX  EQU  ROOMPT+2                   ; Map window x position in map units
+MWINY  EQU  MWINX+2                    ; Map window y position in map units
+MWINW  EQU  MWINY+2                    ; Map window width in map units
+MWINH  EQU  MWINW+2                    ; Map window height in map units
+MWINSW EQU  MWINH+2                    ; Map window screen width in columns
+MWINSH EQU  MWINSW+2                   ; Map window screen height in rows
+X      EQU  MWINSH+2                   ; Player x position on map in tiles
+Y      EQU  X+2                        ; Player y position on map in tiles
+DX     EQU  Y+2                        ; Player movement direction x
+DY     EQU  DX+2                       ; Player movement direction y
+COL    EQU  DY+2                       ; Screen column
+ROW    EQU  COL+2                      ; Screen row
+INVNXT EQU  ROW+2                      ; Pointer to next free slot in inventory
+ITM1ST EQU  INVNXT+2                   ; First displayed item
+ITMCUR EQU  ITM1ST+2                   ; Current displayed item
+ITMSEL EQU  ITMCUR+2                   ; Selected item
+CTILE  EQU  ITMSEL+2                   ; Current tile
+LTILE  EQU  CTILE+2                    ; Last tile
+NTILE  EQU  LTILE+2                    ; Neighbour tile
+CURRNT EQU  NTILE+2                    ; Current name table address
+MSGOFF EQU  CURRNT+2                   ; Message buffer offset
+
+FLEN   EQU  COMMND-PADVAR
+
+********************************************************************************
+*
+* Main program
+*
+       AORG >A000
+
+MAIN   LIMI 0
+       LWPI WRKSP
+       MOV  @RNDSD,R15                 ; Save console random number seed
+;      LI   R1,33333                   ; Fixed seed for testing
+;      MOV  R1,@RANDNO
+       BL   @EXPAD                     ; Exchange PAD and buffer
+       MOV  R15,@RANDNO
+       LI   R10,STACK                  ; Stack pointer
+       BL   @GMODE
+*      Current name table
+       LI   R0,NAMET1
+       MOV  R0,@CURRNT
+*      Check AMS
+       BL   @AMSDTC                    ; AMS detect
+       MOV  @AMSSIZ,R0
+       CI   R0,MINAMS
+       JHE  AMSOK
+*      Not enough AMS
+NOAMS  LI   R0,4
+       LI   R1,11
+       LI   R2,TXAMS
+       BL   @DSPTXT
+       BL   @SHWBUF
+NOALP  BL   @CKQUIT
+       JMP  NOALP                      ; Loop forever
+*      AMS OK
+AMSOK  BL   @AMSERG                    ; Enable AMS register access
+       BL   @AMSENA                    ; Enable AMS mapper
+*      Initialize game
+       BL   @INI1ST
+NEWGME BL   @INIGME
+*      New level
+       BL   @GENLVL
+*      Main loop
+LOOP   BL   @DSCRN                     ; Draw screen to double buffer
+       BL   @VSYNC                     ; Wait for vertical refresh
+       BL   @CHGBUF                    ; Change double buffer
+       BL   @GETCMD                    ; Get command
+       BL   @MOVE                      ; Read joystick and move
+       BL   @EXEC                      ; Execute commands
+       BL   @UPDMON                    ; Update monsters
+       BL   @LIGHT                     ; Light up area
+*      Check HP
+       MOV  @HP,R0
+       JEQ  DIED
+       JLT  DIED
+*      Check status
+       MOV  @STATUS,R0
+       JNE  LOOP1
+       BL   @RECOVR                    ; Recover hit points
+LOOP1  BL   @CKQUIT                    ; Check for quit
+       LI   R1,2
+       BL   @PAUSE
+       JMP  LOOP
+*      Player dies
+DIED   LI   R2,TXUDIE
+       BL   @MSGLN
+       BL   @DSCRN                     ; Draw screen to double buffer
+       BL   @CHGBUF                    ; Change double buffer
+       BL   @WTESC
+*      Restart
+       JMP  NEWGME
+
+*********************************************************************
+*
+* Initialize game
+*
+INI1ST MOV  R11,*R10+                  ; Push return address onto the stack
+*      Settings
+       SETO @DRWMTL                    ; Draw metatiles
+       SETO  @STATON                   ; Stats panel on
+       LI   R1,2
+       MOV  R1,@MSGH                   ; Message window height
+       BL   @LAYOUT
+*      Message buffer
+       LI   R0,MSGBUF
+       LI   R1,>2000
+       LI   R2,MBUFH*MSGW
+       BL   @FILL
+       CLR  @MSGOFF
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// INI1ST
+
+*********************************************************************
+*
+* Initialize game
+*
+INIGME MOV  R11,*R10+                  ; Push return address onto the stack
+*      Stats
+       LI   R0,0
+       MOV  R0,@DEPTH
+       LI   R0,1
+       MOV  R0,@LEVEL
+       CLR  @XP
+       LI   R0,20
+       MOV  R0,@XPNXT
+       LI   R0,10
+       A    @CONMOD,R0
+       MOV  R0,@HP
+       MOV  R0,@HPMAX
+       CLR  @AC
+       BL   @R3D6
+       MOV  R0,@STR
+       BL   @R3D6
+       MOV  R0,@INT
+       BL   @R3D6
+       MOV  R0,@WIS
+       BL   @R3D6
+       MOV  R0,@DEX
+       BL   @R3D6
+       MOV  R0,@CON
+       BL   @CLCMOD
+       CLR  @GOLD
+       CLR  @STATUS
+*      Init items
+       LI   R0,ITLIST
+       CLR  R1
+       LI   R2,MAXITM*IISIZE
+       BL   @FILL
+*      Init inventory
+       LI   R0,INVENT
+       MOV  R0,@INVNXT
+       CLR  R1
+       LI   R2,MAXINV*2
+       BL   @FILL
+*      Init equipment
+       LI   R0,EQUIPM
+       CLR  R1
+       LI   R2,MAXEQU*2
+       BL   @FILL
+       LI   R0,IT_LTHR_ARMR
+       BL   @GENITM
+       BL   @AEQITM
+       LI   R0,IT_DGDR
+       BL   @GENITM
+       BL   @AEQITM
+       LI   R0,IT_TRCH
+       BL   @GENITM
+       BL   @AEQITM
+       BL   @CLCEQU
+*      Misc
+       LI   R0,RECSPD
+       MOV  R0,@RECCNT
+       CLR  @TWNRND
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// INIGME
+
+*********************************************************************
+*
+* Generate level
+*
+GENLVL MOV  R11,*R10+                  ; Push return address onto the stack
+*      Town or dungeon?
+       MOV  @DEPTH,R0
+       JGT  GENLV1
+*      Display text
+       LI   R2,TXTWN
+       BL   @IMMMSG
+*      Generate town
+       BL   @ARMENA                    ; Page in AMS at >C000->FFFF
+       BL   @GENTWN
+       BL   @ARMDIS                    ; Page out AMS at >C000->FFFF
+*      Upload tiles
+       BL   @UPLTLS
+       JMP  GENLV2
+*      Display message
+GENLV1 LI   R2,TXDGN
+       BL   @IMMMSG
+*      Generate dungeon
+       BL   @ARMENA                    ; Page in AMS at >C000->FFFF
+       BL   @GENDGN
+       BL   @ARMDIS                    ; Page out AMS at >C000->FFFF
+*      Upload monster graphics
+       BL   @UPLMON
+*      Place player
+GENLV2 MOV  @STAIRX,@X
+       MOV  @STAIRY,@Y
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSCRN
+
+*********************************************************************
+*
+* Copy map generation code in before the AMS overlay at >E000.
+* This includes the RND and AMS routines, and the routines to get
+* and set tiles in the map.
+*
+ROOMS  EQU  >E000                      ; Rooms list/tree
+       COPY "mapgen.a99"
+
+*********************************************************************
+*
+* Pause
+*
+* R1 contains number of frames to wait
+*
+PAUSE  MOV  R11,*R10+                  ; Push return address onto the stack
+PAUSE1 BL   @VSYNC
+       DEC  R1
+       JNE  PAUSE1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// PAUSE
+
+*********************************************************************
+*
+* Wait for vertical retrace (CRU)
+*
+VSYNC  MOVB @VDPSTA,R0                 ; Clear status
+       CLR  R12
+VSYNC1 TB   2                          ; Test CRU bit for VDP interrupt
+       JEQ  VSYNC1
+       MOVB @VDPSTA,R0
+       B    *R11
+*// VSYNC
+
+*********************************************************************
+*
+* Change double buffer
+*
+CHGBUF MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @SHWBUF
+       BL   @FLPBUF
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// CNGBUF
+
+*********************************************************************
+*
+* Show VDP double buffer
+*
+SHWBUF MOV  R11,*R10+                  ; Push return address onto the stack
+*      Switch VDP double buffer
+       MOV  @CURRNT,R0
+       SRL  R0,10
+       ORI  R0,>0200
+       BL   @VWTR
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SHWBUF
+
+*********************************************************************
+*
+* Flip double buffer pointer between the two possible values
+*
+FLPBUF MOV  @CURRNT,R0
+       LI   R1,>0400
+       XOR  R1,R0
+       MOV  R0,@CURRNT
+*      Return
+       B    *R11
+*// FLPBUF
+
+*********************************************************************
+*
+* Layout screen
+*
+*      X
+LAYOUT ABS  @STATON
+       JEQ  LAYOU1
+       LI   R0,22
+       JMP  LAYOU2
+LAYOU1 LI   R0,32
+LAYOU2 MOV  R0,@MWINSW
+       ABS  @DRWMTL
+       JEQ  LAYOU3
+       SRL  R0,1
+LAYOU3 MOV  R0,@MWINW
+*      Y
+       LI   R1,24
+       S    @MSGH,R1
+       MOV  R1,@MWINSH                 ; Map window screen height
+       ABS  @DRWMTL
+       JEQ  LAYOU4
+       SRL  R1,1
+LAYOU4 MOV  R1,@MWINH
+*      Return
+       B    *R11
+*// LAYOUT
+
+*********************************************************************
+*
+* Draw screen
+*
+DSCRN  MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @DRWMTL,R0                 ; Tiles or metatiles?
+       JNE  DSCRN1
+       BL   @DSCRT
+       JMP  DSCRN2
+DSCRN1 BL   @DSCRM
+DSCRN2 ABS  @STATON
+       JEQ  DSCRN3
+*      Display panel
+       BL   @DPANEL
+*      Display stats
+       BL   @DSTATS
+*      Display messages
+DSCRN3 BL   @DMSSGS
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSCRN
+
+*********************************************************************
+*
+* Draw screen (tiles)
+*
+DSCRT  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Calculate player and map window positions
+       BL   @CLCPOS
+*      Draw player
+       LI   R0,>01E0                   ; Set to 8x8 sprites
+       BL   @VWTR
+       SLA  R5,3
+       SWPB R5
+       SLA  R6,3
+       DEC  R6
+       SWPB R6
+       LI   R7,>1000
+       LI   R8,SPRCLR
+       LI   R0,SPRATB
+       BL   @VWAD
+       LI   R0,VDPWD
+       LI   R2,4
+DSCRT9 MOVB R6,*R0
+       MOVB R5,*R0
+       MOVB R7,*R0
+       MOVB *R8+,*R0
+       AI   R7,>0100
+       DEC  R2
+       JNE  DSCRT9
+       LI   R1,>D000
+       MOVB R1,*R0
+*      Get rectangle from AMS
+       MOV  @MWINX,R0
+       MOV  @MWINY,R1
+       MOV  @MWINW,R2
+       MOV  @MWINH,R3
+       LI   R4,MAPBUF
+       BL   @GRECT
+*      Draw monsters into the buffer
+       BL   @DMONS
+*      Display rectangle to VDP
+       MOV  @CURRNT,R0
+       LI   R1,MAPBUF
+       LI   R4,VDPWD
+       MOV  @MWINH,R3
+DSCRT5 BL   @VWAD
+       MOV  @MWINW,R2
+DSCRT6 MOVB *R1+,R5
+       JLT  DSCRT8
+       SRL  R5,8
+       MOVB @TCMAP(R5),*R4
+       JMP  DSCRT7
+DSCRT8 LI   R5,PDARK*256
+       MOVB R5,*R4
+DSCRT7 DEC  R2
+       JNE  DSCRT6
+       AI   R0,32
+       DEC  R3
+       JNE  DSCRT5
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSCRT
+
+*********************************************************************
+*
+* Draw screen (metatiles)
+*
+DSCRM  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Calculate player and map window positions
+       BL   @CLCPOS
+*      Draw player
+       LI   R0,>01E2                   ; Set to 16x16 sprites
+       BL   @VWTR
+       SLA  R5,4                       ; 1 for metatiles and 3 for pixels
+       SWPB R5
+       SLA  R6,4                       ; 1 for metatiles and 3 for pixels
+       DEC  R6
+       SWPB R6
+       CLR  R7
+       LI   R8,SPRCLR
+       LI   R0,SPRATB
+       BL   @VWAD
+       LI   R0,VDPWD
+       LI   R2,4
+DSCRMC MOVB R6,*R0
+       MOVB R5,*R0
+       MOVB R7,*R0
+       MOVB *R8+,*R0
+       AI   R7,>0400
+       DEC  R2
+       JNE  DSCRMC
+       LI   R1,>D000
+       MOVB R1,*R0
+*      Get rectangle from AMS
+       MOV  @MWINX,R0
+       MOV  @MWINY,R1
+       MOV  @MWINW,R2
+       MOV  @MWINH,R3
+       LI   R4,MAPBUF
+       BL   @GRECT
+*      Draw monsters into the buffer
+       BL   @DMONS
+*      Display rectangle to VDP
+       MOV  @CURRNT,R0
+       LI   R1,MAPBUF
+       MOV  @MWINH,R3
+       LI   R4,VDPWD
+       CLR  R5
+*      Even row
+DSCRM5 BL   @VWAD
+       MOV  @MWINW,R2
+DSCRM6 MOVB *R1+,R5
+       JLT  DSCRM8
+       SRL  R5,7
+       MOV  @TMMAP(R5),R5
+       JMP  DSCRM9
+DSCRM8 LI   R5,MTDARK
+DSCRM9 MOVB *R5+,*R4
+       MOVB *R5+,*R4
+       DEC  R2
+       JNE  DSCRM6
+       AI   R0,32
+       S    @MWINW,R1
+*      Odd row
+       BL   @VWAD
+       MOV  @MWINW,R2
+DSCRM7 MOVB *R1+,R5
+       JLT  DSCRMA
+       SRL  R5,7
+       MOV  @TMMAP(R5),R5
+       INCT R5
+       JMP  DSCRMB
+DSCRMA LI   R5,MTDARK+2
+DSCRMB MOVB *R5+,*R4
+       MOVB *R5+,*R4
+       DEC  R2
+       JNE  DSCRM7
+       AI   R0,32
+*      Next metatile row
+       DEC  R3
+       JNE  DSCRM5
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSCRM
+
+*********************************************************************
+*
+* Calculate player and map window positions
+*
+* On return R5 and R6 contains the player position within the window
+* @MWINX and @MWINY contain the window position
+*
+*      X
+CLCPOS MOV  @MWINW,R5                  ; Window width
+       SRL  R5,1                       ; Player position in window = center x
+       MOV  @X,R0                      ; Player x position on map
+       S    R5,R0                      ; Desired map window x position
+       JGT  CLCPO1                     ; Check if inside map left
+       A    R0,R5                      ; Adjust player position
+       CLR  R0                         ; Minimum map window x position
+       JMP  CLCPO2
+CLCPO1 LI   R3,MAPW                    ; Map width
+       S    @MWINW,R3                  ; Rightmost allowed window position
+       S    R0,R3                      ; Subtract desired window position
+       JGT  CLCPO2                     ; If positive desired position is ok
+       S    R3,R5                      ; Adjust player position
+       A    R3,R0                      ; Adjust map window position
+CLCPO2 MOV  R0,@MWINX
+*      Y
+       MOV  @MWINH,R6                  ; Window height
+       SRL  R6,1                       ; Player position in window = center y
+       MOV  @Y,R1                      ; Player y position on map
+       S    R6,R1                      ; Desired map window y position
+       JGT  CLCPO3                     ; Check if inside map top
+       A    R1,R6                      ; Adjust player position
+       CLR  R1                         ; Minimum map window y position
+       JMP  CLCPO4
+CLCPO3 LI   R3,MAPH                    ; Map height
+       S    @MWINH,R3                  ; Bottommost allowed window position
+       S    R1,R3                      ; Subtract desired window position
+       JGT  CLCPO4                     ; If positive desired position is ok
+       S    R3,R6                      ; Adjust player position
+       A    R3,R1                      ; Adjust map window position
+CLCPO4 MOV  R1,@MWINY
+       B    *R11
+*// CLCPOS
+
+*********************************************************************
+*
+* Draw monsters into the buffer
+*
+DMONS  MOV  @MWINX,R4
+       MOV  R4,R6
+       SWPB R4                         ; Window x as byte
+       MOV  @MWINY,R5
+       MOV  R5,R7
+       SWPB R5                         ; Window y as byte
+       A    @MWINW,R6
+       CI   R6,256
+       JL   DMONS3
+       LI   R6,255
+DMONS3 SWPB R6                         ; Window x + width as byte
+       A    @MWINH,R7
+       CI   R7,256
+       JL   DMONS4
+       LI   R7,255
+DMONS4 SWPB R7                         ; Window y + height as byte
+       LI   R2,MAXMON
+       LI   R3,MILIST
+DMONS1 MOV  *R3,R8
+       JEQ  DMONS2
+       MOVB @MIX(R3),R0
+       CB   R0,R4
+       JL   DMONS2                     ; Skip if monster x < window x
+       CB   R0,R6
+       JHE  DMONS2                     ; Skip if monster x >= window x + 1
+       MOVB @MIY(R3),R1
+       CB   R1,R5
+       JL   DMONS2                     ; Skip if monster y < window y
+       CB   R1,R7
+       JHE  DMONS2                     ; Skip if monster y >= window y + 1
+*      Monster is visible on screen
+       SB   R4,R0                      ; monster x - window x
+       SRL  R0,8
+       SB   R5,R1                      ; monster y - window y
+       SRL  R1,8
+       MOV  @MWINW,R8
+       MPY  R1,R8
+       A    R9,R0                      ; Offset into buffer
+       AI   R0,MAPBUF
+       MOV  @MIMONA(R3),R8             ; Get monster assignment
+       AI   R8,-MALIST                 ; Position in list * 2
+       SRL  R8,1                       ; Position in list
+       AI   R8,TMONS1                  ; Add base monster tile
+       SWPB R8
+       MOVB *R0,R9                     ; Get existing tile
+       ANDI R9,>8000                   ; Isolate bit that determines if tile is hidden
+       SOCB R9,R8                      ; Combine with monster tile
+       MOVB R8,*R0                     ; Write to map
+DMONS2 AI   R3,MISIZE
+       DEC  R2
+       JNE  DMONS1
+*      Return
+       B    *R11
+*// DMONS
+
+*********************************************************************
+*
+* Get command
+*
+GETCMD MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R1,CMDTL1
+       LI   R3,KEYMAP
+GETCM1 MOV  *R3+,R0
+       JLT  GETCM4                     ; Skip
+       JEQ  GETCM2                     ; End
+       BL   @CHKKEY
+       JNE  GETCM3
+GETCM4 INC  R1
+       JMP  GETCM1
+*      No command
+GETCM2 LI   R1,CMDNON
+GETCM3 MOV  R1,@COMMND
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+KEYMAP DATA KEY_1                      ; Tile size 1
+       DATA KEY_2                      ; Tile size 2
+       DATA KEY_3                      ; Message size 2
+       DATA KEY_4                      ; Message size 4
+       DATA KEY_5                      ; Stats off
+       DATA KEY_6                      ; Stats on
+       DATA KEY_M                      ; Map
+       DATA KEY_I                      ; Inventory
+       DATA KEY_E                      ; Equipment
+       DATA KEY_S|M_CTRL               ; Save
+       DATA KEY_L|M_CTRL               ; Load
+       DATA -1                         ; Move (no key)
+       DATA KEY_G                      ; Get
+       DATA KEY_O                      ; Open
+       DATA KEY_C                      ; Close
+       DATA KEY_L                      ; Look
+       DATA KEY_CM                     ; Go upstairs
+       DATA KEY_FS                     ; Go downstairs
+       DATA KEY_T                      ; Tunnel
+       DATA 0                          ; End
+*// GETCMD
+
+*********************************************************************
+*
+* Move
+*
+MOVE   MOV  R11,*R10+                  ; Push return address onto the stack
+*      Reset directional vector
+       CLR  @DX                        ; X movement direction
+       CLR  @DY                        ; Y movement direction
+*      Read joystick
+       LI   R12,>0024                  ; CRU address of the column decoder
+       LI   R1,>0600                   ; Column 6, i.e joystick #1
+       LDCR R1,3                       ; Select it
+       LI   R12,>0006                  ; Base CRU address for joystick 1
+*      Check for fire
+MOVE1  TB   0
+       JEQ  MOVE2
+       CLR  @COMMND                    ; Cancel command
+*      Check for left
+MOVE2  TB   1
+       JEQ  MOVE3
+       MOV  @X,R0
+       CI   R0,0
+       JEQ  MOVE4
+       DEC  @DX
+       JMP  MOVE4
+*      Check for right
+MOVE3  TB   2
+       JEQ  MOVE4
+       MOV  @X,R0
+       CI   R0,MAPW-1
+       JEQ  MOVE4
+       INC  @DX
+*      Check for up
+MOVE4  TB   4
+       JEQ  MOVE5
+       MOV  @Y,R0
+       CI   R0,0
+       JEQ  MOVE6
+       DEC  @DY
+       JMP  MOVE6
+*      Check for down
+MOVE5  TB   3
+       JEQ  MOVE6
+       MOV  @Y,R0
+       CI   R0,MAPH-1
+       JEQ  MOVE6
+       INC  @DY
+*      Check for directional command
+MOVE6  MOV  @COMMND,R0
+       CI   R0,CMDOPN                  ; Open
+       JEQ  MOVE7
+       CI   R0,CMDCLS                  ; Close
+       JEQ  MOVE7
+       CI   R0,CMDLOK                  ; Look
+       JEQ  MOVE7
+       CI   R0,CMDTNL                  ; Tunnel
+       JEQ  MOVE7
+*      Other ...
+       JMP  MOVE8
+*      Directional command found, direction OK?
+MOVE7  MOV  @DX,R0
+       JNE  MOVE10                     ; Yes - finish
+       MOV  @DY,R1
+       JNE  MOVE10                     ; Yes - finish
+*      Not OK, loop
+       JMP  MOVE1
+*      Normal move, check for blocking tile
+MOVE8  MOV  @X,R0                      ; Get X position
+       A    @DX,R0                     ; Add movement direction
+       MOV  R0,R2                      ; Save
+       MOV  @Y,R1                      ; Get Y position
+       A    @DY,R1                     ; Add movement direction
+       MOV  R1,R3                      ; Save
+       BL   @GBTILE                    ; Get tile that player will move to
+       SWPB R1                         ; To LSB
+       ANDI R1,>007F                   ; Limit to 0-127
+       CI   R1,TMONS1
+       JLT  MOVE11
+*      Monster
+       LI   R0,CMDATT
+       MOV  R0,@COMMND                 ; Set command to attack
+       JMP  MOVE10
+*      Not monster
+MOVE11 CI   R1,TFLOOR
+       JEQ  MOVE9                      ; Not blocking
+       CI   R1,TDOORO
+       JHE  MOVE9                      ; Not blocking
+       JMP  MOVE10                     ; Blocking
+*      Move
+MOVE9  MOV  @DX,R0
+       JNE  MOVE12
+       MOV  @DY,R1
+       JNE  MOVE12
+       JMP  MOVE10
+MOVE12 A    @DX,@X
+       A    @DY,@Y
+       MOV  @COMMND,R0
+       CI   R0,CMDNON
+       JNE  MOVE10
+       LI   R0,CMDMOV
+       MOV  R0,@COMMND
+*      Return
+MOVE10 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// MOVE
+
+*********************************************************************
+*
+* Execute command
+*
+EXEC   MOV  R11,*R10+                  ; Push return address onto the stack
+*      Get the current tile
+       MOV  @X,R0
+       MOV  @Y,R1
+       BL   @GBTILE
+       SWPB R1                         ; To LSB
+       ANDI R1,>007F                   ; Limit to 0-127
+       MOV  R1,@CTILE
+*      Get neighbour tile
+       MOV  @X,R0
+       A    @DX,R0
+       MOV  @Y,R1
+       A    @DY,R1
+       BL   @GBTILE
+       SWPB R1                         ; To LSB
+       ANDI R1,>007F                   ; Limit to 0-127
+       MOV  R1,@NTILE
+*      Check command
+       MOV   @COMMND,R4
+       SLA  R4,1
+       MOV  @CMDTBL(R4),R4
+       B    *R4
+*      None
+XNONE  B    @XEND
+*      Tile size 1
+XTL1   CLR  @DRWMTL
+       BL   @LAYOUT
+       B    @XEND
+*      Tile size 2
+XTL2   SETO @DRWMTL
+       BL   @LAYOUT
+       B    @XEND
+*      Message size 2
+XMS2   LI   R0,2
+       MOV  R0,@MSGH
+       BL   @LAYOUT
+       B    @XEND
+*      Message size 4
+XMS4   LI   R0,4
+       MOV  R0,@MSGH
+       BL   @LAYOUT
+       B    @XEND
+*      Stats off
+XST0   CLR  @STATON
+       BL   @LAYOUT
+       B    @XEND
+*      Stats on
+XST1   SETO @STATON
+       BL   @LAYOUT
+       B    @XEND
+*      Map
+XMAP   CLR  R0
+       BL   @DSPMAP
+       B    @XEND
+*      Inventory
+XINV   BL   @DSPINV
+       B    @XEND
+*      Equipment
+XEQU   BL   @DSPEQU
+       B    @XEND
+*      Save
+XSAV   MOV  @DEPTH,R0
+       JEQ  XSAV3
+       LI   R2,TXNOSV
+       BL   @MSGLN
+       JMP  XSAV2
+XSAV3  LI   R2,TXSAVE
+       BL   @IMMMSG
+       BL   @SAVE
+       MOV  R1,R1
+       JNE  XSAV1
+       LI   R2,TXOK
+       BL   @MSGLN
+       JMP  XSAV2
+XSAV1  MOV  R1,R3
+       LI   R2,TXERR
+       BL   @MSG
+       MOV  R3,R1
+       BL   @DNUM
+       LI   R2,TXNULL
+       BL   @MSGLN
+XSAV2  B    @XEND
+*      Load
+XLOA   LI   R2,TXLOAD
+       BL   @IMMMSG
+       BL   @LOAD
+       MOV  R1,R1
+       JNE  XLOA1
+       LI   R2,TXOK
+       BL   @MSGLN
+       BL   @LAYOUT
+       BL   @GENLVL
+       JMP  XLOA2
+XLOA1  MOV  R1,R3
+       LI   R2,TXERR
+       BL   @MSG
+       MOV  R3,R1
+       BL   @DNUM
+       LI   R2,TXNULL
+       BL   @MSGLN
+XLOA2  B    @XEND
+*      Move
+XMOV   MOV  @CTILE,R1
+       C    R1,@LTILE
+       JEQ  XMOV1
+       SLA  R1,1
+       MOV  @TNAMES(R1),R2
+       BL   @MSGLN
+XMOV1  B    @XEND
+*      Get
+XGET   CI   R1,OBJ1ST
+       JL   XGET1
+       CI   R1,OBJLST
+       JH   XGET1
+       BL   @PICKUP
+XGET1  B    @XEND
+*      Open
+XOPEN  MOV  @NTILE,R1
+       CI   R1,TDOORC
+       JNE  XOPEN1
+       MOV  @X,R0
+       A    @DX,R0
+       MOV  @Y,R1
+       A    @DY,R1
+       MOVB @BYTES+TDOORO,R2
+       BL   @STILE                     ; Open door
+XOPEN1 B    @XEND
+*      Close
+XCLOSE MOV  @NTILE,R1
+       CI   R1,TDOORO
+       JNE  XCLOS1
+       MOV  @X,R0
+       A    @DX,R0
+       MOV  @Y,R1
+       A    @DY,R1
+       MOVB @BYTES+TDOORC,R2
+       BL   @STILE                     ; Open door
+XCLOS1 B    @XEND
+*      Look
+XLOOK  MOV  @NTILE,R1
+       SLA  R1,1
+       MOV  @TNAMES(R1),R2
+       BL   @MSGLN
+;       BL   @WTESC
+       B    @XEND
+*      Go upstairs
+XUPS   CI   R1,TSTAIU
+       JNE  XUPS1
+       DEC  @DEPTH
+       BL   @GENLVL
+XUPS1  B    @XEND
+*      Go downstairs
+XDNS   CI   R1,TSTAIR
+       JNE  XDNS1
+       INC  @DEPTH
+       BL   @GENLVL
+XDNS1  B    @XEND
+*      Tunnel
+XTNL   MOV  @NTILE,R1
+       CI   R1,TSTONE
+       JEQ  XTNL1
+       CI   R1,TRUBBL
+       JEQ  XTNL1
+       CI   R1,TORE
+       JNE  XTNL2
+       LI   R1,50
+       BL   @RANDL
+       A    R0,@GOLD
+XTNL1  MOV  @X,R0
+       A    @DX,R0
+       MOV  @Y,R1
+       A    @DY,R1
+       MOVB @BYTES+TFLOOR,R2
+       BL   @STILE                     ; Open door
+XTNL2  B    @XEND
+*      Attack
+XATT   MOV  @X,R0
+       A    @DX,R0
+       MOV  @Y,R1
+       A    @DY,R1
+       BL   @GMONS
+       MOV  R0,R5                      ; Test for monster and move to R5
+       JEQ  XATT1
+       LI   R0,MAWAKE*256              ; Set state to awake
+       MOVB R0,@MISTAT(R5)
+       MOV  @MIMONA(R5),R6             ; Get monster allocation
+       MOV  *R6,R6                     ; Get monster
+*      Attack roll
+       LI   R1,1
+       LI   R2,21
+       BL   @RANDI                     ; R0=1d20
+       CI   R0,1
+       JEQ  XATT4                      ; Fumble
+       CI   R0,20
+       JEQ  XATT3                      ; Critical
+*      Add modifiers
+       A    @STRMOD,R0
+       A    @DEXMOD,R0
+*      Compare to monster AC
+       CB   @R0LB,@MOAC(R6)
+       JHE  XATT3
+*      Miss
+XATT4  LI   R2,TXUMIS
+       BL   @MSG
+       MOV  @MONAME(R6),R2
+       BL   @MSGLN
+       JMP  XATT1
+*      Hit
+XATT3  MOV  @EQWIEL,R3                 ; Get wielded item instance (weapon)
+       JEQ  XATT1
+       MOV  @IIITEM(R3),R3             ; Get weapon item
+       LI   R1,1
+       CLR  R2
+       MOVB @ITDMAC(R3),@R2LB          ; Get weapon damage
+       BL   @RANDI                     ; Calculate damage in R0
+       SB   @R0LB,@MIHP(R5)            ; Subtract damage from monster HP
+       JGT  XATT2
+*      Monster died
+       LI   R2,TXUKIL
+       BL   @MSG
+       MOV  @MONAME(R6),R2
+       BL   @MSGLN
+       CLR  *R5                        ; Remove monster
+       LI   R1,5
+       LI   R2,20
+       BL   @RANDI
+       BL   @ADDXP
+       JMP  XATT1
+*      Monster lives
+XATT2  MOV  R0,R7
+       LI   R2,TXUHIT
+       BL   @MSG
+       MOV  @MONAME(R6),R2
+       BL   @MSG
+       LI   R2,TXFOR
+       BL   @MSG
+       MOV  R7,R1
+       BL   @DNUM
+       LI   R2,TXNULL
+       BL   @MSGLN
+XATT1  B    @XEND
+*      Save current tile as last tile
+XEND   MOV  @CTILE,@LTILE
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+* Jump table
+CMDTBL DATA XNONE                      ; None
+       DATA XTL1                       ; Tile size 1
+       DATA XTL2                       ; Tile size 2
+       DATA XMS2                       ; Message size 2
+       DATA XMS4                       ; Message size 4
+       DATA XST0                       ; Stats off
+       DATA XST1                       ; Stats on
+       DATA XMAP                       ; Map
+       DATA XINV                       ; Inventory
+       DATA XEQU                       ; Equipment
+       DATA XSAV                       ; Save
+       DATA XLOA                       ; Load
+       DATA XMOV                       ; Move
+       DATA XGET                       ; Get
+       DATA XOPEN                      ; Open
+       DATA XCLOSE                     ; Close
+       DATA XLOOK                      ; Look
+       DATA XUPS                       ; Go upstairs
+       DATA XDNS                       ; Go downstairs
+       DATA XTNL                       ; Tunnel
+       DATA XATT                       ; Attack
+*// EXEC
+
+*********************************************************************
+*
+* Pick up
+*
+PICKUP MOV  R11,*R10+                  ; Push return address onto the stack
+*      Check tile
+       MOV  @CTILE,R1
+*      Tile: gold
+       CI   R1,TGOLD
+       JNE  PICKU1
+       LI   R1,30
+       BL   @RANDL
+       A    R0,@GOLD
+       JMP  PICKU4
+*      Tile: chest
+PICKU1 CI   R1,TCHEST
+       JNE  PICKU2
+       LI   R1,100
+       BL   @RANDL
+       A    R0,@GOLD
+       JMP  PICKU4
+*      Other tile
+PICKU2 BL   @FNDITM                    ; Find item matching tile
+       MOV  R0,R0                      ; Check if found
+       JEQ  PICKU6                     ; Skip if not found
+       BL   @GENITM                    ; Generate item instance
+       MOV  R0,R5                      ; Item instance
+       JEQ  PICKU6
+       BL   @ADDITM                    ; Add item instance to inventory
+       MOV  R0,R0
+       JEQ  PICKU5
+*      Success
+PICKU3 LI   R0,1
+       BL   @ADDXP
+*      Display message
+       LI   R2,TXUGET
+       BL   @MSG
+       CLR  R6
+       MOV  @IIITEM(R5),R5             ; Get item
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       SLA  R6,1
+       MOV  @TNAMES(R6),R2             ; Get name
+       BL   @MSGLN
+*      Remove tile from map
+PICKU4 MOV  @X,R0
+       MOV  @Y,R1
+       MOVB @BYTES+TFLOOR,R2
+       BL   @STILE                     ; Remove
+       JMP  PICKU6
+*      Failed
+PICKU5 LI   R2,TXINFU
+       BL   @MSGLN
+*      Return
+PICKU6 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// PICKUP
+
+*********************************************************************
+*
+* Find item matching tile, taking rarity into account
+*
+* R1: Tile number
+*
+* On return R0 is pointing to the item, or is null if no item found.
+*
+MAXMTC EQU  8
+*
+FNDITM MOV  R11,*R10+                  ; Push return address onto the stack
+       SWPB R1
+*      Find matching items
+       CLR  R2
+       LI   R3,ITEMS
+       LI   R4,IMATCH
+FNDIT1 CB   @ITTILE(R3),R1             ; Check tile number
+       JNE  FNDIT2
+       MOV  R3,*R4+
+       INC  R2
+       CI   R2,MAXMTC
+       JEQ  FNDIT3
+FNDIT2 AI   R3,ITSIZE
+       CI   R3,IT_END
+       JL   FNDIT1
+*      Choose one of the matching items
+;      TODO by rarity
+FNDIT3 MOV  R2,R1
+       JEQ  FNDIT4
+       BL   @RANDL
+       SLA  R0,1
+       AI   R0,IMATCH
+       MOV  *R0,R0
+       JMP  FNDIT5
+*      Failed
+FNDIT4 CLR  R0
+*      Return
+FNDIT5 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+IMATCH BSS  MAXMTC*2
+*// FNDITM
+
+*********************************************************************
+*
+* Generate item instance
+*
+* R0: Pointer to item
+*
+* On return R0 is pointing to the item instance, or is null if generation failed.
+*
+GENITM MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R1,ITLIST
+GENIT1 MOV  *R1,R2
+       JEQ  GENIT2
+       AI   R1,IISIZE
+       CI   R1,ITLSTE
+       JL   GENIT1
+*      Failed
+       CLR  R0
+       JMP  GENIT3
+*      Found empty slot
+GENIT2 MOV  R0,@IIITEM(R1)
+*      TODO: Set attack and defence bonuses
+       CLR  @IIBNAT(R1)
+       MOV  R1,R0
+*      Return
+GENIT3 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// GENITM
+
+*********************************************************************
+*
+* Add item instance to inventory
+*
+* R0: Pointer to item instance
+*
+* On return R0 is pointing to the inventory entry, or is null if adding failed.
+*
+ADDITM MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @INVNXT,R1                 ; Get pointer to next slot
+       CI   R1,INVENE                  ; Check for end
+       JL   ADDIT2
+*      Failed
+       CLR  R0
+       JMP  ADDIT3
+*      Found empty slot
+ADDIT2 MOV  R0,*R1
+       MOV  R1,R0
+       INCT @INVNXT
+*      Return
+ADDIT3 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// ADDITM
+
+*********************************************************************
+*
+* Remove item instance from inventory
+*
+* R0: Pointer to inventory entry
+*
+* On return R0 is pointing to the item instance, or is null if removing failed.
+*
+REMITM MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  *R0,R2                     ; Save item instance pointer
+       JEQ  REMIT3                     ; Fail if null
+       MOV  R0,R1                      ; Make a second list pointer
+       INCT R1                         ; Point to next item
+REMIT1 C    R1,@INVNXT                 ; Check if at end
+       JHE  REMIT2                     ; Yes - finish
+       MOV  *R1+,*R0+                  ; Copy next item to current item and move pointers
+       JMP  REMIT1                     ; Loop until end
+REMIT2 CLR  *R1
+       DECT @INVNXT                    ; Move end pointer
+REMIT3 MOV  R2,R0                      ; Copy saved item instance pointer back
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// REMITM
+
+*********************************************************************
+*
+* Add item instance to equipment
+*
+* R0: Pointer to item instance
+*
+* On return R0 is pointing to the equipment entry, or is null if adding failed.
+* If an item in equipment was replaced in the process,
+* R1 is pointing to the item instance, otherwise R1 is null.
+*
+AEQITM MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R0,R2
+       MOV  @IIITEM(R2),R3
+       MOVB @ITTYPE(R3),@R2LB          ; Get item type
+       ANDI R2,>00FF
+       CI   R2,IYWEAP                  ; Check if wearable
+       JLT  AEQIT1
+       CI   R2,IYLGHT                  ; Check if wearable
+       JGT  AEQIT1
+       DEC  R2                         ; Use some math to calculate the equiment slot
+       SLA  R2,1                       ; Might want a jump table instead if we have multiple
+       AI   R2,EQUIPM                  ; Ring slots etc.
+       MOV  *R2,R1                     ; Save item already in slot
+       MOV  R0,*R2                     ; Store new item
+       MOV  R2,R0                      ; Point to equipment entry in R0
+       JMP  AEQIT2
+*      Failed
+AEQIT1 MOV  R0,R1                      ; Point R1 to item instance
+       CLR  R0
+*      Return
+AEQIT2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// AEQITM
+
+*********************************************************************
+*
+* Remove item instance from equipment
+*
+* R0: Pointer to equipment entry
+*
+* On return R0 is pointing to the item instance, or is null if removing failed.
+*
+REQITM MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  *R0,R1                     ; Save item instance pointer
+       JEQ  REQIT1                     ; Fail if null
+       CLR  *R0                        ; Reset equipment entry
+REQIT1 MOV  R1,R0                      ; Copy saved item instance pointer back
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// REQITM
+
+*********************************************************************
+*
+* Delete item instance
+*
+* R0: Pointer to item instance
+*
+* On return R0 is pointing to the item, or is null if deleting failed.
+*
+DELITM MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R0,R1                      ; Copy item instance pointer
+       MOV  @IIITEM(R1),R0             ; Get pointer to item
+       CLR  *R1                        ; Delete item instance by clearing first word
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DELITM
+
+*********************************************************************
+*
+* Drop item
+*
+* R0: Pointer to inventory entry
+*
+* On return R0 is pointing to the item, or is null if dropping failed.
+*
+DRPITM MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @REMITM                    ; Remove from inventory, R0 points to item instance
+       MOV  R0,R0                      ; Check for failure
+       JEQ  DRPIT1                     ; Return if failure
+       BL   @DELITM                    ; Delete the item instance
+*      Return
+DRPIT1 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DRPITM
+
+*********************************************************************
+*
+* Use item
+*
+* R0: Pointer to inventory entry
+*
+* On return R0 is pointing to the item, or is null if using failed.
+*
+USEITM MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  *R0,R1                     ; Get item instance
+       MOV  @IIITEM(R1),R1             ; Get item
+       CB   @ITTYPE(R1),@BYTES+IYMISC  ; Check item type
+       JNE  USEIT1                     ; Fail is not misc
+*      Remove from inventory
+       BL   @REMITM                    ; Remove from inventory, R0 points to item instance
+       MOV  R0,R0                      ; Check for failure
+       JEQ  USEIT2                     ; Return if failure
+       BL   @DELITM                    ; Delete the item instance, R0 point to item
+*      Check item type
+       CI   R0,IT_POTI_HEAL
+       JNE  USEIT4
+*      Potion of healing
+       LI   R1,4
+       LI   R2,8
+       BL   @HEAL
+       MOV  R5,R0
+       JMP  USEIT2
+USEIT4 CI   R5,IT_SCRL_HLNG
+       JNE  USEIT2
+*      Scroll of healing
+       LI   R1,8
+       LI   R2,14
+       BL   @HEAL
+       MOV  R5,R0
+       JMP  USEIT2
+*      Report failure
+USEIT1 CLR  R0
+*      Return
+USEIT2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// USEITM
+
+*********************************************************************
+*
+* Wear item
+* Move item instance from inventory to equipment
+*
+* R0: Pointer to inventory entry
+*
+* On return R0 is pointing to the equipmemt entry, or is null if moving failed.
+*
+WEAITM MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @REMITM                    ; Remove from inventory, R0 points to item instance
+       MOV  R0,R0                      ; Check for failure
+       JEQ  WEAIT4                     ; Return if failure
+       BL   @AEQITM                    ; Add to equipment, R0 points to equipment entry
+       MOV  R0,R0                      ; Check for failure
+       JNE  WEAIT1                     ; Continue if ok
+       MOV  R1,R0                      ; Not OK - get pointer to item instance back into R0
+       CLR  R2                         ; Report failure
+       JMP  WEAIT2                     ; Jump to add item back
+WEAIT1 MOV  R0,R2                      ; Save equipment entry
+       MOV  R1,R0                      ; Check if item was replaced
+       JEQ  WEAIT3                     ; No, return
+WEAIT2 BL   @ADDITM                    ; Add item back
+WEAIT3 MOV  R2,R0                      ; Set equipment entry
+*      Return
+WEAIT4 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// WEAITM
+
+*********************************************************************
+*
+* Take off item
+* Move item instance from equipment to inventory
+*
+* R0: Pointer to equipment entry
+*
+* On return R0 is pointing to the inventory entry, or is null if moving failed.
+*
+TKOITM MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @REQITM
+       MOV  R0,R0
+       JEQ  WEAIT4
+       BL   @ADDITM
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// TKOITM
+
+*********************************************************************
+*
+* Calculate equipment effect on ac, light, etc.
+*
+CLCEQU MOV  R11,*R10+                  ; Push return address onto the stack
+*      Light
+       LI   R0,LNONE
+       MOV  @EQLGHT,R1
+       JEQ  CLCEQ2
+       MOV  @IIITEM(R1),R1
+*      Torch
+       CI   R1,IT_TRCH
+       JNE  CLCEQ1
+       LI   R0,LTORCH
+       JMP  CLCEQ2
+*      Lamp
+CLCEQ1 CI   R1,IT_LAMP
+       JNE  CLCEQ2
+       LI   R0,LLAMP
+CLCEQ2 MOV  R0,@LGTSRC
+*      Armor
+       CLR  @AC
+       LI   R2,6                       ; Number of armor slots
+       LI   R3,EQBODY
+CLCEQ3 MOV  *R3+,R4
+       JEQ  CLCEQ4
+       MOV  @IIITEM(R4),R1
+       AB   @ITDMAC(R1),@AC+1
+CLCEQ4 DEC  R2
+       JNE  CLCEQ3
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// CLCEQU
+
+*********************************************************************
+*
+* Add XP
+*
+* R0: Number of XP to add
+*
+ADDXP  MOV  R11,*R10+                  ; Push return address onto the stack
+       A    R0,@XP
+       S    R0,@XPNXT
+       JGT  ADDXP1
+*      Level up
+       INC  @LEVEL
+       MOV  @LEVEL,R0
+       LI   R1,20
+       MPY  R1,R0
+       A    R1,@XPNXT
+       LI   R1,10
+       A    @CONMOD,R1
+       BL   @RANDL
+       A    R0,@HPMAX
+       MOV  @HPMAX,@HP
+       LI   R2,TXLVLU
+       BL   @MSG
+       MOV  @LEVEL,R1
+       BL   @DNUM
+       LI   R2,TXNULL
+       BL   @MSGLN
+*      Return
+ADDXP1 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// ADDXP
+
+*********************************************************************
+*
+* Add HP
+*
+* R1: Min number of HP to add
+* R2: Max number of HP to add
+*
+HEAL   MOV  R11,*R10+                  ; Push return address onto the stack
+       INC  R2
+       BL   @RANDI
+       A    R0,@HP
+       C    @HP,@HPMAX
+       JLE  HEAL1
+       MOV  @HPMAX,@HP
+*      Return
+HEAL1  DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// HEAL
+
+*********************************************************************
+*
+* Update monsters
+*
+UPDMON MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @COMMND,R0
+       CI   R0,CMDMOV
+       JLT  UPDMO7                     ; Return if player does not move
+UPDMO1 MOVB @X+1,R7
+       MOVB @Y+1,R8
+       LI   R3,MILIST
+UPDMO2 MOV  *R3,R6
+       JEQ  UPDMO6
+       MOVB @MISTAT(R3),R6             ; Test if sleeping
+       JEQ  UPDMO6
+*      X distance
+       MOVB @MIX(R3),R4
+       SB   R7,R4                      ; X distance
+       JGT  UPDMO3
+       INV  R4
+       AB   @BYTES+1,R4
+UPDMO3 CB   R4,@BYTES+16
+       JH   UPDMO6                     ; Too far away
+       CB   R4,@BYTES+1
+       JH  UPDMO5
+*      Y distance
+       MOVB @MIY(R3),R5
+       SB   R8,R5                      ; Y distance
+       JGT  UPDMO4
+       INV  R5
+       AB   @BYTES+1,R5
+UPDMO4 CB   R5,@BYTES+16
+       JH   UPDMO6                     ; Too far away
+       CB   R5,@BYTES+1
+       JH   UPDMO5
+*      Awakened monster is next to player - attack
+       BL   @MATTCK
+       JMP  UPDMO7                     ; Jump out - only one monster can attack
+*      Move monster
+UPDMO5 BL   @MMOVE
+*      Next monster
+UPDMO6 AI   R3,MISIZE
+       CI   R3,MILISE
+       JL   UPDMO2
+*      Return
+UPDMO7 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// UPDMON
+
+*********************************************************************
+*
+* Monster attack
+*
+* R3 points to monster instance
+*
+MATTCK MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @MIMONA(R3),R6             ; Get monster allocation
+       MOV  *R6,R6                     ; Get monster
+*      Attack roll
+       LI   R1,1
+       LI   R2,21
+       BL   @RANDI                     ; R0=1d20
+       CI   R0,1
+       JEQ  MATTC1                      ; Fumble
+       CI   R0,20
+       JEQ  MATTC2                      ; Critical
+*      Compare to player AC
+       C    R0,@AC
+       JHE  MATTC2
+*      Monster misses
+MATTC1 LI   R2,TXTHE
+       BL   @MSG
+       MOV  @MONAME(R6),R2
+       BL   @MSG
+       LI   R2,TXMMIS
+       BL   @MSGLN
+       JMP  MATTC4
+*      Monster hits
+MATTC2 MOVB @MODMG(R6),R1              ; Get monster damage
+       SRL  R1,8
+       BL   @RANDL
+       INC  R0
+       MOV  R0,R7
+       S    R0,@HP
+       JGT  MATTC3
+       CLR  @HP
+MATTC3 LI   R2,TXTHE
+       BL   @MSG
+       MOV  @MONAME(R6),R2
+       BL   @MSG
+       LI   R2,TXMHIT
+       BL   @MSG
+       MOV  R7,R1
+       BL   @DNUM
+       LI   R2,TXNULL
+       BL   @MSGLN
+*      Return
+MATTC4 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// MATTCK
+
+*********************************************************************
+*
+* Monster move
+*
+* R3 points to monster instance
+*
+MMOVE  MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @RAND
+       JLT  MMOVE4
+*      X direction
+       MOVB @MIX(R3),R12
+       MOVB R12,R4
+       SB   R7,R4                      ; X distance
+       JEQ  MMOVE1
+       SRA  R4,7
+       ORI  R4,>0100
+       SB   R4,R12
+*      Y direction
+MMOVE1 MOVB @MIY(R3),R13
+       MOVB R13,R5
+       SB   R8,R5                      ; Y distance
+       JEQ  MMOVE2
+       SRA  R5,7
+       ORI  R5,>0100
+       SB   R5,R13
+*      Check tiles
+MMOVE2 CLR  R0
+       MOVB R12,@R0LB
+       CLR  R1
+       MOVB R13,@R1LB
+       BL   @GBTILE
+       CB   R1,@BYTES+TFLOOR
+       JEQ  MMOVE3
+       CB   R1,@BYTES+TDOORO
+       JNE  MMOVE4
+*      Move
+MMOVE3 MOVB R12,@MIX(R3)
+       MOVB R13,@MIY(R3)
+*      Return
+MMOVE4 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// MMOVE
+
+*********************************************************************
+*
+* Light
+*
+LIGHT  MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @LGTSRC,R4
+       MOV  @X,R0
+       MOV  @Y,R1
+       MOV  *R4+,R2                    ; Get size
+       MOV  R2,R3                      ; Copy size
+       SRL  R3,1                       ; Half size
+       S    R3,R0                      ; Subtract from x
+       S    R3,R1                      ; Subtract from y
+       MOV  R2,R3
+       BL   @ARECT
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// LIGHT
+
+*********************************************************************
+*
+* Recover hit points
+*
+RECOVR MOV  R11,*R10+                  ; Push return address onto the stack
+*      Skip if no command
+       MOV  @COMMND,R0
+       CI   R0,CMDNON
+       JEQ  RECOV1
+*      Count down to recover
+       MOV  @CONMOD,R0
+       AI   R0,5
+       S    R0,@RECCNT
+       JGT  RECOV1
+*      Recover
+       LI   R1,1
+       LI   R2,1
+       BL   @HEAL
+*      Reset counter
+       LI   R0,RECSPD
+       MOV  R0,@RECCNT
+*      Return
+RECOV1 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// RECOVR
+
+*********************************************************************
+*
+* Calculate stat modifiers
+*
+* MOD = (STAT / 2) - 5
+*
+CLCMOD LI   R0,STR
+       LI   R1,STRMOD
+       LI   R2,5
+CLCMO1 MOV  *R0+,R3
+       SRL  R3,1
+       AI   R3,-5
+       CI   R3,10
+       JLT  CLCMO2
+       LI   R3,10
+CLCMO2 MOV  R3,*R1+
+       DEC  R2
+       JNE  CLCMO1
+*      Return
+       B    *R11
+*// CLCMOD
+
+*********************************************************************
+*
+* Get the tile at the specified position from the map buffer
+*
+* R0: Horizontal position (x)
+* R1: Vertical position (y)
+*
+* On return R1 MSB contains the tile number, R0 contains the address
+*
+GBTILE S    @MWINX,R0                  ; Convert global coordinate to buffer coordinate
+       S    @MWINY,R1                  ; Convert global coordinate to buffer coordinate
+       MPY  @MWINW,R1                  ; Multiply y by width
+       A    R2,R0                      ; Add to x
+       AI   R0,MAPBUF                  ; Add base buffer address
+       MOVB *R0,R1                     ; Get tile at position
+*      Return
+       B    *R11
+*// GBTILE
+
+*********************************************************************
+*
+* Get the monster at the specified position
+*
+* R0: Horizontal position (x)
+* R1: Vertical position (y)
+*
+* On return R0 contains a pointer to the monster instance,
+* or null if no monster found at position.
+*
+GMONS  SWPB R0
+       SWPB R1
+       LI   R2,MAXMON
+       LI   R3,MILIST
+GMONS1 MOV  *R3,R8
+       JEQ  GMONS2
+       CB   @MIX(R3),R0
+       JNE  GMONS2
+       CB   @MIY(R3),R1
+       JNE  GMONS2
+       MOV  R3,R0
+       JMP  GMONS3
+GMONS2 AI   R3,MISIZE
+       DEC  R2
+       JNE  GMONS1
+       CLR  R0
+*      Return
+GMONS3 B    *R11
+*// GMONS
+
+*********************************************************************************
+*
+* Display inventory
+*
+IWINC  EQU  1                          ; Column
+IWINR  EQU  1                          ; Row
+IWINW  EQU  30                         ; Window width
+IWINH  EQU  8                          ; Window height
+*
+DSPINV MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @SPRHDE
+*      Display window
+       LI   R0,IWINC                   ; Column
+       LI   R1,IWINR                   ; Row
+       LI   R2,IWINW                   ; Width
+       LI   R3,IWINH                   ; Height
+       LI   R4,TXINV                   ; Title
+       BL   @DSPWIN
+       BL   @SHWBUF                    ; Switch to view double buffer
+*      Display items
+       LI   R0,INVENT
+       MOV  R0,@ITM1ST                 ; First item displayed
+       MOV  R0,@ITMSEL                 ; Selected item
+DSPIN1 MOV  @ITM1ST,@ITMCUR            ; Current item
+       LI   R1,IWINC+1
+       MOV  R1,@COL                    ; Left column
+       LI   R0,IWINR+1
+       MOV  R0,@ROW                    ; Current row
+       LI   R14,IWINH-2                ; Counter for max displayed items
+DSPIN2 MOV  @ITMCUR,R3
+       C    R3,@INVNXT                 ; Check for end of inventory
+       JHE  DSPIN5
+       MOV  @COL,R0                    ; Column
+       MOV  @ROW,R1                    ; Row
+       C    R3,@ITMSEL                 ; Check if item is selected
+       JNE  DSPIN3
+       LI   R2,TXGT                    ; >
+       JMP  DSPIN4
+DSPIN3 LI   R2,TXSPAC                  ; Space
+DSPIN4 BL   @DSPTXT
+       MOV  *R3,R3
+       LI   R4,IWINW-3
+       BL   @DSPITM
+       INCT @ITMCUR
+       INC  @ROW
+       DEC  R14
+       JNE  DSPIN2
+*      Check keys
+DSPIN5 BL   @RELKEY
+*      Down
+       LI   R0,KEY_DN
+       BL   @CHKKEY
+       JEQ  DSPIN6
+       MOV  @INVNXT,R0
+       DECT R0
+       C    @ITMSEL,R0
+       JHE  DSPIN6
+       INCT @ITMSEL
+       MOV  @ITM1ST,R0
+       AI   R0,IWINH-2*2
+       C    @ITMSEL,R0
+       JL   DSPIN1
+       INCT @ITM1ST
+       JMP  DSPIN1
+*      Up
+DSPIN6 LI   R0,KEY_UP
+       BL   @CHKKEY
+       JEQ  DSPIN7
+       LI   R0,INVENT
+       C    @ITMSEL,R0
+       JLE  DSPIN7
+       DECT @ITMSEL
+       C    @ITMSEL,@ITM1ST
+       JHE  DSPIN1
+       DECT @ITM1ST
+       JMP  DSPIN1
+*      Use
+DSPIN7 LI   R0,KEY_U
+       BL   @CHKKEY
+       JEQ  DSPIN8
+       MOV  @ITMSEL,R0
+       BL   @USEITM
+       MOV  R0,R5                      ; R0 points to the item
+       JNE  DSPI14                     ; Or null if dropping failed
+       LI   R2,TXCUSE
+       JMP  DSPI15
+DSPI14 LI   R2,TXUUSE
+       BL   @MSG
+       CLR  R6
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       SLA  R6,1
+       MOV  @TNAMES(R6),R2             ; Get name
+DSPI15 BL   @MSGLN
+       BL   @DMSSGS
+       BL   @CLCEQU
+       JMP  DSPI10                     ; Remove from list
+*      Wear
+DSPIN8 LI   R0,KEY_W
+       BL   @CHKKEY
+       JEQ  DSPIN9
+       MOV  @ITMSEL,R0
+       C    R0,@INVNXT
+       JEQ  DSPIN9
+       BL   @WEAITM
+       MOV  R0,R5                      ; R0 points to equipment entry
+       JEQ  DSPIN9                     ; or null if wearing failed.
+       LI   R2,TXUWEA
+       BL   @MSG
+       MOV  *R5,R5                     ; Get item instance
+       MOV  @IIITEM(R5),R5             ; Get item
+       CLR  R6
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       SLA  R6,1
+       MOV  @TNAMES(R6),R2             ; Get name
+       BL   @MSGLN
+       BL   @DMSSGS
+       BL   @CLCEQU
+       JMP  DSPI10                     ; Remove from list
+*      Drop
+DSPIN9 LI   R0,KEY_D
+       BL   @CHKKEY
+       JEQ  DSPI12
+       MOV  @ITMSEL,R0
+       BL   @DRPITM
+       MOV  R0,R5                      ; R0 points to the item
+       JEQ  DSPI10                     ; or null if dropping failed
+       LI   R2,TXUDRP
+       BL   @MSG
+       CLR  R6
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       SLA  R6,1
+       MOV  @TNAMES(R6),R2             ; Get name
+       BL   @MSGLN
+       BL   @DMSSGS
+*      Remove from list
+DSPI10 LI   R0,IWINC+1                 ; Column
+       LI   R1,IWINR+1                 ; Row
+       LI   R2,IWINW-2                 ; Width
+       LI   R3,IWINH-2                 ; Height
+       BL   @CLRWIN                    ; Clear window
+       C    @ITMSEL,@INVNXT
+       JNE  DSPI11
+       LI   R0,INVENT
+       C    @INVNXT,R0
+       JEQ  DSPI11
+       DECT @ITMSEL
+DSPI11 B    @DSPIN1
+*      Escape keys
+DSPI12 BL   @CHKESC
+       JNE  DSPI13
+       B    @DSPIN5
+*      Refresh screen
+DSPI13 BL   @SPRSHW
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSPINV
+
+*********************************************************************************
+*
+* Display equipment
+*
+EWINC  EQU  1                          ; Column
+EWINR  EQU  1                          ; Row
+EWINW  EQU  30                         ; Window width
+EWINH  EQU  10                          ; Window height
+*
+DSPEQU MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @SPRHDE
+*      Display window
+       LI   R0,EWINC                   ; Column
+       LI   R1,EWINR                   ; Row
+       LI   R2,EWINW                   ; Width
+       LI   R3,EWINH                   ; Height
+       LI   R4,TXEQU                   ; Title
+       BL   @DSPWIN
+       BL   @SHWBUF                    ; Switch to view double buffer
+*      Display items
+       LI   R0,EQUIPM
+       MOV  R0,@ITM1ST                 ; First item displayed
+       MOV  R0,@ITMSEL                 ; Selected item
+DSPEQ1 MOV  @ITM1ST,@ITMCUR            ; Current item
+       LI   R1,EWINC+1
+       MOV  R1,@COL                    ; Left column
+       LI   R0,EWINR+1
+       MOV  R0,@ROW                    ; Current row
+       LI   R14,EWINH-2                ; Counter for max displayed items
+DSPEQ2 MOV  @ITMCUR,R3
+       CI   R3,EQUIPE                  ; Check for end of equipment
+       JHE  DSPEQ5
+       MOV  @COL,R0                    ; Column
+       MOV  @ROW,R1                    ; Row
+       C    R3,@ITMSEL                 ; Check if item is selected
+       JNE  DSPEQ3
+       LI   R2,TXGT                    ; >
+       JMP  DSPEQ4
+DSPEQ3 LI   R2,TXSPAC                   ; Space
+DSPEQ4 BL   @DSPTXT
+       LI   R4,EWINW-3
+       MOV   @EQTEXT-EQUIPM(R3),R2
+       BL   @DTXT
+       LI   R2,TXCOLN
+       BL   @DTXT
+       MOV  *R3,R3
+       BL   @DSPITM
+       INCT @ITMCUR
+       INC  @ROW
+       DEC  R14
+       JNE  DSPEQ2
+*      Check keys
+DSPEQ5 BL   @RELKEY
+*      Down
+       LI   R0,KEY_DN
+       BL   @CHKKEY
+       JEQ  DSPEQ6
+       LI   R0,EQUIPE-2
+       C    @ITMSEL,R0
+       JHE  DSPEQ6
+       INCT @ITMSEL
+       MOV  @ITM1ST,R0
+       AI   R0,EWINH-2*2
+       C    @ITMSEL,R0
+       JL   DSPEQ1
+       INCT @ITM1ST
+       JMP  DSPEQ1
+*      Up
+DSPEQ6 LI   R0,KEY_UP
+       BL   @CHKKEY
+       JEQ  DSPEQ7
+       LI   R0,EQUIPM
+       C    @ITMSEL,R0
+       JLE  DSPEQ7
+       DECT @ITMSEL
+       C    @ITMSEL,@ITM1ST
+       JHE  DSPEQ1
+       DECT @ITM1ST
+       JMP  DSPEQ1
+*      Use
+DSPEQ7 LI   R0,KEY_U
+       BL   @CHKKEY
+       JEQ  DSPEQ8
+;      TODO
+*      Take off
+DSPEQ8 LI   R0,KEY_T
+       BL   @CHKKEY
+       JEQ  DSPEQ0
+       MOV  @ITMSEL,R0
+       MOV  *R0,R1
+       JEQ  DSPEQ0
+       BL   @TKOITM
+       MOV  R0,R5
+       JEQ  DSPEQ0
+       LI   R2,TXUTKO
+       BL   @MSG
+       MOV  *R5,R5                     ; Get item instance
+       MOV  @IIITEM(R5),R5             ; Get item
+       CLR  R6
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       SLA  R6,1
+       MOV  @TNAMES(R6),R2             ; Get name
+       BL   @MSGLN
+       BL   @DMSSGS
+       BL   @CLCEQU
+       B    @DSPEQ1
+*      Escape keys
+DSPEQ0 BL   @CHKESC
+       JEQ  DSPEQ5
+*      Refresh screen
+       BL   @SPRSHW
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSPEQU
+
+*********************************************************************************
+*
+* Display item to VDP
+* VDP address should be set up in advance
+*
+* R3: Pointer to item instance
+* R4: Padding width
+*
+DSPITM MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R3,R3
+       JNE  DSPIT0
+       LI   R2,TXNOTH
+       BL   @DTXT
+       JMP  DSPIT3
+DSPIT0 MOV  @IIITEM(R3),R5             ; Get item
+       CLR  R6
+*      Icon
+;       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+;       MOVB @TCMAP(R6),@VDPWD
+;       LI   R1,>2000
+;       MOVB R1,@VDPWD
+;       DECT R4
+*      Material
+       MOVB @ITMTRL(R5),@R6LB          ; Get material number
+       JEQ  DSPIT1
+       LI   R7,MTSIZE                  ; Structure size
+       MPY  R7,R6                      ; Multiply by structure size (this is 2 so we could also use a shift)
+       AI   R7,MTRLS                   ; Add base
+       MOV  @MTNAME(R7),R2             ; Get name
+       BL   @DTXT
+       LI   R2,TXSPAC
+       BL   @DTXT
+*      Tile
+DSPIT1 MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       MOV  R6,R7
+       SLA  R7,1
+       MOV  @TNAMES(R7),R2             ; Get name
+       BL   @DTXT
+*      Capability
+DSPIT2 MOVB @ITCPBL(R5),@R6LB          ; Get capability number
+       JEQ  DSPIT3
+       LI   R2,TXOF
+       BL   @DTXT
+       LI   R7,CBSIZE                  ; Structure size
+       MPY  R7,R6                      ; Multiply by structure size (this is 2 so we could also use a shift)
+       AI   R7,CPBLS                   ; Add base
+       MOV  @CBNAME(R7),R2             ; Get name
+       BL   @DTXT
+*      Padding
+DSPIT3 MOV  R4,R2
+       JLT  DSPIT5
+       JEQ  DSPIT5
+       LI   R1,>2000
+DSPIT4 MOVB R1,@VDPWD
+       DEC  R2
+       JNE  DSPIT4
+*      Return
+DSPIT5 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSPITM
+
+*********************************************************************************
+*
+* Display panel
+*
+DPANEL MOV  R11,*R10+                  ; Push return address onto the stack
+*      Display window
+       MOV  @MWINSW,R0
+       LI   R1,0
+       LI   R2,32
+       S    @MWINSW,R2
+       MOV  @MWINSH,R3
+       LI   R4,TXNAME
+       BL   @DSPWIN
+*      Display labels
+       LI   R3,PDATA
+       LI   R4,14
+DPANE1 MOV  *R3+,R2
+       MOV  *R3+,R0
+       MOV  R0,R1
+       SWPB R0
+       ANDI R0,>00FF
+       ANDI R1,>00FF
+       CI   R4,1
+       JNE  DPANE2
+       MOV  @MWINSH,R5
+       CI   R5,20
+       JGT  DPANE2
+       DEC  R1
+DPANE2 BL   @DSPTXT
+       DEC  R4
+       JNE  DPANE1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+PDATA  DATA TXLVL
+       BYTE 23,2
+       DATA TXXP
+       BYTE 23,3
+       DATA TXNXT
+       BYTE 23,4
+       DATA TXHP
+       BYTE 23,6
+       DATA TXMAX
+       BYTE 23,7
+       DATA TXAC
+       BYTE 23,8
+       DATA TXSTR
+       BYTE 23,10
+       DATA TXINT
+       BYTE 23,11
+       DATA TXWIS
+       BYTE 23,12
+       DATA TXDEX
+       BYTE 23,13
+       DATA TXCON
+       BYTE 23,14
+       DATA TXGLD
+       BYTE 23,16
+       DATA TXLGT
+       BYTE 23,17
+       DATA TXDPT
+       BYTE 23,19
+*// DPANEL
+
+*********************************************************************************
+*
+* Display stats
+*
+DSTATS MOV  R11,*R10+                  ; Push return address onto the stack
+*      Display numbers
+       LI   R6,SDATA
+       LI   R7,12
+DSTAT1 MOV  *R6+,R1
+       MOV  *R1,R1
+       MOV  *R6+,R0
+       BL   @DNUMR
+       DEC  R7
+       JNE  DSTAT1
+*      Light
+       MOV  *R6+,R1
+       MOV  *R1,R1
+       MOV  *R1,R1
+       MOV  *R6+,R0
+       BL   @DNUMR
+*      Depth
+       MOV  *R6+,R1
+       MOV  *R1,R1
+       MOV  *R6+,R0
+       MOV  @MWINSH,R2
+       CI   R2,20
+       JGT  DSTAT2
+       DEC  R0
+DSTAT2 BL   @DNUMR
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+SDATA  DATA LEVEL
+       BYTE 30,2
+       DATA XP
+       BYTE 30,3
+       DATA XPNXT
+       BYTE 30,4
+       DATA HP
+       BYTE 30,6
+       DATA HPMAX
+       BYTE 30,7
+       DATA AC
+       BYTE 30,8
+       DATA STR
+       BYTE 30,10
+       DATA INT
+       BYTE 30,11
+       DATA WIS
+       BYTE 30,12
+       DATA DEX
+       BYTE 30,13
+       DATA CON
+       BYTE 30,14
+       DATA GOLD
+       BYTE 30,16
+       DATA LGTSRC
+       BYTE 30,17
+       DATA DEPTH
+       BYTE 30,19
+*// DSTATS
+
+*********************************************************************
+*
+* Display messages
+*
+DMSSGS MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R4,24
+       S    @MSGH,R4
+       SLA  R4,5
+       A    @CURRNT,R4
+       MOV  @MSGOFF,R5
+       LI   R0,MSGW
+       MPY  @MSGH,R0
+       S    R1,R5                      ; Move @MSGH rows up in the buffer
+       ANDI R5,MBUFH*MSGW-1            ; And wrap
+       MOV  @MSGH,R6
+DMSSG1 MOV  R4,R0
+       MOV  R5,R1
+       AI   R1,MSGBUF
+       LI   R2,MSGW
+       BL   @VDPCP
+       AI   R4,32
+       AI   R5,MSGW
+       ANDI R5,MBUFH*MSGW-1
+       DEC  R6
+       JNE  DMSSG1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DMSSGS
+
+*********************************************************************************
+*
+* Display map
+*
+* If R0 is zero, only visited areas are shown.
+*
+DSPMAP MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R14,>C000                  ; Tile mask (cleared bits) if view all
+       MOV  R0,R0
+       JNE  DSPMA0
+       LI   R14,>0400                  ; Tile mask (cleared bits) if view visited
+DSPMA0 BL   @BMODE
+       LI   R0,12
+       LI   R1,11
+       LI   R2,TXPLW
+       BL   @BMPTXT
+       LI   R12,>0080                  ; Bit
+       LI   R0,PTRNTB
+       BL   @VWAD
+       LI   R0,VDPWD
+       LI   R1,>1000                   ; Bank number
+       LI   R2,12                      ; Bank counter
+DSPMA1 MOVB R1,@AMSREG                 ; Set bank
+       LI   R3,AMSBUF                  ; Source address
+       LI   R4,2                       ; Row counter
+DSPMA2 LI   R5,32                      ; Column counter
+DSPMA3 LI   R6,8                       ; Line counter
+DSPMA4 CLR  R7                         ; Byte
+       LI   R8,8                       ; Bit counter
+DSPMA5 MOVB *R3+,R13
+       SZCB R14,R13
+       JLT  DSPMA6
+;      CI   R13,TFLOOR*256             ; TODO: Enable if floor is not 0
+       JEQ  DSPMA6
+       CI   R13,TPERM*256
+       JH   DSPMA6
+       SOC  R12,R7
+DSPMA6 SLA  R7,1
+       DEC  R8
+       JNE  DSPMA5                     ; Bit loop
+       MOVB R7,*R0
+       AI   R3,MAPW-8
+       DEC  R6
+       JNE  DSPMA4                     ; Line loop
+       AI   R3,-8*MAPW+8
+       DEC  R5
+       JNE  DSPMA3                     ; Column loop
+       AI   R3,7*MAPW
+       DEC  R4
+       JNE  DSPMA2                     ; Row loop
+       AI   R1,>0100
+       DEC  R2
+       JNE  DSPMA1                     ; Bank loop
+*      Setup player indicator sprite
+       LI   R0,>01E0                   ; Set to 8x8 sprites
+       BL   @VWTR
+       LI   R0,SPRATB
+       BL   @VWAD
+       MOV  @Y,R1
+       AI   R1,-5
+       MOVB @R1LB,@VDPWD               ; Set y
+       LI   R1,>0500                   ; Color and early clock bit (reset)
+       MOV  @X,R0
+       AI   R0,-4
+       JGT  DSPMA9
+       LI   R1,>8500                   ; Early clock bit (set)
+       AI   R0,32
+DSPMA9 MOVB @R0LB,@VDPWD               ; Set x
+       LI   R3,>1400
+       MOVB R2,@VDPWD                  ; Set pattern
+       MOVB R1,@VDPWD                  ; Set color and early clock
+       LI   R1,>D000
+       MOVB R1,@VDPWD
+DSPMA7 LI   R1,8
+       BL   @PAUSE
+       AI   R3,>0100
+       ANDI R3,>0300
+       ORI  R3,>1400
+       LI   R0,SPRATB+2
+       BL   @VWAD
+       MOVB R3,@VDPWD
+*      Check key
+       BL   @CHKESC
+       JEQ  DSPMA7
+*      Done
+       BL   @GMODE
+       MOV  @DEPTH,R0
+       JEQ  DSPMAE
+       BL   @UPLMON
+*      Return
+DSPMAE DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSPMAP
+
+*********************************************************************
+*
+* Display a window
+*
+* R0: Column
+* R1: Row
+* R2: Width
+* R3: Height
+* R4: Pointer to title
+*
+DSPWIN MOV  R11,*R10+                  ; Push return address onto the stack
+*      Determine the length of the title
+       CLR  R6
+       MOV  R4,R4
+       JEQ  DSPWI7
+DSPWI5 MOVB *R4+,R5
+       JEQ  DSPWI6
+       INC  R6
+       JMP  DSPWI5
+DSPWI6 S    R6,R4                      ; Restore title pointer
+       DEC  R4
+DSPWI7 MOV  R4,R7                      ; Save title pointer
+       MOV  R6,R8                      ; Save length
+       INC  R6
+       NEG  R6                         ; -length
+       A    R2,R6                      ; width-length
+       SRL  R6,1                       ; (width-length)/2
+*      Calculate VDP address
+       SLA  R1,5                       ; Row * 32
+       A    R1,R0                      ; Add to column
+       A    @CURRNT,R0                 ; Add base address
+       DECT R2                         ; Subtract 2 for left/right columns
+       DECT R3                         ; Subtract 2 for top/bottom rows
+       MOV  R2,R1                      ; Save width
+       LI   R4,VDPWD
+*      Top row before title
+       BL   @VWAD
+       MOVB @BYTES+PTL,*R4
+       LI   R5,PHL*256
+       MOV  R6,R6
+       JEQ  DSPWI0
+DSPWI1 MOVB R5,*R4
+       DEC  R2
+       DEC  R6
+       JNE  DSPWI1
+*      Title
+DSPWI0 MOV  R8,R8
+       JEQ  DSPWIA
+DSPWI9 MOVB *R7+,*R4
+       DEC  R2
+       DEC  R8
+       JNE  DSPWI9
+*      After title
+DSPWIA MOV  R2,R2
+       JEQ  DSPWIB
+       LI   R5,PHL*256
+DSPWI8 MOVB R5,*R4
+       DEC  R2
+       JNE  DSPWI8
+DSPWIB MOVB @BYTES+PTR,*R4
+*      Middle rows
+DSPWI2 AI   R0,32
+       BL   @VWAD
+       MOVB @BYTES+PVL,*R4
+       LI   R5,32*256
+       MOV  R1,R2
+DSPWI3 MOVB R5,*R4
+       DEC  R2
+       JNE  DSPWI3
+       MOVB @BYTES+PVL,*R4
+       DEC  R3
+       JNE  DSPWI2
+*      Bottom row
+       AI   R0,32
+       BL   @VWAD
+       MOVB @BYTES+PBL,*R4
+       LI   R5,PHL*256
+       MOV  R1,R2
+DSPWI4 MOVB R5,*R4
+       DEC  R2
+       JNE  DSPWI4
+       MOVB @BYTES+PBR,*R4
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSPWIN
+
+*********************************************************************
+*
+* Clear a 'window' box
+*
+* R0: Column
+* R1: Row
+* R2: Width
+* R3: Height
+*
+CLRWIN MOV  R11,*R10+                  ; Push return address onto the stack
+       SLA  R1,5                       ; Row * 32
+       A    R1,R0                      ; Add to column
+       A    @CURRNT,R0                 ; Add base address
+       MOV  R2,R1                      ; Save width
+       LI   R4,VDPWD
+       LI   R5,>2000
+CLRWI1 BL   @VWAD
+CLRWI2 MOVB R5,*R4
+       DEC  R2
+       JNE  CLRWI2
+       MOV  R1,R2
+       AI   R0,32
+       DEC  R3
+       JNE  CLRWI1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSPWIN
+
+*********************************************************************
+*
+* Display immediate message, without waiting for double buffer switch
+*
+* R2: Pointer to null terminated text
+*
+IMMMSG MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @MSGLN
+       BL   @DMSSGS
+       BL   @CHGBUF
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// IMMMSG
+
+*********************************************************************
+*
+* Display message with line feed
+*
+* R2: Pointer to null terminated text
+*
+MSGLN  MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @MSG
+*      Pad with spacs
+       MOV  @MSGOFF,R1
+       MOV  R1,R2
+       ANDI R2,MSGW-1                  ; Column
+       JEQ  MSGLN2                     ; Line full
+       NEG  R2                         ; -column
+       AI   R2,MSGW                    ; Width - column = padding width
+       MOV  R2,R3
+       LI   R0,>2000
+       AI   R1,MSGBUF
+MSGLN1 MOVB R0,*R1+
+       DEC  R2
+       JNE  MSGLN1
+       MOV  @MSGOFF,R1
+       A    R3,R1
+       ANDI R1,MBUFH*MSGW-1
+       MOV  R1,@MSGOFF
+*      Return
+MSGLN2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// MSGLN
+
+*********************************************************************
+*
+* Display message w/o line feed
+*
+* R2: Pointer to null terminated text
+*
+MSG    MOV  @MSGOFF,R1
+MSG1   MOVB *R2+,R0
+       JEQ  MSG2
+       MOVB R0,@MSGBUF(R1)
+       INC  R1
+       ANDI R1,MBUFH*MSGW-1
+       JMP  MSG1
+MSG2   MOV  R1,@MSGOFF
+*      Return
+       B    *R11
+*// MSG
+
+*********************************************************************
+*
+* Display text at position
+*
+* R0: Column
+* R1: Row
+* R2: Pointer to null terminated text
+*
+* On return R0 contains the number of characters displayed.
+*
+DSPTXT MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R4,*R10+
+       SLA  R1,5
+       A    R1,R0
+       A    @CURRNT,R0
+       BL   @VWAD
+       LI   R4,32767
+       BL   @DTXT
+*      Return
+       DECT R10
+       MOV *R10,R4
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DSPTXT
+
+*********************************************************************
+*
+* Display text to VDP
+* VDP address should be set up in advance
+*
+* R2: Pointer to null terminated text
+* R4: Max number of characters to display
+*
+* On return R0 contains the number of characters displayed.
+*
+DTXT   MOV  R4,R4
+       JLT  DTXT2
+       JEQ  DTXT2
+       CLR  R0
+DTXT1  MOVB *R2+,R1
+       JEQ  DTXT2
+       MOV  R1,@VDPWD
+       INC  R0
+       DEC  R4
+       JNE  DTXT1
+*      Return
+DTXT2  B    *R11
+*// DTXT
+
+*********************************************************************
+*
+* Display text in full bitmap mode, by changing patterns
+*
+* R0: Column
+* R1: Row
+* R2: Pointer to null terminated text
+*
+BMPTXT MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R3,>0200
+       MOVB R3,@AMSREG
+       SLA  R1,8
+       SLA  R0,3
+       A    R1,R0
+       AI   R0,PTRNTB
+       BL   @VWAD
+       LI   R0,VDPWD
+BMPTX1 CLR  R1
+       MOVB *R2+,R1
+       JEQ  BMPTX2
+       SRL  R1,5
+       AI   R1,PAT0
+       LI   R3,8
+BMPTX3 MOVB *R1+,*R0
+       DEC  R3
+       JNE  BMPTX3
+       JMP  BMPTX1
+*      Return
+BMPTX2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// BMPTXT
+
+*********************************************************************
+*
+* Display decimal number to message area
+*
+* R1 contains the number to display
+*
+DNUM   LI   R2,4                       ; Counter
+       LI   R3,DIVS                    ; Pointer to list of divisors
+       MOV  @MSGOFF,R4
+*      Leading zeros loop
+DNUM0  CLR  R0                         ; Clear high word of dividend
+       DIV  *R3+,R0                    ; Divide to get digit
+       MOV  R0,R0                      ; Check quotient
+       JNE  DNUM2                      ; Display digit if not zero
+       DEC  R2                         ; Count down
+       JNE  DNUM0                      ; Leading zeros loop
+       JMP  DNUM3
+*      Digit loop
+DNUM1  CLR  R0                         ; Clear high word of dividend
+       DIV  *R3+,R0                    ; Divide to get digit
+DNUM2  AI   R0,48                      ; Add ASCII code for zero
+       SWPB R0                         ; Swap to high byte
+       MOVB R0,@MSGBUF(R4)             ; Display digit
+       INC  R4
+       ANDI R4,MBUFH*MSGW-1
+       DEC  R2                         ; Count down
+       JNE  DNUM1                      ; Digit loop
+*      Last digit
+DNUM3  AI   R1,48                      ; Add ASCII code for zero to remainder
+       SWPB R1                         ; Swap to high byte
+       MOVB R1,@MSGBUF(R4)             ; Display last digit
+       INC  R4
+       ANDI R4,MBUFH*MSGW-1
+       MOV  R4,@MSGOFF
+*      Return
+       B    *R11
+DIVS   DATA 10000,1000,100,10
+*// DNUM
+
+*********************************************************************
+*
+* Display decimal number to VDP, right aligned with no leading zeros
+*
+* R0 contains the screen coordinates of the rightmost digit
+*   MSB: column, LSB: row
+* R1 contains the number to display
+*
+* Uses R2-R5
+*
+DNUMR  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Calculate VDP address
+       MOV  R0,R2
+       ANDI R0,>00FF
+       SLA  R0,5
+       A    @CURRNT,R0
+       ANDI R2,>FF00
+       SWPB R2
+       A    R2,R0
+*      Fill buffer
+       LI   R3,10
+       LI   R4,NUMBUF+5
+       CLR  R5
+DNUMR1 MOV  R1,R2
+       CLR  R1
+       DIV  R3,R1
+       AI   R2,48
+       DEC  R4
+       MOVB @R2LB,*R4
+       DEC  R0
+       INC  R5
+       MOV  R1,R1
+       JNE  DNUMR1
+*      Send to VDP
+       INC  R0
+       BL   @VWAD
+DNUMR2 MOVB *R4+,@VDPWD
+       DEC  R5
+       JNE  DNUMR2
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+NUMBUF BYTE 0,0,0,0,0
+*// DNUMR
+
+*********************************************************************************
+*
+* Set graphics mode (half bitmap mode)
+*
+GMODE  MOV  R11,*R10+                  ; Push return address onto the stack
+       CLR  R0
+       LI   R1,VREGS
+       LI   R2,8
+GMODE1 MOVB *R1+,@R0LB
+       BL   @VWTR                      ; Set register
+       AI   R0,>0100
+       DEC  R2
+       JNE  GMODE1
+*      Upload tiles
+       BL   @UPLTLS
+*      Upload sprite patterns
+       LI   R0,SPRPTB
+       LI   R1,SPR0
+       LI   R2,6*32
+       BL   @VDPCP
+*      Clear name tables
+       LI   R0,NAMET1
+       LI   R1,>2000                   ; Space
+       LI   R2,>300
+       BL   @VDPWR
+       LI   R0,NAMET2
+       LI   R1,>2000                   ; Space
+       LI   R2,>300
+       BL   @VDPWR
+*      Disable sprites
+       LI   R0,SPRATB
+       LI   R1,>D000
+       BL   @VSBW
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*      VDP registers
+VREGS  BYTE >02                        ; Graphics II mode
+       BYTE >E2                        ; 16K, display on, interrupt enabled
+       BYTE NAMET2/>400                ; NAMET2 = >2C00
+       BYTE COLRTB/>40+>1F             ; COLRTB = >2000, >800 bytes
+       BYTE PTRNTB/>800+>00            ; PTRNTB = >0000, >800 bytes
+       BYTE SPRATB/>80                 ; SPRATB = >2B00
+       BYTE SPRPTB/>800                ; SPRPTB = >1800
+       BYTE >00                        ; Backdrop color
+*// GMODE
+
+*********************************************************************************
+*
+* Set full bitmap mode
+*
+BMODE  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Choose 3 pattern tables
+       LI   R0,>0403
+       BL   @VWTR
+*      Clear tile set patterns
+       LI   R0,PTRNTB
+       CLR  R1
+       LI   R2,>1800
+       BL   @VDPWR
+*      Reset tile set colors
+       LI   R0,COLRTB
+       LI   R1,>F100
+       LI   R2,>800
+       BL   @VDPWR
+*      Select name table
+       LI   R0,NAMET1/>400 + >0200
+       BL   @VWTR
+*      Setup name table for bitmap drawing
+       LI   R0,NAMET1
+       BL   @VWAD
+       LI   R0,VDPWD
+       CLR  R1
+       LI   R2,>300
+BMODE1 MOVB R1,*R0
+       AI   R1,>0100
+       DEC  R2
+       JNE  BMODE1
+*      Disable sprites
+       LI   R0,SPRATB
+       LI   R1,>D000
+       BL   @VSBW
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// BMODE
+
+*********************************************************************
+*
+* Upload tiles
+*
+* Uses R0-R3
+*
+UPLTLS MOV  R11,*R10+                  ; Push return address onto the stack
+*      Map standard page at >2000
+       LI   R1,>0200
+       MOVB R1,@AMSREG
+*      Upload tile set patterns
+       LI   R0,PTRNTB
+       LI   R1,PAT0
+       LI   R2,>800
+       BL   @VDPCP
+*      Upload tile set colors
+       LI   R0,COLRTB
+       LI   R1,COL0
+       LI   R2,>800
+       BL   @VDPCP
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// UPLTLS
+
+*********************************************************************
+*
+* Upload monster graphics
+*
+UPLMON MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R6,MALIST
+       LI   R7,0
+UPLMO1 MOV  *R6+,R8
+       JEQ  UPLMO2
+*      Tile
+       CLR  R4
+       MOVB @TCMAP+TMONS1(R7),@R4LB
+       MOV  @MOPAT(R8),R5
+       BL   @UPLMCH
+*      Metatile
+       MOV  R7,R9
+       SLA  R9,1
+       MOV  @TMONS1*2+TMMAP(R9),R9
+       MOVB *R9+,@R4LB
+*      First metatile for monster pattern n is:
+*      ((n & >03) << 1 | (n & >FC) << 2) + 40
+       MOV  R5,R0
+       ANDI R5,3
+       SLA  R5,1
+       ANDI R0,>00FC
+       SLA  R0,2
+       A    R0,R5
+       AI   R5,40
+       BL   @UPLMCH
+       MOVB *R9+,@R4LB
+       INC  R5
+       BL   @UPLMCH
+       MOVB *R9+,@R4LB
+       AI   R5,7
+       BL   @UPLMCH
+       MOVB *R9+,@R4LB
+       INC  R5
+       BL   @UPLMCH
+UPLMO2 INC  R7
+       CI   R7,8
+       JNE  UPLMO1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// UPLMON
+
+*********************************************************************
+*
+* Upload monster characters
+*
+* R4: Destination character number
+* R5: Source character number
+*
+* Uses R0-R3
+*
+UPLMCH MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R4,R0
+       SLA  R0,3
+       AI   R0,COLRTB
+       MOV  R5,R1
+       SLA  R1,3
+       AI   R1,MCOL0
+       LI   R2,8
+       BL   @VDPCP
+       MOV  R4,R0
+       SLA  R0,3
+       AI   R0,PTRNTB
+       MOV  R5,R1
+       SLA  R1,3
+       AI   R1,MPAT0
+       LI   R2,8
+       BL   @VDPCP
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// UPLMCH
+
+*********************************************************************
+*
+* Hide sprites
+*
+SPRHDE MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R0,SPRATB
+       LI   R1,SATTMP
+       BL   @VSBR
+       LI   R0,SPRATB
+       LI   R1,>D000
+       BL   @VSBW
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+SATTMP DATA 0
+*// SPRHDE
+
+*********************************************************************
+*
+* Show sprites
+*
+SPRSHW MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R0,SPRATB
+       MOV  @SATTMP,R1
+       BL   @VSBW
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SPRSHW
+
+*********************************************************************
+*
+* VDP Write To Register
+*
+* R0 MSB: VDP register to write to
+* R0 LSB: Value to write
+*
+VWTR   SWPB R0
+       MOVB R0,@VDPWA                  ; Send low byte (value) to write to VDP register
+       SWPB R0
+       ORI  R0,>8000                   ; Set up a VDP register write operation (10)
+       MOVB R0,@VDPWA                  ; Send high byte (address) of VDP register
+       B    *R11
+*// VWTR
+
+*********************************************************************
+*
+* VDP Set Write Address
+*
+* R0: Write address in VDP RAM
+*
+* R0 is modified, but can be restored with: ANDI R0,>3FFF
+*
+VWAD   SWPB R0
+       MOVB R0,@VDPWA                  ; Send low byte of VDP RAM write address
+       SWPB R0
+       ORI  R0,>4000                   ; Set read/write bits 14 and 15 to write (01)
+       MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
+       B    *R11
+*// VWAD
+
+*********************************************************************
+*
+* VDP Single Byte Read
+*
+* R0   Read address in VDP RAM
+* R1   MSB of R1 set to byte from VDP RAM
+*
+VSBR   MOVB @R0LB,@VDPWA               ; Send low byte of VDP RAM write address
+       MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
+       MOVB @VDPRD,R1                  ; Read byte from VDP RAM
+       B    *R11
+*// VSBR
+
+*********************************************************************
+*
+* VDP Single Byte Write
+*
+* R0: Write address in VDP RAM
+* R1: MSB of R1 sent to VDP RAM
+*
+* R0 is modified, but can be restored with: ANDI R0,>3FFF
+*
+VSBW   SWPB R0
+       MOVB R0,@VDPWA                  ; Send low byte of VDP RAM write address
+       SWPB R0
+       ORI  R0,>4000                   ; Set read/write bits 14 and 15 to write (01)
+       MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
+       MOVB R1,@VDPWD                  ; Write byte to VDP RAM
+       B    *R11
+*// VSBW
+
+***************************************************************************
+*
+* VDP Multiple Byte Read
+*
+* R0: Starting read address in VDP RAM
+* R1: Starting write address in CPU RAM
+* R2: Number of bytes to read from VDP RAM
+*
+* Modifies R0-R2
+*
+VMBR   SWPB R0
+       MOVB R0,@VDPWA                  ; Send low byte of VDP RAM write address
+       SWPB R0
+       MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
+       LI   R0,VDPRD
+VMBR1  MOVB *R0,*R1+                   ; Read byte from VDP RAM
+       DEC  R2                         ; Byte counter
+       JNE  VMBR1                      ; Check if finished
+       B    *R11
+*// VMBR
+
+*********************************************************************
+*
+* Fast CPU to VDP copy, replaces VMBW
+*
+* R0: Destination address
+* R1: Source address
+* R2: Number of bytes to copy
+*
+VDPCP  SWPB R0
+       MOVB R0,@VDPWA                  ; Send low byte of VDP RAM write address
+       SWPB R0
+       ORI  R0,>4000                   ; Set the two MSbits to 01 for write
+       MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
+       LI   R0,VDPWD
+       MOV  R2,R3
+       SRL  R3,3                       ; Number of groups of 8
+       JEQ  VDPC2
+VDPC1  MOVB *R1+,*R0
+       MOVB *R1+,*R0
+       MOVB *R1+,*R0
+       MOVB *R1+,*R0
+       MOVB *R1+,*R0
+       MOVB *R1+,*R0
+       MOVB *R1+,*R0
+       MOVB *R1+,*R0
+       DEC  R3
+       JNE  VDPC1
+       ANDI R2,>0007                   ; Isolate number of remaining bytes
+       JEQ  VDPC3
+VDPC2  MOVB *R1+,*R0
+       DEC  R2
+       JNE  VDPC2
+VDPC3  B    *R11
+*// VDPCP
+
+*********************************************************************
+*
+* Fast CPU to VDP write, replaces VSMW
+*
+* R0: Destination address
+* R1: Byte to write in MSB
+* R2: Number of bytes to copy
+*
+VDPWR  SWPB R0
+       MOVB R0,@VDPWA                  ; Send low byte of VDP RAM write address
+       SWPB R0
+       ORI  R0,>4000                   ; Set the two MSbits to 01 for write
+       MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
+       LI   R0,VDPWD
+       MOV  R2,R3
+       SRL  R3,3                       ; Number of groups of 8
+       JEQ  VDPW2
+VDPW1  MOVB R1,*R0
+       MOVB R1,*R0
+       MOVB R1,*R0
+       MOVB R1,*R0
+       MOVB R1,*R0
+       MOVB R1,*R0
+       MOVB R1,*R0
+       MOVB R1,*R0
+       DEC  R3
+       JNE  VDPW1
+       ANDI R2,>0007                   ; Isolate number of remaining bytes
+       JEQ  VDPW3
+VDPW2  MOVB R1,*R0
+       DEC  R2
+       JNE  VDPW2
+VDPW3  B    *R11
+*// VDPWR
+
+*********************************************************************
+*
+* Roll dice 3D6, return result in R0
+*
+R3D6   MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R1,1
+       LI   R2,7
+       BL   @RANDI
+       MOV  R0,R3
+       LI   R1,1
+       LI   R2,7
+       BL   @RANDI
+       A    R0,R3
+       LI   R1,1
+       LI   R2,7
+       BL   @RANDI
+       A    R3,R0
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// R3D6
+
+***************************************************************************
+*
+* Wait for escape key (fire or space)
+*
+WTESC  MOV  R11,*R10+                  ; Push return address onto the stack
+WTESC1 BL   @CHKESC
+       JEQ  WTESC1
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// WTESC
+
+***************************************************************************
+*
+* Check escape key (fire or space)
+*
+* On return NEQ and R0<>0 means that the key is pressed
+*
+CHKESC MOV  R11,*R10+                  ; Push return address onto the stack
+*      Fire
+       LI   R0,KEY_FI
+       BL   @CHKKEY
+       JNE  CHKES1
+*      Space
+       LI   R0,KEY_SP
+       BL   @CHKKEY
+       JNE  CHKES1
+*      Not pressed
+       CLR  R0
+       JMP  CHKES2
+*      Pressed
+CHKES1 SETO R0
+*      Return
+CHKES2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       CI   R0,0
+       B    *R11
+
+***************************************************************************
+*
+* Check key
+*
+* R0: Column in MSB: >0000 - >0700, Row in LSB: >0006 - >0014
+*
+*       Column   0      1    2    3    4    5     6       7
+*     Row
+*     >0006      =      .    ,    M    N    /    Fire    Fire
+*     >0008    Space    L    K    J    H    ;    Left    Left
+*     >000A    Enter    O    I    U    Y    P    Right   Right
+*     >000C             9    8    7    6    0    Down    Down
+*     >000E    Fctn     2    3    4    5    1    Up      Up
+*     >0010    Shift    S    D    F    G    A
+*     >0012    Ctrl     W    E    R    T    Q
+*     >0014             X    C    V    B    Z
+*
+* On return NEQ means that the key is pressed
+*
+KEY_FI EQU  >0606
+KEY_LF EQU  >0608
+KEY_RG EQU  >060A
+KEY_DN EQU  >060C
+KEY_UP EQU  >060E
+KEY_CM EQU  >0206
+KEY_FS EQU  >0106
+KEY_0  EQU  >050C
+KEY_1  EQU  >050E
+KEY_2  EQU  >010E
+KEY_3  EQU  >020E
+KEY_4  EQU  >030E
+KEY_5  EQU  >040E
+KEY_6  EQU  >040C
+KEY_7  EQU  >030C
+KEY_8  EQU  >020C
+KEY_9  EQU  >010C
+KEY_A  EQU  >0510
+KEY_B  EQU  >0414
+KEY_C  EQU  >0214
+KEY_D  EQU  >0210
+KEY_E  EQU  >0212
+KEY_F  EQU  >0310
+KEY_G  EQU  >0410
+KEY_H  EQU  >0408
+KEY_I  EQU  >020A
+KEY_J  EQU  >0308
+KEY_K  EQU  >0208
+KEY_L  EQU  >0108
+KEY_M  EQU  >0306
+KEY_N  EQU  >0406
+KEY_O  EQU  >010A
+KEY_P  EQU  >050A
+KEY_Q  EQU  >0512
+KEY_R  EQU  >0312
+KEY_S  EQU  >0110
+KEY_T  EQU  >0412
+KEY_U  EQU  >030A
+KEY_V  EQU  >0314
+KEY_W  EQU  >0112
+KEY_X  EQU  >0114
+KEY_Y  EQU  >040A
+KEY_Z  EQU  >0514
+KEY_SP EQU  >0008
+KEY_FN EQU  >000E
+KEY_SH EQU  >0010
+KEY_CT EQU  >0012
+M_FCTN EQU  >1000
+M_SHFT EQU  >2000
+M_CTRL EQU  >3000
+
+CHKKEY MOV  R0,@KLAST
+       ANDI R0,>7000                   ; Isolate modifier
+       JEQ  CHKKE1                     ; Jump if no modifier
+       SRL  R0,11                      ; 2, 4 or 8
+       AI   R0,12                      ; 14, 16 or 18
+       LI   R12,>0024                  ; CRU address of the column decoder
+       LDCR R0,3                       ; Select column
+       ANDI R0,>00FF
+       MOV  R0,R12                     ; Select row
+       TB   0                          ; Test key, EQ if not pressed
+       JEQ  CHKKE2
+CHKKE1 MOV  @KLAST,R0
+       ANDI R0,>0FFF
+       LI   R12,>0024                  ; CRU address of the column decoder
+       LDCR R0,3                       ; Select column
+       ANDI R0,>00FF
+       MOV  R0,R12                     ; Select row
+       TB   0                          ; Test key, EQ if not pressed
+CHKKE2 B    *R11
+KLAST  DATA >0000
+*// CHKKEY
+
+*********************************************************************
+*
+* Check for release of key
+*
+RELKEY MOV  @KLAST,R0
+       JEQ  RELKE2
+       ANDI R0,>0FFF
+       LI   R12,>0024                  ; CRU address of the column decoder
+       LDCR R0,3                       ; Select column
+       ANDI R0,>00FF
+       MOV  R0,R12                     ; Select row
+       LI   R0,3
+RELKE1 TB   0
+       JNE  RELKE1
+*      Check a number of times to make sure it's not a misreading
+       DEC  R0
+       JNE  RELKE1
+RELKE2 B    *R11
+
+*********************************************************************
+*
+* Check for quit
+*
+CKQUIT CLR  R1                         ; Test column 0
+       LI   R12,>0024                  ; Address for column selection
+       LDCR R1,3                       ; Select column
+       LI   R12,>0006                  ; Address to read rows
+       STCR R1,8
+       ANDI R1,>1100
+       JEQ  QUIT
+       B    *R11
+*      Quit
+QUIT   CLR  @>83C4                     ; Reset user ISR address
+QUIT1  BLWP @>0000
+
+***************************************************************************
+*
+* Detect AMS
+* Banks FF=1024K, 7F=512K, 3F=256K, 1F=128K
+*
+* On the size in KB is stored in AMSSIZ
+*
+* This routine is writing:
+* >FF to the first byte of bank >FF (for testing 1024K)
+* >7F to the first byte of bank >7F (for testing 512K)
+* >3F to the first byte of bank >3F (for testing 256K)
+* >1F to the first byte of bank >1F (for testing 128K)
+*
+*
+AMSDTC MOV  R11,*R10+                  ; Push return address onto the stack
+*      Set SAMS registers to standard values
+       CLR  R0
+       CLR  R3
+       LI   R2,16
+INIAMS MOV  R3,R1
+       BL   @AMSMAP
+       AI   R0,>0100
+       AI   R3,>1000
+       DEC  R2
+       JNE  INIAMS
+*      Write bank numbers to banks
+       LI   R2,4                       ; Number of banks to test
+       LI   R0,>FF00                   ; Start with AMS bank number 255
+AMSDT1 LI   R1,AMSBUF                  ; Map to buffer
+       BL   @AMSMAP                    ; Set mapping
+       BL   @AMSENA                    ; Enable AMS
+       MOVB R0,@AMSBUF                 ; Write bank number to bank
+       BL   @AMSDIS                    ; Disable AMS
+       SRL  R0,1                       ; Next bank to test
+       DEC  R2
+       JNE  AMSDT1
+       CLR  @AMSBUF                    ; Clear ordinary RAM at buffer
+*      Check bank numbers
+       LI   R2,4                       ; Number of banks to test
+       LI   R0,>1FFF                   ; Start with last bank in 128K segment
+AMSDT2 LI   R1,AMSBUF                  ; Map to buffer
+       BL   @AMSMAP                    ; Set mapping
+       BL   @AMSENA                    ; Enable AMS
+       CB   R0,@AMSBUF                 ; Check that bank contains bank number
+       JNE  AMSDT3                     ; No - stop
+       BL   @AMSDIS                    ; Disable AMS
+       SLA  R0,1                       ; Next bank to test
+       DEC  R2
+       JNE  AMSDT2
+*      Passed all
+       LI   R0,>0100                   ; Passed all - report 256 banks
+       JMP  AMSDT4
+*      Failed
+AMSDT3 SRL  R0,1                       ; Revert to last bank that passed
+       ANDI R0,>FF00
+       SWPB R0                         ; Swap bank number to LSB
+       INC  R0                         ; Number of banks is one higher
+       ANDI R0,>01E0
+AMSDT4 SLA  R0,2                       ; Convert to KB
+       MOV  R0,@AMSSIZ                 ; Save number of banks
+*      Restore default mapping and disable
+       LI   R0,AMSBUF/>10
+       LI   R1,AMSBUF
+       BL   @AMSMAP
+       BL   @AMSDIS                    ; Disable AMS
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+AMSSIZ DATA 0                          ; Number of detected AMS banks
+*// AMSDTC
+
+*********************************************************************
+*
+* Exchange (most of) PAD RAM with buffer
+*
+EXPAD  LI   R0,PAD+32
+       LI   R1,PADBUF
+       LI   R2,256-32
+EXPAD1 MOV  *R0,R3
+       MOV  *R1,*R0+
+       MOV  R3,*R1+
+       DECT R2
+       JNE  EXPAD1
+*      Return
+       B    *R11
+*// EXPAD
+
+*********************************************************************
+*
+* Save game
+*
+* Returns error code in R1 (0 if OK)
+*
+SAVE   MOV  R11,*R10+                  ; Push return address onto the stack
+*      Upload data
+       LI   R0,FBUF
+       LI   R1,DEPTH
+       LI   R2,FLEN
+       BL   @VDPCP
+*      Prepare for disk access
+       BL   @EXPAD                     ; Exchange PAD and buffer
+*      Set op-code
+       LI   R0,>0600                   ; Op-code SAVE
+       MOVB R0,@PABDAT
+*      Copy PAB data into VDP RAM
+       LI   R0,PAB
+       LI   R1,PABDAT
+       LI   R2,PABDTE-PABDAT
+       BL   @VDPCP
+*      Save file
+       LI   R0,PAB+9                   ; Pointer to name length
+       MOV  R0,@>8356                  ; Store in >8356
+       BLWP @DSRLNK                    ; Save file
+       DATA 8
+*      Restore after disk access
+       BL   @EXPAD                     ; Exchange PAD and buffer
+       BL   @AMSERG
+*      Check for errors
+       LI   R0,PAB+1                   ; Get status byte
+       BL   @VSBR
+       ANDI R1,>E000                   ; Mask off error code
+       SRL  R1,13
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SAVE
+
+*********************************************************************
+*
+* Load game
+*
+* Returns error code in R1 (0 if OK)
+*
+LOAD   MOV  R11,*R10+                  ; Push return address onto the stack
+*      Prepare for disk access
+       BL   @EXPAD                     ; Exchange PAD and buffer
+*      Set op-code
+       LI   R0,>0500                   ; Op-code LOAD
+       MOVB R0,@PABDAT
+*      Copy PAB data into VDP RAM
+       LI   R0,PAB
+       LI   R1,PABDAT
+       LI   R2,PABDTE-PABDAT
+       BL   @VDPCP
+*      Load file
+       LI   R0,PAB+9                   ; Pointer to name length
+       MOV  R0,@>8356                  ; Store in >8356
+       BLWP @DSRLNK                    ; Load file
+       DATA 8
+*      Restore after disk access
+       BL   @EXPAD                     ; Exchange PAD and buffer
+       BL   @AMSERG
+*      Check for errors
+       LI   R0,PAB+1                   ; Get status byte
+       BL   @VSBR
+       ANDI R1,>E000                   ; Mask off error code
+       SRL  R1,13
+       JNE  LOAD1
+*      Download data
+       LI   R0,FBUF
+       LI   R1,DEPTH
+       LI   R2,FLEN
+       BL   @VMBR
+       CLR  R1
+*      Return
+LOAD1  DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// LOAD
+
+*********************************************************************
+*
+*      DSRLNK
+*
+       COPY "dsrlnk.a99"
+
+*********************************************************************
+*
+* Data section
+*
+
+* PAB data
+PABDAT BYTE >05                        ; I/O op-code (5=LOAD)
+       BYTE >00                        ; Flags: n/a
+LDADDR DATA FBUF                       ; Data buffer address (VDP RAM)
+       DATA >0000                      ; Record length: n/a
+       DATA >0100                      ; Max bytes to read
+       DATA >000C                      ; File name length (including DSK1.)
+DNAME  TEXT "DSK1."                    ; File device
+FNAME  TEXT "DOASAVE"                  ; File name
+PABDTE
+
+* Player name
+TXNAME TEXT "ASMUSR"
+       BYTE 0,0
+
+* Master list of item instances
+* A slot is deallocated if the first word is null.
+
+* Item instance data structure
+IIITEM EQU  0                          ; Pointer to item data structure
+IIBNAT EQU  2                          ; Attack bonus
+IIBNDF EQU  3                          ; Defence bonus
+IISIZE EQU  4                          ; Structure size
+
+;      TODO: This could be moved to AMS
+ITLIST BSS  MAXITM*IISIZE
+ITLSTE
+
+* Inventory
+* A list of pointers to item instances.
+* @INVNXT point to the next available slot.
+* The list is rearranged when items are deleted to avoid holes.
+INVENT BSS  MAXINV*2
+INVENE
+
+* Equipment
+* A list of pointers to item instances.
+EQUIPM
+EQWIEL DATA 0                          ; Wielding
+EQBODY DATA 0                          ; On body
+EQARM  DATA 0                          ; On arm
+EQHEAD DATA 0                          ; On head
+EQHAND DATA 0                          ; On hands
+EQFEET DATA 0                          ; On feet
+EQFING DATA 0                          ; On finger
+EQLGHT DATA 0                          ; Light source
+EQUIPE
+
+* Labels for each equipment slot
+EQTEXT DATA TXWIEL
+       DATA TXBODY
+       DATA TXARM
+       DATA TXHEAD
+       DATA TXHAND
+       DATA TXFEET
+       DATA TXFING
+       DATA TXLGHT
+
+* Sprites
+SPRTES COPY "sprites.a99"
+
+* Monster graphics
+MONGFX COPY "monster-graphics.a99"
+
+* Map buffer, for copying a section of the map from AMS into ordinary RAM
+MAPBUF BSS  32*22
+
+* Message buffer
+MSGBUF BSS  MBUFH*MSGW
+
+* PAD save buffer
+PADBUF BSS  256-32
+
+*********************************************************************
+*
+* Lower memory
+*
+       AORG >2000
+
+TLEGFX COPY "tile-graphics.a99"
+
+* Text
+       COPY "text.a99"
+
+* Tile definitions
+       COPY "tiles.a99"
+
+* Item definitions
+       COPY "items.a99"
+
+* Monster definition
+       COPY "monsters.a99"
+
+* Light sources
+LNONE  DATA 1                          ; Size
+       BYTE >80
+LTORCH DATA 5                          ; Size
+       BYTE >00,>80,>80,>80,>00
+       BYTE >80,>80,>80,>80,>80
+       BYTE >80,>80,>80,>80,>80
+       BYTE >80,>80,>80,>80,>80
+       BYTE >00,>80,>80,>80,>00
+LLAMP  DATA 7                          ; Size
+       BYTE >00,>00,>80,>80,>80,>00,>00
+       BYTE >00,>80,>80,>80,>80,>80,>00
+       BYTE >80,>80,>80,>80,>80,>80,>80
+       BYTE >80,>80,>80,>80,>80,>80,>80
+       BYTE >00,>80,>80,>80,>00,>80,>80
+       BYTE >00,>80,>80,>80,>80,>80,>00
+       BYTE >00,>00,>80,>80,>80,>00,>00
+
+       END  MAIN

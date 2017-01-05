@@ -1,0 +1,15 @@
+*********************************************************************
+*
+* Subroutine template
+*
+* R0:
+* R1:
+*
+* On return ...
+*
+SUB    MOV  R11,*R10+                  ; Push return address onto the stack
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SUB

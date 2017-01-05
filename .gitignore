@@ -1,0 +1,12 @@
+i# Created by .ignore support plugin (hsz.mobi)
+/.idea/
+/backup/
+/doa.rpk/
+/misc/
+*.bin
+*.obj
+*.lst
+*.ini
+*.dsk
+*.modcfg
+

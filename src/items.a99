@@ -1,0 +1,253 @@
+*********************************************************************
+*
+* Items
+*
+
+* Item types
+IYMISC EQU  0                          ; Misc useable objects
+IYWEAP EQU  1                          ; Weapons
+IYARMR EQU  2                          ; Armors, robes
+IYSHLD EQU  3                          ; Shields
+IYHELM EQU  4                          ; Helmets
+IYGLVS EQU  5                          ; Gloves, gauntlets
+IYBOOT EQU  6                          ; Boots
+IYRING EQU  7                          ; Rings, specials
+IYLGHT EQU  8                          ; Light sources
+
+* Capability data structure
+CBNAME EQU  0                          ; Name of capability. Pointer to null terminated string.
+CBSIZE EQU  2                          ; Structure size
+
+* Material data structure
+MTNAME EQU  0                          ; Name of material. Pointer to null terminated string.
+MTSIZE EQU  2                          ; Structure size
+
+* Item data structure
+ITTILE EQU  0                          ; Tile number
+ITTYPE EQU  1                          ; Item type
+ITCPBL EQU  2                          ; Capability
+ITMTRL EQU  3                          ; Material
+ITDMAC EQU  4                          ; Damage if weapon, AC bonus if armor
+ITRARI EQU  5                          ; Rarity: 0=very common - 255=very rare
+ITSIZE EQU  6                          ; Structure size
+; TODO: value
+
+* Capabilities
+CPBLS
+CBNONE EQU  0                          ; None
+       DATA TXNONE
+CBHLNG EQU  1                          ; Healing
+       DATA TXHLNG
+CBSPD  EQU  2                          ; Speed
+       DATA TXSPD
+CBFIRE EQU  3                          ; Fire
+       DATA TXFIRE
+CBSLP  EQU  4                          ; Sleeping
+       DATA TXSLP
+CBWISD EQU  5                          ; Wisdom
+       DATA TXWISD
+CBPROT EQU  6                          ; Protection
+       DATA TXPROT
+
+* Materials
+MTRLS
+MADFLT EQU  0                          ; Default
+       DATA TXDFLT
+MALTHR EQU  1                          ; Leather
+       DATA TXLTHR
+MAIRON EQU  2                          ; Iron
+       DATA TXIRON
+MASTEL EQU  3                          ; Steel
+       DATA TXSTEL
+MASILV EQU  4                          ; Silver
+       DATA TXSILV
+MAGOLD EQU  5                          ; Gold
+       DATA TXGOLD
+MAOBSI EQU  6                          ; Obsidian
+       DATA TXOBSI
+
+* Items
+ITEMS
+IT_POTI_HEAL
+       BYTE TPOTI                      ; Potion of healing
+       BYTE IYMISC
+       BYTE CBHLNG
+       BYTE MADFLT
+       BYTE 0
+       BYTE 5
+IT_POTI_SPD
+       BYTE TPOTI                      ; Potion of speed
+       BYTE IYMISC
+       BYTE CBSPD
+       BYTE MADFLT
+       BYTE 0
+       BYTE 5
+IT_SCRL_SPD
+       BYTE TSCRL                      ; Scroll of speed
+       BYTE IYMISC
+       BYTE CBHLNG
+       BYTE MADFLT
+       BYTE 0
+       BYTE 10
+IT_SCRL_HLNG
+       BYTE TSCRL                      ; Scroll of healing
+       BYTE IYMISC
+       BYTE CBHLNG
+       BYTE MADFLT
+       BYTE 0
+       BYTE 10
+IT_BOOK_WISD
+       BYTE TBOOK                      ; Book of wisdom
+       BYTE IYMISC
+       BYTE CBWISD
+       BYTE MADFLT
+       BYTE 0
+       BYTE 20
+IT_SILV_RING_PROT
+       BYTE TRING                      ; Silver ring of protection
+       BYTE IYRING
+       BYTE CBPROT
+       BYTE MASILV
+       BYTE 2
+       BYTE 50
+IT_FOOD
+       BYTE TFOOD                      ; Food
+       BYTE IYMISC
+       BYTE CBNONE
+       BYTE MADFLT
+       BYTE 0
+       BYTE 5
+IT_TRCH
+       BYTE TTORCH                     ; Torch
+       BYTE IYLGHT
+       BYTE CBNONE
+       BYTE MADFLT
+       BYTE 0
+       BYTE 5
+IT_LAMP
+       BYTE TLAMP                      ; Lamp
+       BYTE IYLGHT
+       BYTE CBNONE
+       BYTE MADFLT
+       BYTE 0
+       BYTE 10
+IT_IRON_SWRD
+       BYTE TSWORD                     ; Iron sword
+       BYTE IYWEAP
+       BYTE CBNONE
+       BYTE MAIRON
+       BYTE 6
+       BYTE 10
+IT_STEL_SWRD
+       BYTE TSWORD                     ; Steel sword
+       BYTE IYWEAP
+       BYTE CBNONE
+       BYTE MASTEL
+       BYTE 8
+       BYTE 20
+IT_IRON_AXE
+       BYTE TAXE                       ; Iron axe
+       BYTE IYWEAP
+       BYTE CBNONE
+       BYTE MAIRON
+       BYTE 6
+       BYTE 10
+IT_DGDR
+       BYTE TDGGR                      ; Dagger
+       BYTE IYWEAP
+       BYTE CBNONE
+       BYTE MADFLT
+       BYTE 4
+       BYTE 5
+IT_MACE
+       BYTE TMACE                      ; Mace
+       BYTE IYWEAP
+       BYTE CBNONE
+       BYTE MADFLT
+       BYTE 6
+       BYTE 10
+IT_LTHR_ARMR                           ; Leather armor
+       BYTE TARMR
+       BYTE IYARMR
+       BYTE CBNONE
+       BYTE MALTHR
+       BYTE 4
+       BYTE 10
+IT_IRON_ARMR                           ; Iron mail armor
+       BYTE TMARM
+       BYTE IYARMR
+       BYTE CBNONE
+       BYTE MAIRON
+       BYTE 6
+       BYTE 10
+IT_STEL_ARMR                           ; Steel mail armor
+       BYTE TMARM
+       BYTE IYARMR
+       BYTE CBNONE
+       BYTE MASTEL
+       BYTE 8
+       BYTE 10
+IT_STEL_PARM                           ; Steel plate armor
+       BYTE TPARM
+       BYTE IYARMR
+       BYTE CBNONE
+       BYTE MASTEL
+       BYTE 12
+       BYTE 10
+IT_IRON_HELM                           ; Iron helmet
+       BYTE THELM
+       BYTE IYHELM
+       BYTE CBNONE
+       BYTE MAIRON
+       BYTE 1
+       BYTE 5
+IT_LTHR_BOOT                           ; Leather boots
+       BYTE TBOOT
+       BYTE IYBOOT
+       BYTE CBNONE
+       BYTE MALTHR
+       BYTE 1
+       BYTE 5
+IT_IRON_BOOT                           ; Iron boots
+       BYTE TBOOT
+       BYTE IYBOOT
+       BYTE CBNONE
+       BYTE MAIRON
+       BYTE 2
+       BYTE 5
+IT_LTHR_GLVS                           ; Leather gloves
+       BYTE TGLVS
+       BYTE IYGLVS
+       BYTE CBNONE
+       BYTE MALTHR
+       BYTE 1
+       BYTE 5
+IT_IRON_GNTL                           ; Iron gauntlets
+       BYTE TGNTL
+       BYTE IYGLVS
+       BYTE CBNONE
+       BYTE MAIRON
+       BYTE 2
+       BYTE 5
+IT_STEEL_GNTL                          ; Steel gauntlets
+       BYTE TGNTL
+       BYTE IYGLVS
+       BYTE CBNONE
+       BYTE MASTEL
+       BYTE 3
+       BYTE 10
+IT_ROBE                                ; Robes
+       BYTE TROBE
+       BYTE IYARMR
+       BYTE CBNONE
+       BYTE MADFLT
+       BYTE 4
+       BYTE 10
+IT_SHLD                                ; Shield
+       BYTE TSHLD
+       BYTE IYSHLD
+       BYTE CBNONE
+       BYTE MADFLT
+       BYTE 4
+       BYTE 5
+IT_END
