@@ -1,6 +1,6 @@
 *********************************************************************
 *
-* Map genaration data structure
+* Map generation routines and data structure
 *
 * Any code using the ROOMS data structure at >E000 + dependencies
 * must be in this file.
