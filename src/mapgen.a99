@@ -1219,10 +1219,10 @@ ARMENA MOV  R11,*R10+                  ; Push return address onto the stack
 * Remove mapping of 8K AMS for ROOMS structure at >E000->FFFF
 *
 ARMDIS MOV  R11,*R10+                  ; Push return address onto the stack
-       LI   R0,>0C00
+       LI   R0,>0E00
        LI   R1,ROOMS
        BL   @AMSMAP
-       LI   R0,>0D00
+       LI   R0,>0F00
        LI   R1,ROOMS+>1000
        BL   @AMSMAP
 *      Enable AMS mapper
