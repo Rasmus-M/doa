@@ -22,8 +22,104 @@ DSPSHP MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R4,TXSHOP                  ; Title
        BL   @DSPWIN
        BL   @SHWBUF                    ; Switch to view double buffer
-DSPSH1 BL   @CHKESC
-       JEQ  DSPSH1
+*      Display items
+       LI   R0,SHOP
+       MOV  R0,@ITM1ST                 ; First item displayed
+       MOV  R0,@ITMSEL                 ; Selected item
+DSPSH1 MOV  @ITM1ST,@ITMCUR            ; Current item
+       LI   R1,SWINC+1
+       MOV  R1,@COL                    ; Left column
+       LI   R0,SWINR+1
+       MOV  R0,@ROW                    ; Current row
+       LI   R14,SWINH-2                ; Counter for max displayed items
+DSPSH2 MOV  @ITMCUR,R3
+       C    R3,@SHPNXT                 ; Check for end of inventory
+       JHE  DSPSH5
+       MOV  @COL,R0                    ; Column
+       MOV  @ROW,R1                    ; Row
+       C    R3,@ITMSEL                 ; Check if item is selected
+       JNE  DSPSH3
+       LI   R2,TXGT                    ; >
+       JMP  DSPSH4
+DSPSH3 LI   R2,TXSPAC                  ; Space
+DSPSH4 BL   @DSPTXT
+       MOV  *R3,R3
+       LI   R4,SWINW-7
+       BL   @DSPITM
+*      Value
+       MOV  @COL,R0
+       AI   R0,SWINW-3
+       SLA  R0,8
+       MOVB @ROW+1,@R0LB
+       MOV  @IIITEM(R3),R5             ; Get item
+       MOV  @ITVALU(R5),R1
+       BL   @DNUMR
+*      Next item
+       INCT @ITMCUR
+       INC  @ROW
+       DEC  R14
+       JNE  DSPSH2
+*      Check keys
+DSPSH5 BL   @RELKEY
+*      Down
+       LI   R0,KEY_DN
+       BL   @CHKKEY
+       JEQ  DSPSH6
+       MOV  @SHPNXT,R0
+       DECT R0
+       C    @ITMSEL,R0
+       JHE  DSPSH6
+       INCT @ITMSEL
+       MOV  @ITM1ST,R0
+       AI   R0,SWINH-2*2
+       C    @ITMSEL,R0
+       JL   DSPSH1
+       INCT @ITM1ST
+       JMP  DSPSH1
+*      Up
+DSPSH6 LI   R0,KEY_UP
+       BL   @CHKKEY
+       JEQ  DSPSH7
+       LI   R0,SHOP
+       C    @ITMSEL,R0
+       JLE  DSPSH7
+       DECT @ITMSEL
+       C    @ITMSEL,@ITM1ST
+       JHE  DSPSH1
+       DECT @ITM1ST
+       JMP  DSPSH1
+*      Buy
+DSPSH7 LI   R0,KEY_B
+       BL   @CHKKEY
+       JEQ  DSPSH8
+       MOV  @ITMSEL,R0
+       BL   @BUY
+       MOV  R0,R5                      ; R0 points to the item
+       JEQ  DSPSH8                     ; or null if buying failed
+*      Remove from list
+DSPS10 LI   R0,SWINC+1                 ; Column
+       LI   R1,SWINR+1                 ; Row
+       LI   R2,SWINW-2                 ; Width
+       LI   R3,SWINH-2                 ; Height
+       BL   @CLRWIN                    ; Clear window
+       C    @ITMSEL,@SHPNXT
+       JNE  DSPS11
+       LI   R0,SHOP
+       C    @SHPNXT,R0
+       JEQ  DSPS11
+       DECT @ITMSEL
+DSPS11 B    @DSPSH1
+*      Sell
+DSPSH8 LI   R0,KEY_S
+       BL   @CHKKEY
+       JEQ  DSPSH9
+;      TODO
+*      Escape keys
+DSPSH9 BL   @CHKESC
+       JNE  DSPSH0
+       B    @DSPSH5
+*      Refresh screen
+DSPSH0 BL   @SPRSHW
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11

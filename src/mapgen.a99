@@ -136,6 +136,7 @@ GENTW0 LI   R1,TOWNY+2
 *      Place fountains
        LI   R8,ROOMS
        LI   R2,TFOUNT*256
+       LI   R3,TGRASS*256
        BL   @SRTILE
        BL   @SRTILE
 *      Init monsters
@@ -310,6 +311,7 @@ PLCIT4 LI   R1,OBJLST-OBJ1ST+1         ; Number of object tiles
        AI   R2,OBJ1ST
        SWPB R2                         ; Set tile parameter
        BL   @RLEAF                     ; Get a random room
+       LI   R3,TFLOOR*256
        BL   @SRTILE                    ; Set at random room position
        DEC  R9
        JNE  PLCIT1
@@ -317,6 +319,7 @@ PLCIT4 LI   R1,OBJLST-OBJ1ST+1         ; Number of object tiles
        LI   R9,MAXITM/2
 PLCIT2 BL   @RLEAF                     ; Get a random room
        LI   R2,TRUBBL*256              ; Tile
+       LI   R3,TFLOOR*256
        BL   @SRTILE                    ; Set at random room position
        DEC  R9
        JNE  PLCIT2
@@ -870,20 +873,27 @@ RLEAF1 MOV  @NROOMS,R1
 *
 * R8: Points to the room structure
 * R2: MSB contains tile to set
+* R3: MSB contains tile to replace
 *
-* On return R3,R4 contain the coordinates where the tile was set.
+* On return R4,R5 contain the coordinates where the tile was set.
 *
 SRTILE MOV  R11,*R10+                  ; Push return address onto the stack
-       CLR  R1
-       MOVB @ROOMH(R8),@R1LB
-       BL   @RANDL
-       MOV  R0,R4
+SRTIL1 CLR  R1
        MOVB @ROOMW(R8),@R1LB
        BL   @RANDL
-       MOV  R0,R3
-       MOV  R4,R1
-       AB   @ROOMX(R8),@R0LB
-       AB   @ROOMY(R8),@R1LB
+       MOV  R0,R4
+       AB   @ROOMX(R8),@R4LB
+       MOVB @ROOMH(R8),@R1LB
+       BL   @RANDL
+       MOV  R0,R5
+       AB   @ROOMY(R8),@R5LB
+       MOV  R4,R0
+       MOV  R5,R1
+       BL   @GTILE
+       CB   R1,R3
+       JNE  SRTIL1
+       MOV  R4,R0
+       MOV  R5,R1
        BL   @STILE
 *      Return
        DECT R10                        ; Pop return address off the stack
