@@ -1390,7 +1390,7 @@ STAIRY DATA >0080
 TWNRND DATA >0000                      ; Random number seed for generating the town
 TMPRND DATA >0000                      ; For saving random number seed
 
-* Rarity of each object tile
+* Rarity of each object tile (1-10)
 RARITY
 RGOLD  BYTE 1                          ; Coins
 RCHEST BYTE 3                          ; Chest

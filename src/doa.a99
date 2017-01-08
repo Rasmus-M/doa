@@ -67,18 +67,19 @@ CMDST1 EQU  6                          ; Stats on
 CMDMAP EQU  7                          ; Map
 CMDINV EQU  8                          ; Inventory
 CMDEQU EQU  9                          ; Equipment
-CMDSAV EQU  10                         ; Save
-CMDLOA EQU  11                         ; Load
+CMDSHP EQU  10                         ; Shop
+CMDSAV EQU  11                         ; Save
+CMDLOA EQU  12                         ; Load
 * Commands that spend player time
-CMDMOV EQU  12                         ; Move
-CMDGET EQU  13                         ; Get
-CMDOPN EQU  14                         ; Open
-CMDCLS EQU  15                         ; Close
-CMDLOK EQU  16                         ; Look
-CMDUPS EQU  17                         ; Go upstairs
-CMDDNS EQU  18                         ; Go downstairs
-CMDTNL EQU  19                         ; Tunnel
-CMDATT EQU  20                         ; Attack
+CMDMOV EQU  13                         ; Move
+CMDGET EQU  14                         ; Get
+CMDOPN EQU  15                         ; Open
+CMDCLS EQU  16                         ; Close
+CMDLOK EQU  17                         ; Look
+CMDUPS EQU  18                         ; Go upstairs
+CMDDNS EQU  19                         ; Go downstairs
+CMDTNL EQU  20                         ; Tunnel
+CMDATT EQU  21                         ; Attack
 
 **
 * Scratch pad
@@ -758,6 +759,7 @@ KEYMAP DATA KEY_1                      ; Tile size 1
        DATA KEY_M                      ; Map
        DATA KEY_I                      ; Inventory
        DATA KEY_E                      ; Equipment
+       DATA KEY_B                      ; Shop
        DATA KEY_S|M_CTRL               ; Save
        DATA KEY_L|M_CTRL               ; Load
        DATA -1                         ; Move (no key)
@@ -942,6 +944,12 @@ XINV   BL   @DSPINV
 *      Equipment
 XEQU   BL   @DSPEQU
        B    @XEND
+*      Shop
+XSHOP  MOV  @CTILE,R1
+       CI   R1,TSHOP
+       JNE  XSHOP1
+       BL   @DSPSHP
+XSHOP1 B    @XEND
 *      Save
 XSAV   MOV  @DEPTH,R0
        JEQ  XSAV3
@@ -1140,6 +1148,7 @@ CMDTBL DATA XNONE                      ; None
        DATA XMAP                       ; Map
        DATA XINV                       ; Inventory
        DATA XEQU                       ; Equipment
+       DATA XSHOP                      ; Shop
        DATA XSAV                       ; Save
        DATA XLOA                       ; Load
        DATA XMOV                       ; Move

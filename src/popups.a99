@@ -10,7 +10,7 @@
 SWINC  EQU  1                          ; Column
 SWINR  EQU  1                          ; Row
 SWINW  EQU  30                         ; Window width
-SWINH  EQU  8                          ; Window height
+SWINH  EQU  16                         ; Window height
 
 DSPSHP MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @SPRHDE
@@ -23,7 +23,7 @@ DSPSHP MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @DSPWIN
        BL   @SHWBUF                    ; Switch to view double buffer
 DSPSH1 BL   @CHKESC
-       JNE  DSPSH1
+       JEQ  DSPSH1
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
