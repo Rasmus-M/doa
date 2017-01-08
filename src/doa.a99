@@ -49,6 +49,7 @@ MBUFH  EQU  8                          ; Message buffer height
 MAXITM EQU  128                        ; Max item instances
 MAXINV EQU  32                         ; Max inventory size
 MAXEQU EQU  8                          ; Max equipment size
+MAXSHP EQU  64                         ; Max shop size
 OBJ1ST EQU  10                         ; Number of first object tile
 OBJLST EQU  32                         ; Number of last object tile
 NMONST EQU  12                         ; Number of unique monsters
@@ -145,7 +146,8 @@ DY     EQU  DX+2                       ; Player movement direction y
 COL    EQU  DY+2                       ; Screen column
 ROW    EQU  COL+2                      ; Screen row
 INVNXT EQU  ROW+2                      ; Pointer to next free slot in inventory
-ITM1ST EQU  INVNXT+2                   ; First displayed item
+SHPNXT EQU  INVNXT+2                   ; Pointer to next free slot in shop
+ITM1ST EQU  SHPNXT+2                   ; First displayed item
 ITMCUR EQU  ITM1ST+2                   ; Current displayed item
 ITMSEL EQU  ITMCUR+2                   ; Selected item
 CTILE  EQU  ITMSEL+2                   ; Current tile
@@ -297,14 +299,20 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @FILL
        LI   R0,IT_LTHR_ARMR
        BL   @GENITM
-       BL   @AEQITM
+       BL   @ADDEQU
        LI   R0,IT_DGDR
        BL   @GENITM
-       BL   @AEQITM
+       BL   @ADDEQU
        LI   R0,IT_TRCH
        BL   @GENITM
-       BL   @AEQITM
+       BL   @ADDEQU
        BL   @CLCEQU
+*      Initialize shop
+       LI   R0,SHOP
+       MOV  R0,@SHPNXT
+       CLR  R1
+       LI   R2,MAXSHP*2
+       BL   @FILL
 *      Misc
        LI   R0,RECSPD
        MOV  R0,@RECCNT
@@ -1190,7 +1198,7 @@ PICKU2 BL   @FNDITM                    ; Find item matching tile
        BL   @GENITM                    ; Generate item instance
        MOV  R0,R5                      ; Item instance
        JEQ  PICKU6
-       BL   @ADDITM                    ; Add item instance to inventory
+       BL   @ADDINV                    ; Add item instance to inventory
        MOV  R0,R0
        JEQ  PICKU5
 *      Success
@@ -1300,22 +1308,22 @@ GENIT3 DECT R10                        ; Pop return address off the stack
 *
 * On return R0 is pointing to the inventory entry, or is null if adding failed.
 *
-ADDITM MOV  R11,*R10+                  ; Push return address onto the stack
+ADDINV MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  @INVNXT,R1                 ; Get pointer to next slot
        CI   R1,INVENE                  ; Check for end
-       JL   ADDIT2
+       JL   ADDIN1
 *      Failed
        CLR  R0
-       JMP  ADDIT3
+       JMP  ADDIN2
 *      Found empty slot
-ADDIT2 MOV  R0,*R1
+ADDIN1 MOV  R0,*R1
        MOV  R1,R0
        INCT @INVNXT
 *      Return
-ADDIT3 DECT R10                        ; Pop return address off the stack
+ADDIN2 DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
-*// ADDITM
+*// ADDINV
 
 *********************************************************************
 *
@@ -1325,23 +1333,74 @@ ADDIT3 DECT R10                        ; Pop return address off the stack
 *
 * On return R0 is pointing to the item instance, or is null if removing failed.
 *
-REMITM MOV  R11,*R10+                  ; Push return address onto the stack
+REMINV MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  *R0,R2                     ; Save item instance pointer
-       JEQ  REMIT3                     ; Fail if null
+       JEQ  REMIN3                     ; Fail if null
        MOV  R0,R1                      ; Make a second list pointer
        INCT R1                         ; Point to next item
-REMIT1 C    R1,@INVNXT                 ; Check if at end
-       JHE  REMIT2                     ; Yes - finish
+REMIN1 C    R1,@INVNXT                 ; Check if at end
+       JHE  REMIN2                     ; Yes - finish
        MOV  *R1+,*R0+                  ; Copy next item to current item and move pointers
-       JMP  REMIT1                     ; Loop until end
-REMIT2 CLR  *R1
+       JMP  REMIN1                     ; Loop until end
+REMIN2 CLR  *R1
        DECT @INVNXT                    ; Move end pointer
-REMIT3 MOV  R2,R0                      ; Copy saved item instance pointer back
+REMIN3 MOV  R2,R0                      ; Copy saved item instance pointer back
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
-*// REMITM
+*// REMINV
+
+*********************************************************************
+*
+* Add item instance to shop
+*
+* R0: Pointer to item instance
+*
+* On return R0 is pointing to the shop entry, or is null if adding failed.
+*
+ADDSHP MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @SHPNXT,R1                 ; Get pointer to next slot
+       CI   R1,SHOPE                   ; Check for end
+       JL   ADDSH2
+*      Failed
+       CLR  R0
+       JMP  ADDSH3
+*      Found empty slot
+ADDSH2 MOV  R0,*R1
+       MOV  R1,R0
+       INCT @SHPNXT
+*      Return
+ADDSH3 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// ADDSHP
+
+*********************************************************************
+*
+* Remove item instance from shop
+*
+* R0: Pointer to shop entry
+*
+* On return R0 is pointing to the item instance, or is null if removing failed.
+*
+REMSHP MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  *R0,R2                     ; Save item instance pointer
+       JEQ  REMSH3                     ; Fail if null
+       MOV  R0,R1                      ; Make a second list pointer
+       INCT R1                         ; Point to next item
+REMSH1 C    R1,@SHPNXT                 ; Check if at end
+       JHE  REMSH2                     ; Yes - finish
+       MOV  *R1+,*R0+                  ; Copy next item to current item and move pointers
+       JMP  REMSH1                     ; Loop until end
+REMSH2 CLR  *R1
+       DECT @SHPNXT                    ; Move end pointer
+REMSH3 MOV  R2,R0                      ; Copy saved item instance pointer back
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// REMSHP
 
 *********************************************************************
 *
@@ -1353,30 +1412,30 @@ REMIT3 MOV  R2,R0                      ; Copy saved item instance pointer back
 * If an item in equipment was replaced in the process,
 * R1 is pointing to the item instance, otherwise R1 is null.
 *
-AEQITM MOV  R11,*R10+                  ; Push return address onto the stack
+ADDEQU MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  R0,R2
        MOV  @IIITEM(R2),R3
        MOVB @ITTYPE(R3),@R2LB          ; Get item type
        ANDI R2,>00FF
        CI   R2,IYWEAP                  ; Check if wearable
-       JLT  AEQIT1
+       JLT  ADDEQ1
        CI   R2,IYLGHT                  ; Check if wearable
-       JGT  AEQIT1
+       JGT  ADDEQ1
        DEC  R2                         ; Use some math to calculate the equiment slot
        SLA  R2,1                       ; Might want a jump table instead if we have multiple
        AI   R2,EQUIPM                  ; Ring slots etc.
        MOV  *R2,R1                     ; Save item already in slot
        MOV  R0,*R2                     ; Store new item
        MOV  R2,R0                      ; Point to equipment entry in R0
-       JMP  AEQIT2
+       JMP  ADDEQ2
 *      Failed
-AEQIT1 MOV  R0,R1                      ; Point R1 to item instance
+ADDEQ1 MOV  R0,R1                      ; Point R1 to item instance
        CLR  R0
 *      Return
-AEQIT2 DECT R10                        ; Pop return address off the stack
+ADDEQ2 DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
-*// AEQITM
+*// ADDEQU
 
 *********************************************************************
 *
@@ -1386,16 +1445,16 @@ AEQIT2 DECT R10                        ; Pop return address off the stack
 *
 * On return R0 is pointing to the item instance, or is null if removing failed.
 *
-REQITM MOV  R11,*R10+                  ; Push return address onto the stack
+REMEQU MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  *R0,R1                     ; Save item instance pointer
-       JEQ  REQIT1                     ; Fail if null
+       JEQ  REMEQ1                     ; Fail if null
        CLR  *R0                        ; Reset equipment entry
-REQIT1 MOV  R1,R0                      ; Copy saved item instance pointer back
+REMEQ1 MOV  R1,R0                      ; Copy saved item instance pointer back
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
-*// REQITM
+*// REMEQU
 
 *********************************************************************
 *
@@ -1424,7 +1483,7 @@ DELITM MOV  R11,*R10+                  ; Push return address onto the stack
 * On return R0 is pointing to the item, or is null if dropping failed.
 *
 DRPITM MOV  R11,*R10+                  ; Push return address onto the stack
-       BL   @REMITM                    ; Remove from inventory, R0 points to item instance
+       BL   @REMINV                    ; Remove from inventory, R0 points to item instance
        MOV  R0,R0                      ; Check for failure
        JEQ  DRPIT1                     ; Return if failure
        BL   @DELITM                    ; Delete the item instance
@@ -1448,7 +1507,7 @@ USEITM MOV  R11,*R10+                  ; Push return address onto the stack
        CB   @ITTYPE(R1),@BYTES+IYMISC  ; Check item type
        JNE  USEIT1                     ; Fail is not misc
 *      Remove from inventory
-       BL   @REMITM                    ; Remove from inventory, R0 points to item instance
+       BL   @REMINV                    ; Remove from inventory, R0 points to item instance
        MOV  R0,R0                      ; Check for failure
        JEQ  USEIT2                     ; Return if failure
        BL   @DELITM                    ; Delete the item instance, R0 point to item
@@ -1487,10 +1546,10 @@ USEIT2 DECT R10                        ; Pop return address off the stack
 * On return R0 is pointing to the equipmemt entry, or is null if moving failed.
 *
 WEAITM MOV  R11,*R10+                  ; Push return address onto the stack
-       BL   @REMITM                    ; Remove from inventory, R0 points to item instance
+       BL   @REMINV                    ; Remove from inventory, R0 points to item instance
        MOV  R0,R0                      ; Check for failure
        JEQ  WEAIT4                     ; Return if failure
-       BL   @AEQITM                    ; Add to equipment, R0 points to equipment entry
+       BL   @ADDEQU                    ; Add to equipment, R0 points to equipment entry
        MOV  R0,R0                      ; Check for failure
        JNE  WEAIT1                     ; Continue if ok
        MOV  R1,R0                      ; Not OK - get pointer to item instance back into R0
@@ -1499,7 +1558,7 @@ WEAITM MOV  R11,*R10+                  ; Push return address onto the stack
 WEAIT1 MOV  R0,R2                      ; Save equipment entry
        MOV  R1,R0                      ; Check if item was replaced
        JEQ  WEAIT3                     ; No, return
-WEAIT2 BL   @ADDITM                    ; Add item back
+WEAIT2 BL   @ADDINV                    ; Add item back
 WEAIT3 MOV  R2,R0                      ; Set equipment entry
 *      Return
 WEAIT4 DECT R10                        ; Pop return address off the stack
@@ -1517,15 +1576,68 @@ WEAIT4 DECT R10                        ; Pop return address off the stack
 * On return R0 is pointing to the inventory entry, or is null if moving failed.
 *
 TKOITM MOV  R11,*R10+                  ; Push return address onto the stack
-       BL   @REQITM
+       BL   @REMEQU
        MOV  R0,R0
        JEQ  WEAIT4
-       BL   @ADDITM
+       BL   @ADDINV
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
 *// TKOITM
+
+*********************************************************************
+*
+* Buy item instance from shop
+*
+* R0: Pointer to shop entry
+*
+* On return R0 is pointing to the inventory entry, or is null if buying failed.
+*
+BUY    MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  *R0,R3                     ; Get item instance
+       MOV  @IIITEM(R3),R3             ; Get item
+       C    @ITVALU(R3),@GOLD          ; Check if enough gold
+       JGT  BUY1                       ; Return if not
+       BL   @REMSHP                    ; Remove from shop
+       MOV  R0,R0                      ; Check if failed
+       JEQ  BUY1                       ; Return if failed
+       BL   @ADDINV                    ; Add to inventory
+       MOV  R0,R0                      ; Check if failed
+       JEQ  BUY2                       ; Return item if failed
+       S    @ITVALU(R3),@GOLD          ; Pay
+       JMP  BUY1                       ; Return
+BUY2   BL   @ADDSHP                    ; Return item to shop
+*      Return
+BUY1   DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// BUY
+
+*********************************************************************
+*
+* Sell item instance to shop
+*
+* R0: Pointer to inventory entry
+*
+* On return R0 is pointing to the shop entry, or is null if selling failed.
+*
+SELL   MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @REMINV                    ; Remove from inventory
+       MOV  R0,R3                      ; Check if failed
+       JEQ  SELL1                      ; Return if failed
+       BL   @ADDSHP                    ; Add to shop
+       MOV  R0,R0                      ; Check if failed
+       JEQ  SELL2                      ; Get item back if failed
+       MOV  @IIITEM(R3),R3             ; Get item
+       A    @ITVALU(R3),@GOLD          ; Get payment
+       JMP  SELL1                      ; Return
+SELL2  BL   @ADDINV                    ; Take item back
+*      Return
+SELL1  DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// SELL
 
 *********************************************************************
 *
@@ -3296,6 +3408,13 @@ EQTEXT DATA TXWIEL
        DATA TXFEET
        DATA TXFING
        DATA TXLGHT
+
+* Inventory
+* A list of pointers to item instances.
+* @SHPNXT point to the next available slot.
+* The list is rearranged when items are deleted to avoid holes.
+SHOP   BSS  MAXSHP*2
+SHOPE
 
 * Sprites
 SPRTES COPY "sprites.a99"
