@@ -91,35 +91,45 @@ DSPSH6 LI   R0,KEY_UP
 *      Buy
 DSPSH7 LI   R0,KEY_B
        BL   @CHKKEY
-       JEQ  DSPSH8
+       JEQ  DSPS10
        MOV  @ITMSEL,R0
        BL   @BUY
-       MOV  R0,R5                      ; R0 points to the item
-       JEQ  DSPSH8                     ; or null if buying failed
+       MOV  R0,R5                      ; R0 points to the inventory entry
+       JEQ  DSPS10                     ; or null if buying failed
+       LI   R2,TXUBUY
+       BL   @MSG
+       MOV  *R5,R5                     ; Get item instance
+       MOV  @IIITEM(R5),R5             ; Get item
+       CLR  R6
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       SLA  R6,1
+       MOV  @TNAMES(R6),R2             ; Get name
+       BL   @MSGLN
+       BL   @DMSSGS
 *      Remove from list
-DSPS10 LI   R0,SWINC+1                 ; Column
+DSPSH8 LI   R0,SWINC+1                 ; Column
        LI   R1,SWINR+1                 ; Row
        LI   R2,SWINW-2                 ; Width
        LI   R3,SWINH-2                 ; Height
        BL   @CLRWIN                    ; Clear window
        C    @ITMSEL,@SHPNXT
-       JNE  DSPS11
+       JNE  DSPSH9
        LI   R0,SHOP
        C    @SHPNXT,R0
-       JEQ  DSPS11
-       DECT @ITMSEL
-DSPS11 B    @DSPSH1
-*      Sell
-DSPSH8 LI   R0,KEY_S
-       BL   @CHKKEY
        JEQ  DSPSH9
-;      TODO
+       DECT @ITMSEL
+DSPSH9 B    @DSPSH1
+*      Sell
+DSPS10 LI   R0,KEY_S
+       BL   @CHKKEY
+       JEQ  DSPS11
+;      TODO?
 *      Escape keys
-DSPSH9 BL   @CHKESC
-       JNE  DSPSH0
+DSPS11 BL   @CHKESC
+       JNE  DSPS12
        B    @DSPSH5
 *      Refresh screen
-DSPSH0 BL   @SPRSHW
+DSPS12 BL   @SPRSHW
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
@@ -205,33 +215,33 @@ DSPIN6 LI   R0,KEY_UP
 *      Use
 DSPIN7 LI   R0,KEY_U
        BL   @CHKKEY
-       JEQ  DSPIN8
+       JEQ  DSPI10
        MOV  @ITMSEL,R0
        BL   @USEITM
        MOV  R0,R5                      ; R0 points to the item
-       JNE  DSPI14                     ; Or null if dropping failed
+       JNE  DSPIN8                     ; Or null if dropping failed
        LI   R2,TXCUSE
-       JMP  DSPI15
-DSPI14 LI   R2,TXUUSE
+       JMP  DSPIN9
+DSPIN8 LI   R2,TXUUSE
        BL   @MSG
        CLR  R6
        MOVB @ITTILE(R5),@R6LB          ; Get tile number
        SLA  R6,1
        MOV  @TNAMES(R6),R2             ; Get name
-DSPI15 BL   @MSGLN
+DSPIN9 BL   @MSGLN
        BL   @DMSSGS
        BL   @CLCEQU
-       JMP  DSPI10                     ; Remove from list
+       JMP  DSPI13                     ; Remove from list
 *      Wear
-DSPIN8 LI   R0,KEY_W
+DSPI10 LI   R0,KEY_W
        BL   @CHKKEY
-       JEQ  DSPIN9
+       JEQ  DSPI11
        MOV  @ITMSEL,R0
        C    R0,@INVNXT
-       JEQ  DSPIN9
+       JEQ  DSPI11
        BL   @WEAITM
        MOV  R0,R5                      ; R0 points to equipment entry
-       JEQ  DSPIN9                     ; or null if wearing failed.
+       JEQ  DSPI11                     ; or null if wearing failed.
        LI   R2,TXUWEA
        BL   @MSG
        MOV  *R5,R5                     ; Get item instance
@@ -243,15 +253,15 @@ DSPIN8 LI   R0,KEY_W
        BL   @MSGLN
        BL   @DMSSGS
        BL   @CLCEQU
-       JMP  DSPI10                     ; Remove from list
+       JMP  DSPI13                     ; Remove from list
 *      Drop
-DSPIN9 LI   R0,KEY_D
+DSPI11 LI   R0,KEY_D
        BL   @CHKKEY
        JEQ  DSPI12
        MOV  @ITMSEL,R0
        BL   @DRPITM
        MOV  R0,R5                      ; R0 points to the item
-       JEQ  DSPI10                     ; or null if dropping failed
+       JEQ  DSPI13                     ; or null if dropping failed
        LI   R2,TXUDRP
        BL   @MSG
        CLR  R6
@@ -260,25 +270,46 @@ DSPIN9 LI   R0,KEY_D
        MOV  @TNAMES(R6),R2             ; Get name
        BL   @MSGLN
        BL   @DMSSGS
+*      Sell
+DSPI12 LI   R0,KEY_S
+       BL   @CHKKEY
+       JEQ  DSPI15
+       MOV  @CTILE,R1
+       CI   R1,TSHOP
+       JNE  DSPI13
+       MOV  @ITMSEL,R0
+       BL   @SELL
+       MOV  R0,R5                      ; R0 points to the item
+       JEQ  DSPI13                     ; or null if selling failed
+       LI   R2,TXUSEL
+       BL   @MSG
+       MOV  *R5,R5                     ; Get item instance
+       MOV  @IIITEM(R5),R5             ; Get item
+       CLR  R6
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       SLA  R6,1
+       MOV  @TNAMES(R6),R2             ; Get name
+       BL   @MSGLN
+       BL   @DMSSGS
 *      Remove from list
-DSPI10 LI   R0,IWINC+1                 ; Column
+DSPI13 LI   R0,IWINC+1                 ; Column
        LI   R1,IWINR+1                 ; Row
        LI   R2,IWINW-2                 ; Width
        LI   R3,IWINH-2                 ; Height
        BL   @CLRWIN                    ; Clear window
        C    @ITMSEL,@INVNXT
-       JNE  DSPI11
+       JNE  DSPI14
        LI   R0,INVENT
        C    @INVNXT,R0
-       JEQ  DSPI11
+       JEQ  DSPI14
        DECT @ITMSEL
-DSPI11 B    @DSPIN1
+DSPI14 B    @DSPIN1
 *      Escape keys
-DSPI12 BL   @CHKESC
-       JNE  DSPI13
+DSPI15 BL   @CHKESC
+       JNE  DSPI16
        B    @DSPIN5
 *      Refresh screen
-DSPI13 BL   @SPRSHW
+DSPI16 BL   @SPRSHW
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11

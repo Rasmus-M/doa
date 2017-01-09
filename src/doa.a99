@@ -279,7 +279,8 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @R3D6
        MOV  R0,@CON
        BL   @CLCMOD
-       CLR  @GOLD
+       LI   R0,10
+       MOV  R0,@GOLD
        CLR  @STATUS
 *      Init items
        LI   R0,ITLIST
@@ -1610,16 +1611,20 @@ BUY    MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  *R0,R3                     ; Get item instance
        MOV  @IIITEM(R3),R3             ; Get item
        C    @ITVALU(R3),@GOLD          ; Check if enough gold
-       JGT  BUY1                       ; Return if not
-       BL   @REMSHP                    ; Remove from shop
-       MOV  R0,R0                      ; Check if failed
+       JLE  BUY3                       ; Continue if OK
+       CLR  R0                         ; Signal failure
+       JMP  BUY1                       ; Return
+BUY3   BL   @REMSHP                    ; Remove from shop
+       MOV  R0,R2                      ; Check if failed
        JEQ  BUY1                       ; Return if failed
        BL   @ADDINV                    ; Add to inventory
        MOV  R0,R0                      ; Check if failed
        JEQ  BUY2                       ; Return item if failed
        S    @ITVALU(R3),@GOLD          ; Pay
        JMP  BUY1                       ; Return
-BUY2   BL   @ADDSHP                    ; Return item to shop
+BUY2   MOV  R2,R0
+       BL   @ADDSHP                    ; Return item to shop
+       CLR  R0                         ; Signal failure
 *      Return
 BUY1   DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
@@ -1644,7 +1649,9 @@ SELL   MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  @IIITEM(R3),R3             ; Get item
        A    @ITVALU(R3),@GOLD          ; Get payment
        JMP  SELL1                      ; Return
-SELL2  BL   @ADDINV                    ; Take item back
+SELL2  MOV  R3,R0
+       BL   @ADDINV                    ; Take item back
+       CLR  R0                         ; Signal failure
 *      Return
 SELL1  DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
