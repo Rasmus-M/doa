@@ -31,7 +31,6 @@ ITDMAC EQU  4                          ; Damage if weapon, AC bonus if armor
 ITRARI EQU  5                          ; Rarity within tile: 1-10. A low rarity means that a tile is more likely to turn ito this item when picked.
 ITVALU EQU  6                          ; Value in gold pieces
 ITSIZE EQU  8                          ; Structure size
-; TODO: value
 
 * Capabilities
 CPBLS

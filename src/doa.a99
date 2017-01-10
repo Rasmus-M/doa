@@ -314,18 +314,17 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        CLR  R1
        LI   R2,MAXSHP*2
        BL   @FILL
-       LI   R0,IT_FOOD
+       LI   R4,16
+INIGM1 LI   R1,(IT_END-ITEMS)/ITSIZE
+       BL   @RANDL
+       LI   R1,ITSIZE
+       MPY  R1,R0
+       AI   R1,ITEMS
+       MOV  R1,R0
        BL   @GENITM
        BL   @ADDSHP
-       LI   R0,IT_MACE
-       BL   @GENITM
-       BL   @ADDSHP
-       LI   R0,IT_SILV_RING_PROT
-       BL   @GENITM
-       BL   @ADDSHP
-       LI   R0,IT_STEL_PARM
-       BL   @GENITM
-       BL   @ADDSHP
+       DEC  R4
+       JNE  INIGM1
 *      Misc
        LI   R0,RECSPD
        MOV  R0,@RECCNT

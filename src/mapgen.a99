@@ -298,9 +298,9 @@ PLCST1 BL   @RLEAF                     ; Get a random room
 PLCITM MOV  R11,*R10+                  ; Push return address onto the stack
 *      Note that items are not allocated until the tiles are picked up.
        LI   R9,MAXITM/2
-PLCIT1 LI   R1,1
-       LI   R2,11
-       BL   @RANDI                     ; Generate a rarity level (1-10)
+PLCIT1 LI   R1,10
+       BL   @RANDL                     ; Generate a rarity level (0-9)
+       A    @DEPTH,R0                  ; Add dungeon depth (1-)
        SWPB R0
        MOV  R0,R7                      ; Save it
 PLCIT4 LI   R1,OBJLST-OBJ1ST+1         ; Number of object tiles
