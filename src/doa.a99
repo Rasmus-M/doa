@@ -515,7 +515,7 @@ DSCRT  MOV  R11,*R10+                  ; Push return address onto the stack
        SLA  R6,3
        DEC  R6
        SWPB R6
-       LI   R7,>1000
+       LI   R7,>2000
        LI   R8,SPRCLR
        LI   R0,SPRATB
        BL   @VWAD
@@ -579,7 +579,11 @@ DSCRM  MOV  R11,*R10+                  ; Push return address onto the stack
        SLA  R6,4                       ; 1 for metatiles and 3 for pixels
        DEC  R6
        SWPB R6
-       CLR  R7
+*      Animate
+       MOV  @X,R7
+       XOR  @Y,R7
+       ANDI R7,2
+       SLA  R7,11
        LI   R8,SPRCLR
        LI   R0,SPRATB
        BL   @VWAD
@@ -2239,7 +2243,7 @@ DSPMA6 SLA  R7,1
        LI   R1,>8500                   ; Early clock bit (set)
        AI   R0,32
 DSPMA9 MOVB @R0LB,@VDPWD               ; Set x
-       LI   R3,>1400
+       LI   R3,>2400
        MOVB R2,@VDPWD                  ; Set pattern
        MOVB R1,@VDPWD                  ; Set color and early clock
        LI   R1,>D000
@@ -2248,7 +2252,7 @@ DSPMA7 LI   R1,8
        BL   @PAUSE
        AI   R3,>0100
        ANDI R3,>0300
-       ORI  R3,>1400
+       ORI  R3,>2400
        LI   R0,SPRATB+2
        BL   @VWAD
        MOVB R3,@VDPWD
@@ -2635,7 +2639,7 @@ GMODE1 MOVB *R1+,@R0LB
 *      Upload sprite patterns
        LI   R0,SPRPTB
        LI   R1,SPR0
-       LI   R2,6*32
+       LI   R2,10*32
        BL   @VDPCP
 *      Clear name tables
        LI   R0,NAMET1
