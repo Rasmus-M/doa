@@ -219,7 +219,7 @@ DSPIN7 LI   R0,KEY_U
        MOV  @ITMSEL,R0
        BL   @USEITM
        MOV  R0,R5                      ; R0 points to the item
-       JNE  DSPIN8                     ; Or null if dropping failed
+       JNE  DSPIN8                     ; Or null if using failed
        LI   R2,TXCUSE
        JMP  DSPIN9
 DSPIN8 LI   R2,TXUUSE

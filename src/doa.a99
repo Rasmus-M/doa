@@ -128,8 +128,9 @@ STATUS EQU  CONMOD+2                   ; Status
 STATON EQU  STATUS+2                   ; Stats panel on
 MSGH   EQU  STATON+2                   ; Message window height in rows
 DRWMTL EQU  MSGH+2                     ; Draw meta tiles?
+TWNRND EQU  DRWMTL+2                   ; Random number seed for generating the town
 * Save file end
-COMMND EQU  DRWMTL+2                   ; Command
+COMMND EQU  TWNRND+2                   ; Command
 RECCNT EQU  COMMND+2                   ; HP recovering counter
 RANDNO EQU  RECCNT+2                   ; Pseudo random number
 ROOMPT EQU  RANDNO+2                   ; Room pointer
@@ -229,10 +230,11 @@ DIED   LI   R2,TXUDIE
 
 *********************************************************************
 *
-* Initialize game
+* Initialize first time
 *
 INI1ST MOV  R11,*R10+                  ; Push return address onto the stack
 *      Settings
+       CLR  @TWNRND                    ; Random number seed for generating the town
        SETO @DRWMTL                    ; Draw metatiles
        SETO  @STATON                   ; Stats panel on
        LI   R1,2
@@ -1521,33 +1523,49 @@ USEITM MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  *R0,R1                     ; Get item instance
        MOV  @IIITEM(R1),R1             ; Get item
        CB   @ITTYPE(R1),@BYTES+IYMISC  ; Check item type
-       JNE  USEIT1                     ; Fail is not misc
+       JNE  USEIT8                     ; Fail is not misc
 *      Remove from inventory
        BL   @REMINV                    ; Remove from inventory, R0 points to item instance
        MOV  R0,R0                      ; Check for failure
-       JEQ  USEIT2                     ; Return if failure
+       JEQ  USEIT9                     ; Return if failure
        BL   @DELITM                    ; Delete the item instance, R0 point to item
+       MOV  R0,R5                      ; Save pointer to item
 *      Check item type
        CI   R0,IT_POTI_HEAL
-       JNE  USEIT4
+       JNE  USEIT1
 *      Potion of healing
        LI   R1,4
        LI   R2,8
        BL   @HEAL
        MOV  R5,R0
-       JMP  USEIT2
-USEIT4 CI   R5,IT_SCRL_HLNG
+       JMP  USEIT9
+USEIT1 CI   R0,IT_SCRL_HLNG
        JNE  USEIT2
 *      Scroll of healing
        LI   R1,8
        LI   R2,14
        BL   @HEAL
        MOV  R5,R0
-       JMP  USEIT2
+       JMP  USEIT9
+USEIT2 CI   R0,IT_FOOD
+       JNE  USEIT3
+*      Food
+       LI   R1,2
+       LI   R2,4
+       BL   @HEAL
+       MOV  R5,R0
+       JMP  USEIT9
+USEIT3 CI   R0,IT_BOOK_WISD
+       JNE  USEIT9
+*      Book of wisdom
+       INC  @WIS
+       BL   @CLCMOD
+       MOV  R5,R0
+       JMP  USEIT9
 *      Report failure
-USEIT1 CLR  R0
+USEIT8 CLR  R0
 *      Return
-USEIT2 DECT R10                        ; Pop return address off the stack
+USEIT9 DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
 *// USEITM
