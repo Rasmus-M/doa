@@ -265,10 +265,6 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        CLR  @XP
        LI   R0,20
        MOV  R0,@XPNXT
-       LI   R0,10
-       A    @CONMOD,R0
-       MOV  R0,@HP
-       MOV  R0,@HPMAX
        CLR  @AC
        BL   @R3D6
        MOV  R0,@STR
@@ -281,6 +277,10 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @R3D6
        MOV  R0,@CON
        BL   @CLCMOD
+       LI   R0,10
+       A    @CONMOD,R0
+       MOV  R0,@HP
+       MOV  R0,@HPMAX
        LI   R0,10
        MOV  R0,@GOLD
        CLR  @STATUS
