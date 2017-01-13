@@ -10,7 +10,7 @@ Controls:
 4: Set 4 rows message area.
 5: Disable stats panel.
 6: Enable stats panel.
-Joystick right, left, up, down: Move player; Specify direction for directional command; Select item in dialog (inventory, equipment, shop).
+Joystick right, left, up, down: Move player; Attack; Specify direction for directional command; Select item in dialog (inventory, equipment, shop).
 Joystick fire, space: Close dialog (inventory, equipment, shop, map).
 G: Get item.
 O: Open door (directional).
