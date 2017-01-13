@@ -3403,7 +3403,7 @@ FNAME  TEXT "DOASAVE"                  ; File name
 PABDTE
 
 * Player name
-TXNAME TEXT "ASMUSR"
+TXNAME TEXT "PLAYER"
        BYTE 0,0
 
 * Master list of item instances
