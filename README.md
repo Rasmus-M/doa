@@ -2,8 +2,6 @@
 
 ## For the TI-99/4A Home Computer (1981)
 
----
-
 ### Controls:
 
 * 1: Set 8x8 tile mode.
