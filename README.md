@@ -2,6 +2,10 @@
 
 ## For the TI-99/4A Home Computer (1981)
 
+### System requirements
+
+TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system for saving and loading.
+
 ### Controls:
 
 * 1: Set 8x8 tile mode.
