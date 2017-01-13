@@ -1602,14 +1602,14 @@ WEAIT4 DECT R10                        ; Pop return address off the stack
 
 *********************************************************************
 *
-* Take off item
+* Remove item
 * Move item instance from equipment to inventory
 *
 * R0: Pointer to equipment entry
 *
 * On return R0 is pointing to the inventory entry, or is null if moving failed.
 *
-TKOITM MOV  R11,*R10+                  ; Push return address onto the stack
+REMITM MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @REMEQU
        MOV  R0,R0
        JEQ  WEAIT4
@@ -1618,7 +1618,7 @@ TKOITM MOV  R11,*R10+                  ; Push return address onto the stack
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
-*// TKOITM
+*// REMITM
 
 *********************************************************************
 *

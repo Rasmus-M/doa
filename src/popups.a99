@@ -400,17 +400,17 @@ DSPEQ7 LI   R0,KEY_U
        BL   @CHKKEY
        JEQ  DSPEQ8
 ;      TODO
-*      Take off
-DSPEQ8 LI   R0,KEY_T
+*      Remove
+DSPEQ8 LI   R0,KEY_R
        BL   @CHKKEY
        JEQ  DSPEQ0
        MOV  @ITMSEL,R0
        MOV  *R0,R1
        JEQ  DSPEQ0
-       BL   @TKOITM
+       BL   @REMITM
        MOV  R0,R5
        JEQ  DSPEQ0
-       LI   R2,TXUTKO
+       LI   R2,TXUREM
        BL   @MSG
        MOV  *R5,R5                     ; Get item instance
        MOV  @IIITEM(R5),R5             ; Get item
