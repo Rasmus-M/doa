@@ -53,7 +53,8 @@ DSPSH4 BL   @DSPTXT
        MOVB @ROW+1,@R0LB
        MOV  @IIITEM(R3),R5             ; Get item
        MOV  @ITVALU(R5),R1
-       BL   @DNUMR
+       LI   R2,5
+       BL   @DPNUR
 *      Next item
        INCT @ITMCUR
        INC  @ROW
@@ -450,11 +451,11 @@ DSPITM MOV  R11,*R10+                  ; Push return address onto the stack
 DSPIT0 MOV  @IIITEM(R3),R5             ; Get item
        CLR  R6
 *      Icon
-;       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-;       MOVB @TCMAP(R6),@VDPWD
-;       LI   R1,>2000
-;       MOVB R1,@VDPWD
-;       DECT R4
+       MOVB @ITTILE(R5),@R6LB          ; Get tile number
+       MOVB @TCMAP(R6),@VDPWD
+       LI   R1,>2000
+       MOVB R1,@VDPWD
+       DECT R4
 *      Material
        MOVB @ITMTRL(R5),@R6LB          ; Get material number
        JEQ  DSPIT1

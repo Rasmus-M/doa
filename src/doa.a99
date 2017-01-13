@@ -2639,6 +2639,65 @@ DNUMR2 MOVB *R4+,@VDPWD
 NUMBUF BYTE 0,0,0,0,0
 *// DNUMR
 
+*********************************************************************
+*
+* Display decimal number to VDP, right aligned with no leading zeros
+* and padded to ...
+*
+* R0 contains the screen coordinates of the rightmost digit
+*   MSB: column, LSB: row
+* R1 contains the number to display
+* R2 number of characters to pad
+*
+* Uses R2-R6
+*
+DPNUR  MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R2,R6
+*      Calculate VDP address
+       MOV  R0,R2
+       ANDI R0,>00FF
+       SLA  R0,5
+       A    @CURRNT,R0
+       ANDI R2,>FF00
+       SWPB R2
+       A    R2,R0
+*      Fill buffer
+       LI   R3,10
+       LI   R4,NUMBUF+5
+       CLR  R5
+DPNUR1 MOV  R1,R2
+       CLR  R1
+       DIV  R3,R1
+       AI   R2,48
+       DEC  R4
+       MOVB @R2LB,*R4
+       DEC  R0
+       INC  R5
+       DEC  R6
+       MOV  R1,R1
+       JNE  DPNUR1
+*      Padding
+       MOV  R6,R6
+       JEQ  DPNUR3
+       LI   R2,>2000
+DPNUR4 DEC  R4
+       MOVB R2,*R4
+       DEC  R0
+       INC  R5
+       DEC  R6
+       JNE  DPNUR4
+*      Send to VDP
+DPNUR3 INC  R0
+       BL   @VWAD
+DPNUR2 MOVB *R4+,@VDPWD
+       DEC  R5
+       JNE  DPNUR2
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// DPNUR
+
 *********************************************************************************
 *
 * Set graphics mode (half bitmap mode)

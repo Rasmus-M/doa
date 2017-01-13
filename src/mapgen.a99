@@ -137,8 +137,18 @@ GENTW0 LI   R1,TOWNY+2
        LI   R8,ROOMS
        LI   R2,TFOUNT*256
        LI   R3,TGRASS*256
-       BL   @SRTILE
-       BL   @SRTILE
+       LI   R9,16
+GENT11 BL   @SRTILE
+       DEC  R9
+       JNE  GENT11
+*      Place trees
+       LI   R8,ROOMS
+       LI   R2,TTREE*256
+       LI   R3,TGRASS*256
+       LI   R9,32
+GENT12 BL   @SRTILE
+       DEC  R9
+       JNE  GENT12
 *      Init monsters
        LI   R0,MILIST
        CLR  R1
