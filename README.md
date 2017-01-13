@@ -27,6 +27,6 @@ S: Sell (from inventory in shop area).
 E: Equipment.
 R: Remove (from equipment). Transfer to inventory.
 B: Enter shop (from shop area only); Buy item (from shop).
-M: Map.
+M: Display Map.
 Ctrl+S: Save game (from town only).
 Ctrl+L: Load game.
