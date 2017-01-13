@@ -11,7 +11,7 @@ Controls:
 5: Disable stats panel.
 6: Enable stats panel.
 Joystick right, left, up, down: Move player; Specify direction for directional command; Select item in dialog (inventory, equipment, shop).
-Joystick fire, space: Close dialog (inventory, equipment, shop).
+Joystick fire, space: Close dialog (inventory, equipment, shop, map).
 G: Get item.
 O: Open door (directional).
 C: Close door (directional).
@@ -27,5 +27,6 @@ S: Sell (from inventory in shop area).
 E: Equipment.
 R: Remove (from equipment). Transfer to inventory.
 B: Enter shop (from shop area only); Buy item (from shop).
+M: Map.
 Ctrl+S: Save game (from town only).
 Ctrl+L: Load game.
