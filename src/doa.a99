@@ -749,8 +749,15 @@ DMONS1 MOV  *R3,R8
        SWPB R8
        MOVB *R0,R9                     ; Get existing tile
        ANDI R9,>8000                   ; Isolate bit that determines if tile is hidden
-       SOCB R9,R8                      ; Combine with monster tile
+       JLT  DMONS5
+*      Wake up monster?
+       MOVB @MISTAT(R3),R1
+       JNE  DMONS5
+       MOVB @BYTES+MAWAKE,@MISTAT(R3)  ; Wake up monster
+*      Write to map
+DMONS5 SOCB R9,R8                      ; Combine with monster tile
        MOVB R8,*R0                     ; Write to map
+*      Next monster
 DMONS2 AI   R3,MISIZE
        DEC  R2
        JNE  DMONS1
@@ -1063,12 +1070,14 @@ XLOOK  MOV  @NTILE,R1
 XUPS   CI   R1,TSTAIU
        JNE  XUPS1
        DEC  @DEPTH
+       CLR  @GODOWN
        BL   @GENLVL
 XUPS1  B    @XEND
 *      Go downstairs
 XDNS   CI   R1,TSTAIR
        JNE  XDNS1
        INC  @DEPTH
+       SETO @GODOWN
        BL   @GENLVL
 XDNS1  B    @XEND
 *      Tunnel

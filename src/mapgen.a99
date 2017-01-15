@@ -267,21 +267,10 @@ GENDG9 BL   @PLCSTR
 *
 PLCSTR MOV  R11,*R10+                  ; Push return address onto the stack
 *      Place the up stairs
-       BL   @RLEAF                     ; Get a random room
-       MOVB @ROOMW(R8),R0
-       SRL  R0,1
-       AB   @ROOMX(R8),R0              ; Room center x
-       SRL  R0,8
-       MOV  R0,@STAIRX
-       MOVB @ROOMH(R8),R1
-       SRL  R1,1
-       AB   @ROOMY(R8),R1              ; Room center y
-       SRL  R1,8
-       MOV  R1,@STAIRY
-       MOVB @BYTES+TSTAIU,R2
-       BL   @STILE
-*      Place the down stairs
-       LI   R9,3                       ; Number of stairs
+       LI   R9,1
+       ABS  @GODOWN
+       JNE  PLCST1
+       INCT R9
 PLCST1 BL   @RLEAF                     ; Get a random room
        MOVB @ROOMW(R8),R0
        SRL  R0,1
@@ -291,10 +280,36 @@ PLCST1 BL   @RLEAF                     ; Get a random room
        SRL  R1,1
        AB   @ROOMY(R8),R1              ; Room center y
        SRL  R1,8
-       MOVB @BYTES+TSTAIR,R2
+       ABS  @GODOWN
+       JEQ  PLCST2
+       MOV  R0,@STAIRX
+       MOV  R1,@STAIRY
+PLCST2 MOVB @BYTES+TSTAIU,R2
        BL   @STILE
        DEC  R9
-       JNE  PLCST1
+       JNe  PLCST1
+*      Place the down stairs
+       LI   R9,1
+       ABS  @GODOWN
+       JEQ  PLCST3
+       INCT R9
+PLCST3 BL   @RLEAF                     ; Get a random room
+       MOVB @ROOMW(R8),R0
+       SRL  R0,1
+       AB   @ROOMX(R8),R0              ; Room center x
+       SRL  R0,8
+       MOVB @ROOMH(R8),R1
+       SRL  R1,1
+       AB   @ROOMY(R8),R1              ; Room center y
+       SRL  R1,8
+       ABS  @GODOWN
+       JNE  PLCST4
+       MOV  R0,@STAIRX
+       MOV  R1,@STAIRY
+PLCST4 MOVB @BYTES+TSTAIR,R2
+       BL   @STILE
+       DEC  R9
+       JNE  PLCST3
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
@@ -1405,8 +1420,9 @@ BYTES  BYTE >00,>01,>02,>03,>04,>05,>06,>07,>08,>09,>0A,>0B,>0C,>0D,>0E,>0F
        BYTE >70,>71,>72,>73,>74,>75,>76,>77,>78,>79,>7A,>7B,>7C,>7D,>7E,>7F
 
 NROOMS DATA >0000                      ; Number of rooms
-STAIRX DATA >0080                      ; Staircase position
-STAIRY DATA >0080
+GODOWN DATA >0000                      ; 0 if going up, not zero if going down
+STAIRX DATA >0080                      ; Staircase position X
+STAIRY DATA >0080                      ; Staircase position Y
 TMPRND DATA >0000                      ; For saving random number seed
 
 * Rarity of each object tile (1-10)
