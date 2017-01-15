@@ -28,7 +28,7 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 * D: Drop (from inventory). Item will be lost.
 * U: Use (from inventory).
 * S: Sell (from inventory in shop area).
-* E: Equipment.
+* Q: Equipment.
 * R: Remove (from equipment). Transfer to inventory.
 * B: Enter shop (from shop area only); Buy item (from shop).
 * M: Display Map.

@@ -246,6 +246,9 @@ INI1ST MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R2,MBUFH*MSGW
        BL   @FILL
        CLR  @MSGOFF
+*      Display welcome message
+       LI   R2,TXDOA
+       BL   @MSGLN
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
@@ -784,7 +787,7 @@ KEYMAP DATA KEY_1                      ; Tile size 1
        DATA KEY_6                      ; Stats on
        DATA KEY_M                      ; Map
        DATA KEY_I                      ; Inventory
-       DATA KEY_E                      ; Equipment
+       DATA KEY_Q                      ; Equipment
        DATA KEY_B                      ; Shop
        DATA KEY_S|M_CTRL               ; Save
        DATA KEY_L|M_CTRL               ; Load
@@ -807,17 +810,12 @@ MOVE   MOV  R11,*R10+                  ; Push return address onto the stack
 *      Reset directional vector
        CLR  @DX                        ; X movement direction
        CLR  @DY                        ; Y movement direction
-*      Read joystick
-       LI   R12,>0024                  ; CRU address of the column decoder
-       LI   R1,>0600                   ; Column 6, i.e joystick #1
-       LDCR R1,3                       ; Select it
-       LI   R12,>0006                  ; Base CRU address for joystick 1
 *      Check for fire
-MOVE1  TB   0
+MOVE1  BL   @CHKESC
        JEQ  MOVE2
        CLR  @COMMND                    ; Cancel command
 *      Check for left
-MOVE2  TB   1
+MOVE2  BL   @CHKLF
        JEQ  MOVE3
        MOV  @X,R0
        CI   R0,0
@@ -825,14 +823,14 @@ MOVE2  TB   1
        DEC  @DX
        JMP  MOVE4
 *      Check for right
-MOVE3  TB   2
+MOVE3  BL   @CHKRG
        JEQ  MOVE4
        MOV  @X,R0
        CI   R0,MAPW-1
        JEQ  MOVE4
        INC  @DX
 *      Check for up
-MOVE4  TB   4
+MOVE4  BL   @CHKUP
        JEQ  MOVE5
        MOV  @Y,R0
        CI   R0,0
@@ -840,7 +838,7 @@ MOVE4  TB   4
        DEC  @DY
        JMP  MOVE6
 *      Check for down
-MOVE5  TB   3
+MOVE5  BL   @CHKDN
        JEQ  MOVE6
        MOV  @Y,R0
        CI   R0,MAPH-1
@@ -3136,8 +3134,117 @@ CHKES1 SETO R0
 *      Return
 CHKES2 DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
-       CI   R0,0
+       MOV  R0,R0
        B    *R11
+*// CHKESC
+
+***************************************************************************
+*
+* Check Joystick Up and E
+*
+* On return NEQ
+*
+CHKUP  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Up
+       LI   R0,KEY_UP
+       BL   @CHKKEY
+       JNE  CHKUP1
+*      E
+       LI   R0,KEY_E
+       BL   @CHKKEY
+       JNE  CHKUP1
+*      Not pressed
+       CLR  R0
+       JMP  CHKUP2
+*      Pressed
+CHKUP1 SETO R0
+*      Return
+CHKUP2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       MOV  R0,R0
+       B    *R11
+*// CHKUP
+
+***************************************************************************
+*
+* Check Joystick Down and X
+*
+* On return NEQ
+*
+CHKDN  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Down
+       LI   R0,KEY_DN
+       BL   @CHKKEY
+       JNE  CHKDN1
+*      E
+       LI   R0,KEY_X
+       BL   @CHKKEY
+       JNE  CHKDN1
+*      Not pressed
+       CLR  R0
+       JMP  CHKDN2
+*      Pressed
+CHKDN1 SETO R0
+*      Return
+CHKDN2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       MOV  R0,R0
+       B    *R11
+*// CHKDN
+
+***************************************************************************
+*
+* Check Joystick Left and S
+*
+* On return NEQ
+*
+CHKLF  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Left
+       LI   R0,KEY_LF
+       BL   @CHKKEY
+       JNE  CHKLF1
+*      S
+       LI   R0,KEY_S
+       BL   @CHKKEY
+       JNE  CHKLF1
+*      Not pressed
+       CLR  R0
+       JMP  CHKLF2
+*      Pressed
+CHKLF1 SETO R0
+*      Return
+CHKLF2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       MOV  R0,R0
+       B    *R11
+*// CHKLF
+
+***************************************************************************
+*
+* Check Joystick Right and D
+*
+* On return NEQ
+*
+CHKRG  MOV  R11,*R10+                  ; Push return address onto the stack
+*      Right
+       LI   R0,KEY_RG
+       BL   @CHKKEY
+       JNE  CHKRG1
+*      D
+       LI   R0,KEY_D
+       BL   @CHKKEY
+       JNE  CHKRG1
+*      Not pressed
+       CLR  R0
+       JMP  CHKRG2
+*      Pressed
+CHKRG1 SETO R0
+*      Return
+CHKRG2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       MOV  R0,R0
+       B    *R11
+*// CHKRG
 
 ***************************************************************************
 *

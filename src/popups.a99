@@ -63,8 +63,7 @@ DSPSH4 BL   @DSPTXT
 *      Check keys
 DSPSH5 BL   @RELKEY
 *      Down
-       LI   R0,KEY_DN
-       BL   @CHKKEY
+       BL   @CHKDN
        JEQ  DSPSH6
        MOV  @SHPNXT,R0
        DECT R0
@@ -78,8 +77,7 @@ DSPSH5 BL   @RELKEY
        INCT @ITM1ST
        JMP  DSPSH1
 *      Up
-DSPSH6 LI   R0,KEY_UP
-       BL   @CHKKEY
+DSPSH6 BL   @CHKUP
        JEQ  DSPSH7
        LI   R0,SHOP
        C    @ITMSEL,R0
@@ -187,8 +185,7 @@ DSPIN4 BL   @DSPTXT
 *      Check keys
 DSPIN5 BL   @RELKEY
 *      Down
-       LI   R0,KEY_DN
-       BL   @CHKKEY
+       BL   @CHKDN
        JEQ  DSPIN6
        MOV  @INVNXT,R0
        DECT R0
@@ -202,8 +199,7 @@ DSPIN5 BL   @RELKEY
        INCT @ITM1ST
        JMP  DSPIN1
 *      Up
-DSPIN6 LI   R0,KEY_UP
-       BL   @CHKKEY
+DSPIN6 BL   @CHKUP
        JEQ  DSPIN7
        LI   R0,INVENT
        C    @ITMSEL,R0
@@ -371,8 +367,7 @@ DSPEQ4 BL   @DSPTXT
 *      Check keys
 DSPEQ5 BL   @RELKEY
 *      Down
-       LI   R0,KEY_DN
-       BL   @CHKKEY
+       BL   @CHKDN
        JEQ  DSPEQ6
        LI   R0,EQUIPE-2
        C    @ITMSEL,R0
@@ -385,8 +380,7 @@ DSPEQ5 BL   @RELKEY
        INCT @ITM1ST
        JMP  DSPEQ1
 *      Up
-DSPEQ6 LI   R0,KEY_UP
-       BL   @CHKKEY
+DSPEQ6 BL   @CHKUP
        JEQ  DSPEQ7
        LI   R0,EQUIPM
        C    @ITMSEL,R0
