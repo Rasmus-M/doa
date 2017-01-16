@@ -703,7 +703,8 @@ CLCPO4 MOV  R1,@MWINY
 *
 * Draw monsters into the buffer
 *
-DMONS  MOV  @MWINX,R4
+DMONS  MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @MWINX,R4
        MOV  R4,R6
        SWPB R4                         ; Window x as byte
        MOV  @MWINY,R5
@@ -740,28 +741,38 @@ DMONS1 MOV  *R3,R8
        SRL  R1,8
        MOV  @MWINW,R8
        MPY  R1,R8
-       A    R9,R0                      ; Offset into buffer
-       AI   R0,MAPBUF
+       A    R0,R9                      ; Offset into buffer
+       AI   R9,MAPBUF
        MOV  @MIMONA(R3),R8             ; Get monster assignment
        AI   R8,-MALIST                 ; Position in list * 2
        SRL  R8,1                       ; Position in list
        AI   R8,TMONS1                  ; Add base monster tile
        SWPB R8
-       MOVB *R0,R9                     ; Get existing tile
-       ANDI R9,>8000                   ; Isolate bit that determines if tile is hidden
+       MOVB *R9,R12                    ; Get existing tile
+       ANDI R12,>8000                  ; Isolate bit that determines if tile is hidden
        JLT  DMONS5
 *      Wake up monster?
        MOVB @MISTAT(R3),R1
-       JNE  DMONS5
+       JNE  DMONS6                     ; Jump if not sleeping
+       MOV  @COMMND,R1
+       CI   R1,CMDMOV
+       JLT  DMONS6                     ; Jump if command does not spend player time
+       LI   R1,8
+       BL   @RANDL                     ; Roll
+       MOV  R0,R0
+       JNE  DMONS6                     ; Jump if not rolling a 0
        MOVB @BYTES+MAWAKE,@MISTAT(R3)  ; Wake up monster
+       JMP  DMONS6
 *      Write to map
-DMONS5 SOCB R9,R8                      ; Combine with monster tile
-       MOVB R8,*R0                     ; Write to map
+DMONS5 SOCB R12,R8                     ; Combine with monster tile
+DMONS6 MOVB R8,*R9                     ; Write to map
 *      Next monster
 DMONS2 AI   R3,MISIZE
        DEC  R2
        JNE  DMONS1
 *      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
        B    *R11
 *// DMONS
 
@@ -1106,7 +1117,7 @@ XATT   MOV  @X,R0
        BL   @GMONS
        MOV  R0,R5                      ; Test for monster and move to R5
        JEQ  XATT1
-       LI   R0,MAWAKE*256              ; Set state to awake
+       LI   R0,MANGRY*256              ; Set state to angry
        MOVB R0,@MISTAT(R5)
        MOV  @MIMONA(R5),R6             ; Get monster allocation
        MOV  *R6,R6                     ; Get monster
@@ -1885,8 +1896,13 @@ MATTC4 DECT R10                        ; Pop return address off the stack
 * R3 points to monster instance
 *
 MMOVE  MOV  R11,*R10+                  ; Push return address onto the stack
-       BL   @RAND
-       JLT  MMOVE4
+       LI   R1,2
+       CB   @MISTAT(R3),@BYTES+MANGRY
+       JEQ  MMOVE5
+       INCT R1
+MMOVE5 BL   @RANDL
+       MOV  R0,R0
+       JNE  MMOVE4
 *      X direction
        MOVB @MIX(R3),R12
        MOVB R12,R4
@@ -1908,7 +1924,7 @@ MMOVE2 CLR  R0
        MOVB R12,@R0LB
        CLR  R1
        MOVB R13,@R1LB
-       BL   @GBTILE
+       BL   @GTILE
        CB   R1,@BYTES+TFLOOR
        JEQ  MMOVE3
        CB   R1,@BYTES+TDOORO
