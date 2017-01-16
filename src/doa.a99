@@ -1794,17 +1794,17 @@ UPDMON MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  @COMMND,R0
        CI   R0,CMDMOV
        JLT  UPDMO7                     ; Return if player does not move
-UPDMO1 MOVB @X+1,R7
-       MOVB @Y+1,R8
+UPDMO1 MOVB @X+1,R7                    ; Player X
+       MOVB @Y+1,R8                    ; Player Y
        LI   R3,MILIST
 UPDMO2 MOV  *R3,R6
        JEQ  UPDMO6
        MOVB @MISTAT(R3),R6             ; Test if sleeping
        JEQ  UPDMO6
 *      X distance
-       MOVB @MIX(R3),R4
+       MOVB @MIX(R3),R4                ; Monster X
        SB   R7,R4                      ; X distance
-       JGT  UPDMO3
+       JGT  UPDMO3                     ; Absolute value
        INV  R4
        AB   @BYTES+1,R4
 UPDMO3 CB   R4,@BYTES+16
@@ -1812,9 +1812,9 @@ UPDMO3 CB   R4,@BYTES+16
        CB   R4,@BYTES+1
        JH  UPDMO5
 *      Y distance
-       MOVB @MIY(R3),R5
+       MOVB @MIY(R3),R5                ; Monster Y
        SB   R8,R5                      ; Y distance
-       JGT  UPDMO4
+       JGT  UPDMO4                     ; Absolute value
        INV  R5
        AB   @BYTES+1,R5
 UPDMO4 CB   R5,@BYTES+16
@@ -1850,9 +1850,9 @@ MATTCK MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R2,21
        BL   @RANDI                     ; R0=1d20
        CI   R0,1
-       JEQ  MATTC1                      ; Fumble
+       JEQ  MATTC1                     ; Fumble
        CI   R0,20
-       JEQ  MATTC2                      ; Critical
+       JEQ  MATTC2                     ; Critical
 *      Compare to player AC
        C    R0,@AC
        JHE  MATTC2
@@ -1893,7 +1893,7 @@ MATTC4 DECT R10                        ; Pop return address off the stack
 *
 * Monster move
 *
-* R3 points to monster instance
+* R3 points to monster instance. R7, R8 hold player position.
 *
 MMOVE  MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R1,2
@@ -1904,28 +1904,33 @@ MMOVE5 BL   @RANDL
        MOV  R0,R0
        JNE  MMOVE4
 *      X direction
-       MOVB @MIX(R3),R12
+       MOVB @MIX(R3),R12               ; Monster X
        MOVB R12,R4
        SB   R7,R4                      ; X distance
        JEQ  MMOVE1
-       SRA  R4,7
-       ORI  R4,>0100
+       SRA  R4,7                       ; Fill byte with sign (-1 or 0)
+       ORI  R4,>0100                   ; -1 or 1
        SB   R4,R12
 *      Y direction
 MMOVE1 MOVB @MIY(R3),R13
        MOVB R13,R5
        SB   R8,R5                      ; Y distance
        JEQ  MMOVE2
-       SRA  R5,7
-       ORI  R5,>0100
+       SRA  R5,7                       ; Fill byte with sign (-1 or 0)
+       ORI  R5,>0100                   ; -1 or 1
        SB   R5,R13
 *      Check tiles
 MMOVE2 CLR  R0
        MOVB R12,@R0LB
        CLR  R1
        MOVB R13,@R1LB
-       BL   @GTILE
-       CB   R1,@BYTES+TFLOOR
+       BL   @GBTILE                    ; Get tile from buffer
+       MOV  R0,R0                      ; Check for failure
+       JNE  MMOVE6
+       MOVB R12,@R0LB
+       MOVB R13,@R1LB
+       BL   @GTILE                     ; Get tile from map
+MMOVE6 CB   R1,@BYTES+TFLOOR
        JEQ  MMOVE3
        CB   R1,@BYTES+TDOORO
        JNE  MMOVE4
@@ -2015,16 +2020,26 @@ CLCMO2 MOV  R3,*R1+
 * R0: Horizontal position (x)
 * R1: Vertical position (y)
 *
-* On return R1 MSB contains the tile number, R0 contains the address
+* On return R1 MSB contains the tile number,
+* R0 contains the address or null if position is out of buffer.
 *
 GBTILE S    @MWINX,R0                  ; Convert global coordinate to buffer coordinate
+       JLT  GBTIL1
+       C    R0,@MWINW
+       JHE  GBTIL1
        S    @MWINY,R1                  ; Convert global coordinate to buffer coordinate
+       JLT  GBTIL1
+       C    R1,@MWINH
+       JHE  GBTIL1
        MPY  @MWINW,R1                  ; Multiply y by width
        A    R2,R0                      ; Add to x
        AI   R0,MAPBUF                  ; Add base buffer address
        MOVB *R0,R1                     ; Get tile at position
+       JMP  GBTIL2
+*      Fail
+GBTIL1 CLR  R0
 *      Return
-       B    *R11
+GBTIL2 B    *R11
 *// GBTILE
 
 *********************************************************************
