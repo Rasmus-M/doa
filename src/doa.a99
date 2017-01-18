@@ -105,8 +105,10 @@ STACK  EQU  >8340
 PADVAR EQU  STACK+>10
 * PAD variables
 * Save file start
-DEPTH  EQU  PADVAR+2                   ; Dungeon depth
-LEVEL  EQU  DEPTH+2                    ; Player level
+SAVEST EQU  PADVAR+2
+DEPTH  EQU  SAVEST                     ; Dungeon depth
+DPTMAX EQU  DEPTH+2                    ; Maximum reached depth
+LEVEL  EQU  DPTMAX+2                   ; Player level
 XP     EQU  LEVEL+2                    ; Experience points
 XPNXT  EQU  XP+2                       ; Experience points remaining for next level
 HP     EQU  XPNXT+2                    ; Current hit points
@@ -129,8 +131,11 @@ STATON EQU  STATUS+2                   ; Stats panel on
 MSGH   EQU  STATON+2                   ; Message window height in rows
 DRWMTL EQU  MSGH+2                     ; Draw meta tiles?
 TWNRND EQU  DRWMTL+2                   ; Random number seed for generating the town
+INVNXT EQU  TWNRND+2                   ; Pointer to next free slot in inventory
+SHPNXT EQU  INVNXT+2                   ; Pointer to next free slot in shop
 * Save file end
-COMMND EQU  TWNRND+2                   ; Command
+SAVEEN EQU  SHPNXT+2
+COMMND EQU  SAVEEN                     ; Command
 RECCNT EQU  COMMND+2                   ; HP recovering counter
 RANDNO EQU  RECCNT+2                   ; Pseudo random number
 ROOMPT EQU  RANDNO+2                   ; Room pointer
@@ -146,9 +151,7 @@ DX     EQU  Y+2                        ; Player movement direction x
 DY     EQU  DX+2                       ; Player movement direction y
 COL    EQU  DY+2                       ; Screen column
 ROW    EQU  COL+2                      ; Screen row
-INVNXT EQU  ROW+2                      ; Pointer to next free slot in inventory
-SHPNXT EQU  INVNXT+2                   ; Pointer to next free slot in shop
-ITM1ST EQU  SHPNXT+2                   ; First displayed item
+ITM1ST EQU  ROW+2                     ; First displayed item
 ITMCUR EQU  ITM1ST+2                   ; Current displayed item
 ITMSEL EQU  ITMCUR+2                   ; Selected item
 CTILE  EQU  ITMSEL+2                   ; Current tile
@@ -156,8 +159,6 @@ LTILE  EQU  CTILE+2                    ; Last tile
 NTILE  EQU  LTILE+2                    ; Neighbour tile
 CURRNT EQU  NTILE+2                    ; Current name table address
 MSGOFF EQU  CURRNT+2                   ; Message buffer offset
-
-FLEN   EQU  COMMND-PADVAR
 
 ********************************************************************************
 *
@@ -261,8 +262,8 @@ INI1ST MOV  R11,*R10+                  ; Push return address onto the stack
 *
 INIGME MOV  R11,*R10+                  ; Push return address onto the stack
 *      Stats
-       LI   R0,0
-       MOV  R0,@DEPTH
+       CLR  @DEPTH
+       CLR  @DPTMAX
        LI   R0,1
        MOV  R0,@LEVEL
        CLR  @XP
@@ -1088,7 +1089,10 @@ XUPS1  B    @XEND
 XDNS   CI   R1,TSTAIR
        JNE  XDNS1
        INC  @DEPTH
-       SETO @GODOWN
+       C    @DEPTH,@DPTMAX
+       JLE  XDNS2
+       MOV  @DEPTH,@DPTMAX
+XDNS2  SETO @GODOWN
        BL   @GENLVL
 XDNS1  B    @XEND
 *      Tunnel
@@ -3038,7 +3042,7 @@ VMBR   SWPB R0
        MOVB R0,@VDPWA                  ; Send low byte of VDP RAM write address
        SWPB R0
        MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
-       LI   R0,VDPRD
+VMBR0  LI   R0,VDPRD
 VMBR1  MOVB *R0,*R1+                   ; Read byte from VDP RAM
        DEC  R2                         ; Byte counter
        JNE  VMBR1                      ; Check if finished
@@ -3059,10 +3063,10 @@ VDPCP  SWPB R0
        ORI  R0,>4000                   ; Set the two MSbits to 01 for write
        MOVB R0,@VDPWA                  ; Send high byte of VDP RAM write address
        LI   R0,VDPWD
-       MOV  R2,R3
+VDPCP0 MOV  R2,R3
        SRL  R3,3                       ; Number of groups of 8
-       JEQ  VDPC2
-VDPC1  MOVB *R1+,*R0
+       JEQ  VDPCP2
+VDPCP1 MOVB *R1+,*R0
        MOVB *R1+,*R0
        MOVB *R1+,*R0
        MOVB *R1+,*R0
@@ -3071,13 +3075,13 @@ VDPC1  MOVB *R1+,*R0
        MOVB *R1+,*R0
        MOVB *R1+,*R0
        DEC  R3
-       JNE  VDPC1
+       JNE  VDPCP1
        ANDI R2,>0007                   ; Isolate number of remaining bytes
-       JEQ  VDPC3
-VDPC2  MOVB *R1+,*R0
+       JEQ  VDPCP3
+VDPCP2 MOVB *R1+,*R0
        DEC  R2
-       JNE  VDPC2
-VDPC3  B    *R11
+       JNE  VDPCP2
+VDPCP3 B    *R11
 *// VDPCP
 
 *********************************************************************
@@ -3096,8 +3100,8 @@ VDPWR  SWPB R0
        LI   R0,VDPWD
        MOV  R2,R3
        SRL  R3,3                       ; Number of groups of 8
-       JEQ  VDPW2
-VDPW1  MOVB R1,*R0
+       JEQ  VDPWR2
+VDPWR1 MOVB R1,*R0
        MOVB R1,*R0
        MOVB R1,*R0
        MOVB R1,*R0
@@ -3106,13 +3110,13 @@ VDPW1  MOVB R1,*R0
        MOVB R1,*R0
        MOVB R1,*R0
        DEC  R3
-       JNE  VDPW1
+       JNE  VDPWR1
        ANDI R2,>0007                   ; Isolate number of remaining bytes
-       JEQ  VDPW3
-VDPW2  MOVB R1,*R0
+       JEQ  VDPWR3
+VDPWR2 MOVB R1,*R0
        DEC  R2
-       JNE  VDPW2
-VDPW3  B    *R11
+       JNE  VDPWR2
+VDPWR3 B    *R11
 *// VDPWR
 
 *********************************************************************
@@ -3510,9 +3514,21 @@ EXPAD1 MOV  *R0,R3
 SAVE   MOV  R11,*R10+                  ; Push return address onto the stack
 *      Upload data
        LI   R0,FBUF
-       LI   R1,DEPTH
-       LI   R2,FLEN
+       LI   R1,SAVEST
+       LI   R2,SAVEEN-SAVEST
        BL   @VDPCP
+       LI   R1,ITLIST
+       LI   R2,ITLSTE-ITLIST
+       BL   @VDPCP0
+       LI   R1,INVENT
+       LI   R2,INVENE-INVENT
+       BL   @VDPCP0
+       LI   R1,EQUIPM
+       LI   R2,EQUIPE-EQUIPM
+       BL   @VDPCP0
+       LI   R1,SHOP
+       LI   R2,SHOPE-SHOP
+       BL   @VDPCP0
 *      Prepare for disk access
        BL   @EXPAD                     ; Exchange PAD and buffer
 *      Set op-code
@@ -3575,9 +3591,22 @@ LOAD   MOV  R11,*R10+                  ; Push return address onto the stack
        JNE  LOAD1
 *      Download data
        LI   R0,FBUF
-       LI   R1,DEPTH
-       LI   R2,FLEN
+       LI   R1,SAVEST
+       LI   R2,SAVEEN-SAVEST
        BL   @VMBR
+       LI   R1,ITLIST
+       LI   R2,ITLSTE-ITLIST
+       BL   @VMBR0
+       LI   R1,INVENT
+       LI   R2,INVENE-INVENT
+       BL   @VMBR0
+       LI   R1,EQUIPM
+       LI   R2,EQUIPE-EQUIPM
+       BL   @VMBR0
+       LI   R1,SHOP
+       LI   R2,SHOPE-SHOP
+       BL   @VMBR0
+*      Report success
        CLR  R1
 *      Return
 LOAD1  DECT R10                        ; Pop return address off the stack
@@ -3590,7 +3619,7 @@ LOAD1  DECT R10                        ; Pop return address off the stack
 *      Includes
 *
        COPY "dsrlnk.a99"
-       COPy "popups.a99"
+       COPY "popups.a99"
 
 *********************************************************************
 *
@@ -3602,7 +3631,7 @@ PABDAT BYTE >05                        ; I/O op-code (5=LOAD)
        BYTE >00                        ; Flags: n/a
 LDADDR DATA FBUF                       ; Data buffer address (VDP RAM)
        DATA >0000                      ; Record length: n/a
-       DATA >0100                      ; Max bytes to read
+       DATA >0400                      ; Max bytes to read
        DATA >000C                      ; File name length (including DSK1.)
 DNAME  TEXT "DSK1."                    ; File device
 FNAME  TEXT "DOASAVE"                  ; File name
