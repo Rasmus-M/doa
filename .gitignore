@@ -9,6 +9,8 @@ i# Created by .ignore support plugin (hsz.mobi)
 *.ini
 *.dsk
 *.modcfg
+*.jar
+todo.txt
 /doa
 /dob
 /doc
