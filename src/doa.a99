@@ -217,7 +217,7 @@ LOOP   BL   @DSCRN                     ; Draw screen to double buffer
        JNE  LOOP1
        BL   @RECOVR                    ; Recover hit points
 LOOP1  BL   @CKQUIT                    ; Check for quit
-       LI   R1,2
+       MOV  @NPAUSE,R1
        BL   @PAUSE
        JMP  LOOP
 *      Player dies
@@ -228,6 +228,7 @@ DIED   LI   R2,TXUDIE
        BL   @WTESC
 *      Restart
        JMP  NEWGME
+NPAUSE DATA 3                          ; Pause length
 
 *********************************************************************
 *
@@ -3410,7 +3411,7 @@ RELKEY MOV  @KLAST,R0
        LDCR R0,3                       ; Select column
        ANDI R0,>00FF
        MOV  R0,R12                     ; Select row
-       LI   R0,3
+       LI   R0,10
 RELKE1 TB   0
        JNE  RELKE1
 *      Check a number of times to make sure it's not a misreading
