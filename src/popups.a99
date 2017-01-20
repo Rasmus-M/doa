@@ -219,7 +219,10 @@ DSPIN7 LI   R0,KEY_U
        JNE  DSPIN8                     ; Or null if using failed
        LI   R2,TXCUSE
        JMP  DSPIN9
-DSPIN8 LI   R2,TXUUSE
+DSPIN8 CI   R0,IT_SCRL_RECA
+       JNE  DSPI17
+       B    @DSPI16
+DSPI17 LI   R2,TXUUSE
        BL   @MSG
        CLR  R6
        MOVB @ITTILE(R5),@R6LB          ; Get tile number

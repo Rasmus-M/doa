@@ -4,7 +4,7 @@
 *
 
 * Item types
-IYMISC EQU  0                          ; Misc useable objects
+IYUSEA EQU  0                          ; Useable objects
 IYWEAP EQU  1                          ; Weapons
 IYARMR EQU  2                          ; Armors, robes
 IYSHLD EQU  3                          ; Shields
@@ -48,6 +48,8 @@ CBWISD EQU  5                          ; Wisdom
        DATA TXWISD
 CBPROT EQU  6                          ; Protection
        DATA TXPROT
+CBRECA EQU  7                          ; Recall
+       DATA TXRECA
 
 * Materials
 MTRLS
@@ -71,7 +73,7 @@ ITEMS
 
 IT_POTI_HEAL                           ; Potion of healing
        BYTE TPOTI                      ; Tile
-       BYTE IYMISC                     ; Type
+       BYTE IYUSEA                     ; Type
        BYTE CBHLNG                     ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC
@@ -80,7 +82,7 @@ IT_POTI_HEAL                           ; Potion of healing
 
 IT_POTI_SPD                            ; Potion of speed
        BYTE TPOTI                      ; Tile
-       BYTE IYMISC                     ; Type
+       BYTE IYUSEA                     ; Type
        BYTE CBSPD                      ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC
@@ -89,7 +91,7 @@ IT_POTI_SPD                            ; Potion of speed
 
 IT_SCRL_HLNG                           ; Scroll of healing
        BYTE TSCRL                      ; Tile
-       BYTE IYMISC                     ; Type
+       BYTE IYUSEA                     ; Type
        BYTE CBHLNG                     ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC
@@ -98,16 +100,25 @@ IT_SCRL_HLNG                           ; Scroll of healing
 
 IT_SCRL_SPD                            ; Scroll of speed
        BYTE TSCRL                      ; Tile
-       BYTE IYMISC                     ; Type
+       BYTE IYUSEA                     ; Type
        BYTE CBHLNG                     ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC
        BYTE 1                          ; Rarity
        DATA 160                        ; Value
 
+IT_SCRL_RECA                           ; Scroll of recall
+       BYTE TSCRL                      ; Tile
+       BYTE IYUSEA                     ; Type
+       BYTE CBRECA                     ; Capability
+       BYTE MADFLT                     ; Material
+       BYTE 0                          ; Damage/AC
+       BYTE 1                          ; Rarity
+       DATA 80                         ; Value
+
 IT_BOOK_WISD                           ; Book of wisdom
        BYTE TBOOK                      ; Tile
-       BYTE IYMISC                     ; Type
+       BYTE IYUSEA                     ; Type
        BYTE CBWISD                     ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC
@@ -125,7 +136,7 @@ IT_SILV_RING_PROT                      ; Silver ring of protection
 
 IT_FOOD                                ; Food
        BYTE TFOOD                      ; Tile
-       BYTE IYMISC                     ; Type
+       BYTE IYUSEA                     ; Type
        BYTE CBNONE                     ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC

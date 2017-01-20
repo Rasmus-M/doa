@@ -299,6 +299,9 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        CLR  R1
        LI   R2,MAXINV*2
        BL   @FILL
+       LI   R0,IT_SCRL_RECA
+       BL   @GENITM
+       BL   @ADDINV
 *      Init equipment
        LI   R0,EQUIPM
        CLR  R1
@@ -1544,14 +1547,14 @@ DRPIT1 DECT R10                        ; Pop return address off the stack
 USEITM MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  *R0,R1                     ; Get item instance
        MOV  @IIITEM(R1),R1             ; Get item
-       CB   @ITTYPE(R1),@BYTES+IYMISC  ; Check item type
+       CB   @ITTYPE(R1),@BYTES+IYUSEA  ; Check item type
        JNE  USEIT8                     ; Fail is not misc
 *      Remove from inventory
        BL   @REMINV                    ; Remove from inventory, R0 points to item instance
        MOV  R0,R0                      ; Check for failure
        JEQ  USEIT9                     ; Return if failure
        BL   @DELITM                    ; Delete the item instance, R0 point to item
-       MOV  R0,R5                      ; Save pointer to item
+       MOV  R0,@ITMTMP                 ; Save pointer to item
 *      Check item type
        CI   R0,IT_POTI_HEAL
        JNE  USEIT1
@@ -1559,37 +1562,51 @@ USEITM MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R1,4
        LI   R2,8
        BL   @HEAL
-       MOV  R5,R0
-       JMP  USEIT9
+       JMP  USEITX
 USEIT1 CI   R0,IT_SCRL_HLNG
        JNE  USEIT2
 *      Scroll of healing
        LI   R1,8
        LI   R2,14
        BL   @HEAL
-       MOV  R5,R0
-       JMP  USEIT9
+       JMP  USEITX
 USEIT2 CI   R0,IT_FOOD
        JNE  USEIT3
 *      Food
        LI   R1,2
        LI   R2,4
        BL   @HEAL
-       MOV  R5,R0
-       JMP  USEIT9
+       JMP  USEITX
 USEIT3 CI   R0,IT_BOOK_WISD
-       JNE  USEIT9
+       JNE  USEIT4
 *      Book of wisdom
        INC  @WIS
        BL   @CLCMOD
-       MOV  R5,R0
-       JMP  USEIT9
+       JMP  USEITX
+USEIT4 CI   R0,IT_SCRL_RECA
+       JNE  USEITX
+*      Scroll of recall
+       MOV  @DEPTH,R0
+       JNE  USEI41
+       MOV  @DPTMAX,R0
+       JEQ  USEIT8
+       MOV  @DPTMAX,@DEPTH
+       SETO @GODOWN
+       JMP  USEI42
+USEI41 CLR  @DEPTH
+       CLR  @GODOWN
+USEI42 BL   @GENLVL
+       JMP  USEITX
 *      Report failure
 USEIT8 CLR  R0
+       JMP  USEIT9
+*      Restore item pointer
+USEITX MOV  @ITMTMP,R0
 *      Return
 USEIT9 DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
+ITMTMP DATA >0000
 *// USEITM
 
 *********************************************************************
