@@ -1690,7 +1690,9 @@ BUY3   BL   @REMSHP                    ; Remove from shop
        BL   @ADDINV                    ; Add to inventory
        MOV  R0,R0                      ; Check if failed
        JEQ  BUY2                       ; Return item if failed
-       S    @ITVALU(R3),@GOLD          ; Pay
+       MOV  @ITVALU(R3),R1             ; Value
+       BL   @BPRICE                     ; Actual price
+       S    R1,@GOLD                   ; Pay
        JMP  BUY1                       ; Return
 BUY2   MOV  R2,R0
        BL   @ADDSHP                    ; Return item to shop
@@ -1717,7 +1719,9 @@ SELL   MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  R0,R0                      ; Check if failed
        JEQ  SELL2                      ; Get item back if failed
        MOV  @IIITEM(R3),R3             ; Get item
-       A    @ITVALU(R3),@GOLD          ; Get payment
+       MOV  @ITVALU(R3),R1             ; Get value
+       BL   @SPRICE                    ; Get selling price
+       A    R1,@GOLD                   ; Get payment
        JMP  SELL1                      ; Return
 SELL2  MOV  R3,R0
        BL   @ADDINV                    ; Take item back
@@ -2048,6 +2052,38 @@ CLCMO2 MOV  R3,*R1+
 
 *********************************************************************
 *
+* Calculate buying price of item adjusted for stats
+*
+* R1: Value of item
+*
+BPRICE MOV  R1,R14
+       MPY  @WISMOD,R14
+       SRA  R15,5
+       S    R15,R1
+       JGT  BPRIC1
+       LI   R1,1
+*      Return
+BPRIC1 B    *R11
+*// BPRICE
+
+*********************************************************************
+*
+* Calculate selling price of item adjusted for stats
+*
+* R1: Value of item
+*
+SPRICE MOV  R1,R14
+       MPY  @WISMOD,R14
+       SRA  R15,5
+       A    R15,R1
+       JGT  SPRIC1
+       LI   R1,1
+*      Return
+SPRIC1 B    *R11
+*// SPRICE
+
+*********************************************************************
+*
 * Get the tile at the specified position from the map buffer
 *
 * R0: Horizontal position (x)
@@ -2350,11 +2386,9 @@ DSPMA7 LI   R1,8
        JEQ  DSPMA7
 *      Done
        BL   @GMODE
-       MOV  @DEPTH,R0
-       JEQ  DSPMAE
        BL   @UPLMON
 *      Return
-DSPMAE DECT R10                        ; Pop return address off the stack
+       DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
 *// DSPMAP

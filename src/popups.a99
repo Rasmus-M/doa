@@ -31,7 +31,7 @@ DSPSH1 MOV  @ITM1ST,@ITMCUR            ; Current item
        MOV  R1,@COL                    ; Left column
        LI   R0,SWINR+1
        MOV  R0,@ROW                    ; Current row
-       LI   R14,SWINH-2                ; Counter for max displayed items
+       LI   R9,SWINH-2                 ; Counter for max displayed items
 DSPSH2 MOV  @ITMCUR,R3
        C    R3,@SHPNXT                 ; Check for end of inventory
        JHE  DSPSH5
@@ -53,12 +53,13 @@ DSPSH4 BL   @DSPTXT
        MOVB @ROW+1,@R0LB
        MOV  @IIITEM(R3),R5             ; Get item
        MOV  @ITVALU(R5),R1
+       BL   @BPRICE
        LI   R2,5
        BL   @DPNUR
 *      Next item
        INCT @ITMCUR
        INC  @ROW
-       DEC  R14
+       DEC  R9
        JNE  DSPSH2
 *      Check keys
 DSPSH5 BL   @RELKEY
