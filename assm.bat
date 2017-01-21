@@ -21,9 +21,11 @@ xas99.py -R -i src/doa.a99 -o doa
 xdm99.py DOA.dsk -a doa -n DOA
 xdm99.py DOA.dsk -a dob -n DOB
 xdm99.py DOA.dsk -a doc -n DOC
+xdm99.py DOA.dsk -a dod -n DOD
 
 xdm99.py DOA360.dsk -a doa -n DOA
 xdm99.py DOA360.dsk -a dob -n DOB
 xdm99.py DOA360.dsk -a doc -n DOC
+xdm99.py DOA360.dsk -a dod -n DOD
 
 :end

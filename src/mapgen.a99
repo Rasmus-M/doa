@@ -149,11 +149,26 @@ GENT11 BL   @SRTILE
 GENT12 BL   @SRTILE
        DEC  R9
        JNE  GENT12
+*      Allocate monsters
+       LI   R3,MALIST
+       LI   R4,NMONAL
+       LI   R1,MOVILL
+GENT13 MOV  R1,*R3+
+       CLR  R1
+       DEC   R4
+       JNE   GENT13
 *      Init monsters
        LI   R0,MILIST
        CLR  R1
        LI   R2,MAXMON*MISIZE
        BL   @FILL
+*      Place monsters
+       LI   R9,4
+GENT14 LI   R8,ROOMS
+       LI   R0,MALIST
+       BL   @GENMON
+       DEC  R9
+       JNE  GENT14
 *      Restore random number seed
        MOV  @TMPRND,@RANDNO
 *      Return
@@ -393,12 +408,13 @@ PLCMO0 LI   R1,NMONST
        AI   R1,MONSTR
        CLR  R5
        MOVB @MOLVL(R1),@R5LB
+       JEQ  PLCMO0                     ; Level 0 is for town only
        S    @DEPTH,R5                  ; Difference between monster level and dungeon level
        CI   R5,1                       ; Try again if > 1
        JGT  PLCMO0
        MOV  R1,*R3+
-       DEC   R4
-       JNE   PLCMO0
+       DEC  R4
+       JNE  PLCMO0
 *      Init monsters
        LI   R0,MILIST
        CLR  R1

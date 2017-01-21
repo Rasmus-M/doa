@@ -52,7 +52,7 @@ MAXEQU EQU  8                          ; Max equipment size
 MAXSHP EQU  64                         ; Max shop size
 OBJ1ST EQU  10                         ; Number of first object tile
 OBJLST EQU  32                         ; Number of last object tile
-NMONST EQU  12                         ; Number of unique monsters
+NMONST EQU  13                         ; Number of unique monsters
 NMONAL EQU  8                          ; Number of monsters allocated per level
 MAXMON EQU  128                        ; Max monster instances
 RECSPD EQU  50                         ; Base recovering speed
@@ -371,9 +371,9 @@ GENLV1 LI   R2,TXDGN
        BL   @GENDGN
        BL   @ARMDIS                    ; Page out AMS at >C000->FFFF
 *      Upload monster graphics
-       BL   @UPLMON
+GENLV2 BL   @UPLMON
 *      Place player
-GENLV2 MOV  @STAIRX,@X
+       MOV  @STAIRX,@X
        MOV  @STAIRY,@Y
 *      Return
        DECT R10                        ; Pop return address off the stack
@@ -1959,6 +1959,8 @@ MMOVE2 CLR  R0
        MOVB R13,@R1LB
        BL   @GTILE                     ; Get tile from map
 MMOVE6 CB   R1,@BYTES+TFLOOR
+       JEQ  MMOVE3
+       CB   R1,@BYTES+TGRASS
        JEQ  MMOVE3
        CB   R1,@BYTES+TDOORO
        JNE  MMOVE4

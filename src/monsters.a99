@@ -14,6 +14,13 @@ MODMG  EQU  7                          ; Damage
 MOSIZE EQU  8                          ; Structure size
 
 MONSTR
+*      Villain
+MOVILL DATA TXVILL
+       DATA 12                         ; Pattern number
+       BYTE 0                          ; Level
+       BYTE 2                          ; HP
+       BYTE 1                          ; AC
+       BYTE 1                          ; Damage
 *      Spider
 MOSPID DATA TXSPID
        DATA 0                          ; Pattern number
