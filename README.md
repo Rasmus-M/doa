@@ -53,5 +53,5 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 
 * Fixed stairs - you start at the stairs you entered by, but there are 3 up stairs when going up, and 3 down stairs when going down
 * Monsters should no longer move into walls
-
+* Fixed bug causing all items to be dropped
 

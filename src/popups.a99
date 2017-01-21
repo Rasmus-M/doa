@@ -271,6 +271,7 @@ DSPI11 LI   R0,KEY_D
        MOV  @TNAMES(R6),R2             ; Get name
        BL   @MSGLN
        BL   @DMSSGS
+       JMP  DSPI13                     ; Remove from list
 *      Sell
 DSPI12 LI   R0,KEY_S
        BL   @CHKKEY
