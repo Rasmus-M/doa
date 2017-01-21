@@ -1578,25 +1578,31 @@ USEIT2 CI   R0,IT_FOOD
        LI   R2,4
        BL   @HEAL
        JMP  USEITX
-USEIT3 CI   R0,IT_BOOK_WISD
+USEIT3 CI   R0,IT_BOOK_STR
        JNE  USEIT4
+*      Book of strength
+       INC  @STR
+       BL   @CLCMOD
+       JMP  USEITX
+USEIT4 CI   R0,IT_BOOK_WIS
+       JNE  USEIT5
 *      Book of wisdom
        INC  @WIS
        BL   @CLCMOD
        JMP  USEITX
-USEIT4 CI   R0,IT_SCRL_RECA
+USEIT5 CI   R0,IT_SCRL_RECA
        JNE  USEITX
 *      Scroll of recall
        MOV  @DEPTH,R0
-       JNE  USEI41
+       JNE  USEI51
        MOV  @DPTMAX,R0
        JEQ  USEIT8
        MOV  @DPTMAX,@DEPTH
        SETO @GODOWN
-       JMP  USEI42
-USEI41 CLR  @DEPTH
+       JMP  USEI52
+USEI51 CLR  @DEPTH
        CLR  @GODOWN
-USEI42 BL   @GENLVL
+USEI52 BL   @GENLVL
        JMP  USEITX
 *      Report failure
 USEIT8 CLR  R0

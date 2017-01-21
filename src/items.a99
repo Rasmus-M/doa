@@ -36,19 +36,27 @@ ITSIZE EQU  8                          ; Structure size
 CPBLS
 CBNONE EQU  0                          ; None
        DATA TXNONE
-CBHLNG EQU  1                          ; Healing
-       DATA TXHLNG
-CBSPD  EQU  2                          ; Speed
-       DATA TXSPD
-CBFIRE EQU  3                          ; Fire
-       DATA TXFIRE
-CBSLP  EQU  4                          ; Sleeping
-       DATA TXSLP
-CBWISD EQU  5                          ; Wisdom
+CBSTR  EQU  1                          ; Strength
+       DATA TXSTRE
+CBINT  EQU  2                          ; Intelligence
+       DATA TXINTE
+CBWIS  EQU  3                          ; Wisdom
        DATA TXWISD
+CBDEX  EQU  4                          ; Dexterity
+       DATA TXDEXT
+CBCON  EQU  5                          ; Constitution
+       DATA TXCONS
 CBPROT EQU  6                          ; Protection
        DATA TXPROT
-CBRECA EQU  7                          ; Recall
+CBHLNG EQU  7                          ; Healing
+       DATA TXHLNG
+CBSPD  EQU  8                          ; Speed
+       DATA TXSPD
+CBFIRE EQU  9                          ; Fire
+       DATA TXFIRE
+CBSLP  EQU  10                         ; Sleeping
+       DATA TXSLP
+CBRECA EQU  11                         ; Recall
        DATA TXRECA
 
 * Materials
@@ -116,10 +124,19 @@ IT_SCRL_RECA                           ; Scroll of recall
        BYTE 1                          ; Rarity
        DATA 80                         ; Value
 
-IT_BOOK_WISD                           ; Book of wisdom
+IT_BOOK_STR                            ; Book of strength
        BYTE TBOOK                      ; Tile
        BYTE IYUSEA                     ; Type
-       BYTE CBWISD                     ; Capability
+       BYTE CBSTR                      ; Capability
+       BYTE MADFLT                     ; Material
+       BYTE 0                          ; Damage/AC
+       BYTE 1                          ; Rarity
+       DATA 1000                       ; Value
+
+IT_BOOK_WIS                            ; Book of wisdom
+       BYTE TBOOK                      ; Tile
+       BYTE IYUSEA                     ; Type
+       BYTE CBWIS                      ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC
        BYTE 1                          ; Rarity
