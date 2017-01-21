@@ -1165,8 +1165,11 @@ XATT3  MOV  @EQWIEL,R3                 ; Get wielded item instance (weapon)
        MOV  @MONAME(R6),R2
        BL   @MSGLN
        CLR  *R5                        ; Remove monster
-       LI   R1,5
-       LI   R2,20
+       CLR  R1
+       MOVB @MOLVL(R6),@R1LB
+       INC  R1
+       MOV  R1,R2
+       SLA  R2,2
        BL   @RANDI
        BL   @ADDXP
        JMP  XATT1
@@ -1960,8 +1963,8 @@ MMOVE2 CLR  R0
        BL   @GTILE                     ; Get tile from map
 MMOVE6 CB   R1,@BYTES+TFLOOR
        JEQ  MMOVE3
-       CB   R1,@BYTES+TGRASS
-       JEQ  MMOVE3
+;       CB   R1,@BYTES+TGRASS
+;       JEQ  MMOVE3
        CB   R1,@BYTES+TDOORO
        JNE  MMOVE4
 *      Move

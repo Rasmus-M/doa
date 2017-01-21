@@ -166,6 +166,7 @@ GENT13 MOV  R1,*R3+
        LI   R9,4
 GENT14 LI   R8,ROOMS
        LI   R0,MALIST
+       LI   R7,TFLOOR*256
        BL   @GENMON
        DEC  R9
        JNE  GENT14
@@ -427,6 +428,7 @@ PLCMO1 BL   @RLEAF                     ; Get a random room
        BL   @RANDL
        SLA  R0,1
        AI   R0,MALIST
+       LI   R7,TFLOOR*256
        BL   @GENMON
        DEC  R9
        JNE  PLCMO1
@@ -964,6 +966,7 @@ ALCMON MOV  R11,*R10+                  ; Push return address onto the stack
 *
 * R0: Points to entry in monster allocation list
 * R8: Points to the room structure
+* R7: MSB contains tile where monster can be placed
 *
 GENMON MOV  R11,*R10+                  ; Push return address onto the stack
 *      Find an empty slot
@@ -978,15 +981,23 @@ GENMO1 MOV  *R3,R4
 *      Found one
 GENMO2 MOV  *R0,R4                     ; Get pointer to monster
        MOV  R0,@MIMONA(R3)
-       CLR  R1
+GENMO4 CLR  R1
        MOVB @ROOMW(R8),@R1LB
        BL   @RANDL
-       AB   @ROOMX(R8),@R0LB
-       MOVB @R0LB,@MIX(R3)
+       MOV  R0,R5
+       AB   @ROOMX(R8),@R5LB
+       CLR  R1
        MOVB @ROOMH(R8),@R1LB
        BL   @RANDL
-       AB   @ROOMY(R8),@R0LB
-       MOVB @R0LB,@MIY(R3)
+       MOV  R0,R6
+       AB   @ROOMY(R8),@R6LB
+       MOV  R5,R0
+       MOV  R6,R1
+       BL   @GTILE
+       CB   R1,R7
+       JNE  GENMO4
+       MOVB @R5LB,@MIX(R3)
+       MOVB @R6LB,@MIY(R3)
        MOVB @MOHP(R4),@MIHP(R3)
 *      Return
 GENMO3 DECT R10                        ; Pop return address off the stack
