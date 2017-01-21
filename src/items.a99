@@ -109,7 +109,7 @@ IT_SCRL_HLNG                           ; Scroll of healing
 IT_SCRL_SPD                            ; Scroll of speed
        BYTE TSCRL                      ; Tile
        BYTE IYUSEA                     ; Type
-       BYTE CBHLNG                     ; Capability
+       BYTE CBSPD                      ; Capability
        BYTE MADFLT                     ; Material
        BYTE 0                          ; Damage/AC
        BYTE 1                          ; Rarity
