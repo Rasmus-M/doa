@@ -34,3 +34,24 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 * M: Display Map.
 * Ctrl+S: Save game (from town only).
 * Ctrl+L: Load game.
+
+### History
+
+#### New features in version 0.2.0
+
+* Version number added
+* Cursor keys SDEX to move, E (equipment) moved to Q
+* Saving inventory, equipment, shop
+* Light wakes up monsters
+* Monsters move faster after you hit them
+* Scroll of recall
+* Villains in town
+* Wisdom bonus for trade
+* XB loader
+
+#### Bugs fixed in version 0.2.0
+
+* Fixed stairs - you start at the stairs you entered by, but there are 3 up stairs when going up, and 3 down stairs when going down
+* Monsters should no longer move into walls
+
+
