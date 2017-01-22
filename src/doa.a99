@@ -2,10 +2,10 @@
 *
 * Dungeons of Asgard
 *
-* Rogue-like game utilizing SASM memory
+* Rogue-like game utilizing SAMS memory
 * For the TI-99/4A home computer
 *
-* October 2016
+* October 2016 - January 2017
 * Rasmus Moustgaard <rasmus.moustgaard@gmail.com>
 *
 *********************************************************************
@@ -159,6 +159,9 @@ LTILE  EQU  CTILE+2                    ; Last tile
 NTILE  EQU  LTILE+2                    ; Neighbour tile
 CURRNT EQU  NTILE+2                    ; Current name table address
 MSGOFF EQU  CURRNT+2                   ; Message buffer offset
+LOOPS  EQU  MSGOFF+2                   ; Loop counter
+FRAMES EQU  LOOPS+2                    ; Frame counter (within loop)
+INTSTA EQU  FRAMES+2                   ; Interrupt status
 
 ********************************************************************************
 *
@@ -166,15 +169,13 @@ MSGOFF EQU  CURRNT+2                   ; Message buffer offset
 *
        AORG >A000
 
-MAIN   LIMI 0
-       LWPI WRKSP
+MAIN   LIMI 0                          ; Interrupts off
+       LWPI WRKSP                      ; Setup workspace
        MOV  @RNDSD,R15                 ; Save console random number seed
-;      LI   R1,33333                   ; Fixed seed for testing
-;      MOV  R1,@RANDNO
        BL   @EXPAD                     ; Exchange PAD and buffer
-       MOV  R15,@RANDNO
-       LI   R10,STACK                  ; Stack pointer
-       BL   @GMODE
+       MOV  R15,@RANDNO                ; Restore random number seed
+       LI   R10,STACK                  ; Setup stack pointer
+       BL   @GMODE                     ; Setup graphics mode
 *      Current name table
        LI   R0,NAMET1
        MOV  R0,@CURRNT
@@ -187,7 +188,7 @@ MAIN   LIMI 0
 NOAMS  LI   R0,4
        LI   R1,11
        LI   R2,TXAMS
-       BL   @DSPTXT
+       BL   @DSPTXT                    ; Display message
        BL   @SHWBUF
 NOALP  BL   @CKQUIT
        JMP  NOALP                      ; Loop forever
@@ -195,12 +196,14 @@ NOALP  BL   @CKQUIT
 AMSOK  BL   @AMSERG                    ; Enable AMS register access
        BL   @AMSENA                    ; Enable AMS mapper
 *      Initialize game
-       BL   @INI1ST
-NEWGME BL   @INIGME
+       BL   @INI1ST                    ; One time initialization
+NEWGME BL   @INIGME                    ; New game initialization
+       CLR  @LOOPS                     ; Reset loop counter
 *      New level
-       BL   @GENLVL
+       BL   @GENLVL                    ; Generate level
 *      Main loop
-LOOP   BL   @DSCRN                     ; Draw screen to double buffer
+LOOP   CLR  @FRAMES                    ; Reset frame counter
+       BL   @DSCRN                     ; Draw screen to double buffer
        BL   @VSYNC                     ; Wait for vertical refresh
        BL   @CHGBUF                    ; Change double buffer
        BL   @GETCMD                    ; Get command
@@ -217,8 +220,16 @@ LOOP   BL   @DSCRN                     ; Draw screen to double buffer
        JNE  LOOP1
        BL   @RECOVR                    ; Recover hit points
 LOOP1  BL   @CKQUIT                    ; Check for quit
-       MOV  @NPAUSE,R1
+*      Check for restart
+       LI   R0,KEY_R|M_CTRL
+       BL   @CHKKEY
+       JNE  NEWGME
+*      Pause
+       LI   R1,8
+       S    @FRAMES,R1
        BL   @PAUSE
+*      Loop
+       INC  @LOOPS
        JMP  LOOP
 *      Player dies
 DIED   LI   R2,TXUDIE
@@ -228,15 +239,16 @@ DIED   LI   R2,TXUDIE
        BL   @WTESC
 *      Restart
        JMP  NEWGME
-NPAUSE DATA 3                          ; Pause length
 
 *********************************************************************
 *
 * Initialize first time
 *
 INI1ST MOV  R11,*R10+                  ; Push return address onto the stack
-*      Settings
+*      Setup variables
        CLR  @TWNRND                    ; Random number seed for generating the town
+       CLR  @INTSTA                    ; Interrupt status
+*      Settings
        SETO @DRWMTL                    ; Draw metatiles
        SETO  @STATON                   ; Stats panel on
        LI   R1,2
@@ -397,11 +409,14 @@ ROOMS  EQU  >E000                      ; Rooms list/tree
 * R1 contains number of frames to wait
 *
 PAUSE  MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R1,R1
+       JLT  PAUSE2
+       JEQ  PAUSE2
 PAUSE1 BL   @VSYNC
        DEC  R1
        JNE  PAUSE1
 *      Return
-       DECT R10                        ; Pop return address off the stack
+PAUSE2 DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
 *// PAUSE
@@ -410,13 +425,39 @@ PAUSE1 BL   @VSYNC
 *
 * Wait for vertical retrace (CRU)
 *
-VSYNC  MOVB @VDPSTA,R0                 ; Clear status
-       CLR  R12
-VSYNC1 TB   2                          ; Test CRU bit for VDP interrupt
+VSYNC  MOV  R11,*R10+                  ; Push return address onto the stack
+VSYNC1 BL   @INTRPT
+       MOV  @INTSTA,R0
        JEQ  VSYNC1
-       MOVB @VDPSTA,R0
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
        B    *R11
 *// VSYNC
+
+*********************************************************************
+*
+* "Interrupt" routine
+*
+INTRPT MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R12,*R10+                  ; Push R12
+       CLR  R12                        ; Setup CRU
+       TB   2                          ; Test CRU bit for VDP interrupt
+       JEQ  INTRP1                     ; Return if no interrupt
+*      Interrupt
+       MOV  @VDPSTA,@INTSTA            ; Read and save VDP status
+*      Call sound/music player
+       BL   @PLAYMU
+       JMP  INTRP2
+*      No interrupt
+INTRP1 CLR  @INTSTA                    ; Report no interrupt
+*      Return
+INTRP2 DECT R10                        ; Pop R12
+       MOV  *R10,R12
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// INTRPT
 
 *********************************************************************
 *
@@ -496,14 +537,18 @@ DSCRN  MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @DSCRT
        JMP  DSCRN2
 DSCRN1 BL   @DSCRM
-DSCRN2 ABS  @STATON
+DSCRN2 BL   @INTRPT                    ; Call interrupt routine
+       ABS  @STATON
        JEQ  DSCRN3
 *      Display panel
        BL   @DPANEL
+       BL   @INTRPT                    ; Call interrupt routine
 *      Display stats
        BL   @DSTATS
+       BL   @INTRPT                    ; Call interrupt routine
 *      Display messages
 DSCRN3 BL   @DMSSGS
+       BL   @INTRPT                    ; Call interrupt routine
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
@@ -3480,6 +3525,37 @@ CKQUIT CLR  R1                         ; Test column 0
 QUIT   CLR  @>83C4                     ; Reset user ISR address
 QUIT1  BLWP @>0000
 
+*********************************************************************************
+*
+* Play music
+*
+PLAYMU MOV  R11,*R10+                  ; Push return address onto the stack
+       BL   @stplay
+       LWPI WRKSP
+       MOV  @PLYRWS+14,R0              ; Check if music is done
+       JNE  PLAYM1
+*      Restart music
+       BL   @INITMU
+*      Return
+PLAYM1 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// PLAYMU
+
+*********************************************************************************
+*
+* Initialize music
+*
+INITMU MOV  R11,*R10+                  ; Push return address onto the stack
+       LI   R1,MUSIC
+       LI   R2,0
+       BL   @stinit
+*      Return
+       DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
+*// INITMU
+
 ***************************************************************************
 *
 * Detect AMS
@@ -3759,6 +3835,12 @@ SPRTES COPY "sprites.a99"
 
 * Monster graphics
 MONGFX COPY "monster-graphics.a99"
+
+* Sound/music player
+TIPLYR COPY "tiplayer.a99"
+
+* Music
+MUSIC  DATA 0
 
 * Map buffer, for copying a section of the map from AMS into ordinary RAM
 MAPBUF BSS  32*22
