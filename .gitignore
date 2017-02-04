@@ -9,7 +9,9 @@ i# Created by .ignore support plugin (hsz.mobi)
 *.ini
 *.dsk
 *.jar
+*.vgm
 todo.txt
 /doa
 /dob
 /doc
+/dod

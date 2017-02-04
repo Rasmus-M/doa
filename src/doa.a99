@@ -3837,10 +3837,10 @@ SPRTES COPY "sprites.a99"
 MONGFX COPY "monster-graphics.a99"
 
 * Sound/music player
-TIPLYR COPY "tiplayer.a99"
+TIPLYR COPY "tiplayersfx.a99"
 
 * Music
-MUSIC  DATA 0
+MUSIC  BCOPY "..\sound\main.vgm.spf"
 
 * Map buffer, for copying a section of the map from AMS into ordinary RAM
 MAPBUF BSS  32*22
