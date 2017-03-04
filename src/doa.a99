@@ -3547,10 +3547,16 @@ PLAYM1 DECT R10                        ; Pop return address off the stack
 * Initialize music
 *
 INITMU MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R1,*R10+                   ; Push R1
+       MOV  R2,*R10+                   ; Push R2
        LI   R1,MUSIC
        LI   R2,0
        BL   @stinit
 *      Return
+       DECT R10                        ; Pop R2
+       MOV  *R10,R2
+       DECT R10                        ; Pop R1
+       MOV  *R10,R1
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
