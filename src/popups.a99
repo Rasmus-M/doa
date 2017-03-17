@@ -127,6 +127,9 @@ DSPS10 LI   R0,KEY_S
 *      Escape keys
 DSPS11 BL   @CHKESC
        JNE  DSPS12
+*      "Interrupt"
+       BL   @INTRPT
+*      Loop
        B    @DSPSH5
 *      Refresh screen
 DSPS12 BL   @SPRSHW
@@ -309,6 +312,9 @@ DSPI14 B    @DSPIN1
 *      Escape keys
 DSPI15 BL   @CHKESC
        JNE  DSPI16
+*      "Interrupt"
+       BL   @INTRPT
+*      Loop
        B    @DSPIN5
 *      Refresh screen
 DSPI16 BL   @SPRSHW
@@ -424,9 +430,13 @@ DSPEQ8 LI   R0,KEY_R
        B    @DSPEQ1
 *      Escape keys
 DSPEQ0 BL   @CHKESC
-       JEQ  DSPEQ5
+       JNE  DSPEQA
+*      "Interrupt"
+       BL   @INTRPT
+*      Loop
+       B    @DSPEQ5
 *      Refresh screen
-       BL   @SPRSHW
+DSPEQA BL   @SPRSHW
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11

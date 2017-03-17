@@ -362,6 +362,8 @@ INIGM1 LI   R1,(IT_END-ITEMS)/ITSIZE
 * Generate level
 *
 GENLVL MOV  R11,*R10+                  ; Push return address onto the stack
+*      Mute music
+       BL   @MUTEMU
 *      Town or dungeon?
        MOV  @DEPTH,R0
        JGT  GENLV1
@@ -387,6 +389,8 @@ GENLV2 BL   @UPLMON
 *      Place player
        MOV  @STAIRX,@X
        MOV  @STAIRY,@Y
+*      Init music
+       BL   @INITMU
 *      Return
        DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
@@ -930,6 +934,7 @@ MOVE7  MOV  @DX,R0
        MOV  @DY,R1
        JNE  MOVE10                     ; Yes - finish
 *      Not OK, loop
+       BL   @INTRPT
        JMP  MOVE1
 *      Normal move, check for blocking tile
 MOVE8  MOV  @X,R0                      ; Get X position
@@ -3549,8 +3554,12 @@ PLAYM1 DECT R10                        ; Pop return address off the stack
 INITMU MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  R1,*R10+                   ; Push R1
        MOV  R2,*R10+                   ; Push R2
-       LI   R1,MUSIC
-       LI   R2,0
+       MOV  @DEPTH,R2
+       JGT  INITM1
+       LI   R1,TWNMUS
+       JMP  INITM2
+INITM1 LI   R1,DNGMUS
+INITM2 LI   R2,0
        BL   @stinit
 *      Return
        DECT R10                        ; Pop R2
@@ -3561,6 +3570,20 @@ INITMU MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  *R10,R11
        B    *R11
 *// INITMU
+
+*********************************************************************************
+*
+* Mute music
+*
+MUTEMU LI   R0,MUTETB
+       LI   R2,4
+MUTEM1 MOVB *R0+,@SOUND
+       DEC  R2
+       JNE  MUTEM1
+*      Return
+       B    *R11
+MUTETB BYTE >9F,>BF,>DF,>FF
+*// MUTEMU
 
 ***************************************************************************
 *
@@ -3846,7 +3869,8 @@ MONGFX COPY "monster-graphics.a99"
 TIPLYR COPY "tiplayersfx.a99"
 
 * Music
-MUSIC  BCOPY "..\sound\main.vgm.spf"
+TWNMUS BCOPY "..\sound\town.vgm.spf"
+DNGMUS BCOPY "..\sound\dungeon.vgm.spf"
 
 * Map buffer, for copying a section of the map from AMS into ordinary RAM
 MAPBUF BSS  32*22
