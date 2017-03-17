@@ -3499,20 +3499,27 @@ KLAST  DATA >0000
 *
 * Check for release of key
 *
-RELKEY MOV  @KLAST,R0
+RELKEY MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  @KLAST,R0
        JEQ  RELKE2
+       LI   R1,10
+RELKE1 MOV  @KLAST,R0
        ANDI R0,>0FFF
        LI   R12,>0024                  ; CRU address of the column decoder
        LDCR R0,3                       ; Select column
        ANDI R0,>00FF
        MOV  R0,R12                     ; Select row
-       LI   R0,10
-RELKE1 TB   0
-       JNE  RELKE1
+       TB   0
+       JEQ  RELKE3
+       BL   @INTRPT
+       JMP  RELKE1
 *      Check a number of times to make sure it's not a misreading
-       DEC  R0
+RELKE3 DEC  R1
        JNE  RELKE1
-RELKE2 B    *R11
+*      Return
+RELKE2 DECT R10                        ; Pop return address off the stack
+       MOV  *R10,R11
+       B    *R11
 
 *********************************************************************
 *

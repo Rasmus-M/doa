@@ -76,7 +76,7 @@ DSPSH5 BL   @RELKEY
        C    @ITMSEL,R0
        JL   DSPSH1
        INCT @ITM1ST
-       JMP  DSPSH1
+       JMP  DSPS11
 *      Up
 DSPSH6 BL   @CHKUP
        JEQ  DSPSH7
@@ -87,7 +87,7 @@ DSPSH6 BL   @CHKUP
        C    @ITMSEL,@ITM1ST
        JHE  DSPSH1
        DECT @ITM1ST
-       JMP  DSPSH1
+       JMP  DSPS11
 *      Buy
 DSPSH7 LI   R0,KEY_B
        BL   @CHKKEY
@@ -201,7 +201,7 @@ DSPIN5 BL   @RELKEY
        C    @ITMSEL,R0
        JL   DSPIN1
        INCT @ITM1ST
-       JMP  DSPIN1
+       B    @DSPI15
 *      Up
 DSPIN6 BL   @CHKUP
        JEQ  DSPIN7
@@ -212,7 +212,7 @@ DSPIN6 BL   @CHKUP
        C    @ITMSEL,@ITM1ST
        JHE  DSPIN1
        DECT @ITM1ST
-       JMP  DSPIN1
+       B    @DSPI15
 *      Use
 DSPIN7 LI   R0,KEY_U
        BL   @CHKKEY
@@ -389,7 +389,7 @@ DSPEQ5 BL   @RELKEY
        C    @ITMSEL,R0
        JL   DSPEQ1
        INCT @ITM1ST
-       JMP  DSPEQ1
+       JMP  DSPEQ0
 *      Up
 DSPEQ6 BL   @CHKUP
        JEQ  DSPEQ7
@@ -400,7 +400,7 @@ DSPEQ6 BL   @CHKUP
        C    @ITMSEL,@ITM1ST
        JHE  DSPEQ1
        DECT @ITM1ST
-       JMP  DSPEQ1
+       JMP  DSPEQ0
 *      Use
 DSPEQ7 LI   R0,KEY_U
        BL   @CHKKEY
