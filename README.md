@@ -34,8 +34,14 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 * M: Display Map.
 * Ctrl+S: Save game (from town only).
 * Ctrl+L: Load game.
+* Ctrl+R: Restart game.
 
 ### History
+
+#### New features in version 0.3.0
+
+* Music
+* Ctrl+R to restart game
 
 #### New features in version 0.2.0
 
