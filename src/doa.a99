@@ -598,6 +598,8 @@ DSCRT9 MOVB R6,*R0
        BL   @GRECT
 *      Draw monsters into the buffer
        BL   @DMONS
+*      Call interrupt routine
+       BL   @INTRPT
 *      Display rectangle to VDP
        MOV  @CURRNT,R0
        LI   R1,MAPBUF
@@ -615,6 +617,7 @@ DSCRT8 LI   R5,PDARK*256
 DSCRT7 DEC  R2
        JNE  DSCRT6
        AI   R0,32
+*      Next row
        DEC  R3
        JNE  DSCRT5
 *      Return
@@ -666,6 +669,8 @@ DSCRMC MOVB R6,*R0
        BL   @GRECT
 *      Draw monsters into the buffer
        BL   @DMONS
+*      Call interrupt routine
+       BL   @INTRPT
 *      Display rectangle to VDP
        MOV  @CURRNT,R0
        LI   R1,MAPBUF
@@ -934,7 +939,7 @@ MOVE7  MOV  @DX,R0
        MOV  @DY,R1
        JNE  MOVE10                     ; Yes - finish
 *      Not OK, loop
-       BL   @INTRPT
+       BL   @INTRPT                    ; Call interrupt routine
        JMP  MOVE1
 *      Normal move, check for blocking tile
 MOVE8  MOV  @X,R0                      ; Get X position
@@ -3511,7 +3516,7 @@ RELKE1 MOV  @KLAST,R0
        MOV  R0,R12                     ; Select row
        TB   0
        JEQ  RELKE3
-       BL   @INTRPT
+       BL   @INTRPT                    ; Call interrupt routine
        JMP  RELKE1
 *      Check a number of times to make sure it's not a misreading
 RELKE3 DEC  R1

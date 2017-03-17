@@ -127,7 +127,7 @@ DSPS10 LI   R0,KEY_S
 *      Escape keys
 DSPS11 BL   @CHKESC
        JNE  DSPS12
-*      "Interrupt"
+*      Call interrupt routine
        BL   @INTRPT
 *      Loop
        B    @DSPSH5
@@ -312,7 +312,7 @@ DSPI14 B    @DSPIN1
 *      Escape keys
 DSPI15 BL   @CHKESC
        JNE  DSPI16
-*      "Interrupt"
+*      Call interrupt routine
        BL   @INTRPT
 *      Loop
        B    @DSPIN5
@@ -431,7 +431,7 @@ DSPEQ8 LI   R0,KEY_R
 *      Escape keys
 DSPEQ0 BL   @CHKESC
        JNE  DSPEQA
-*      "Interrupt"
+*      Call interrupt routine
        BL   @INTRPT
 *      Loop
        B    @DSPEQ5
