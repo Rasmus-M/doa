@@ -3266,9 +3266,11 @@ R3D6   MOV  R11,*R10+                  ; Push return address onto the stack
 *
 WTESC  MOV  R11,*R10+                  ; Push return address onto the stack
 WTESC1 BL   @CHKESC
-       JEQ  WTESC1
+       JNE  WTESC2
+       BL   @INTRPT
+       JMP  WTESC1
 *      Return
-       DECT R10                        ; Pop return address off the stack
+WTESC2 DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
 *// WTESC
