@@ -2399,6 +2399,7 @@ DSPMA6 SLA  R7,1
        AI   R3,MAPW-8
        DEC  R6
        JNE  DSPMA4                     ; Line loop
+       BL   @INTRPT                    ; Call interrupt routine
        AI   R3,-8*MAPW+8
        DEC  R5
        JNE  DSPMA3                     ; Column loop
@@ -3549,6 +3550,7 @@ QUIT1  BLWP @>0000
 * Play music
 *
 PLAYMU MOV  R11,*R10+                  ; Push return address onto the stack
+       MOV  R0,*R10+                   ; Push R0
        BL   @stplay
        LWPI WRKSP
        MOV  @PLYRWS+14,R0              ; Check if music is done
@@ -3556,7 +3558,9 @@ PLAYMU MOV  R11,*R10+                  ; Push return address onto the stack
 *      Restart music
        BL   @INITMU
 *      Return
-PLAYM1 DECT R10                        ; Pop return address off the stack
+PLAYM1 DECT R10                        ; Pop R0
+       MOV  *R10,R0
+       DECT R10                        ; Pop return address off the stack
        MOV  *R10,R11
        B    *R11
 *// PLAYMU
@@ -3883,7 +3887,7 @@ MONGFX COPY "monster-graphics.a99"
 TIPLYR COPY "tiplayersfx.a99"
 
 * Music
-TWNMUS BCOPY "..\sound\town.vgm.spf"
+TWNMUS BCOPY "..\sound\town-slow.vgm.spf"
 DNGMUS BCOPY "..\sound\dungeon.vgm.spf"
 
 * Map buffer, for copying a section of the map from AMS into ordinary RAM
