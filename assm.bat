@@ -28,6 +28,6 @@ xdm99.py DOA360.dsk -a dob -n DOB
 xdm99.py DOA360.dsk -a doc -n DOC
 xdm99.py DOA360.dsk -a dod -n DOD
 
-java -jar tools/ea5tocart.jar doa "dungeons of asgaard"
+java -jar tools/ea5tocart.jar doa "Dungeons of Asgaard"
 
 :end
