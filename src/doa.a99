@@ -3887,7 +3887,7 @@ MONGFX COPY "monster-graphics.a99"
 TIPLYR COPY "tiplayersfx.a99"
 
 * Music
-TWNMUS BCOPY "..\sound\town-slow.vgm.spf"
+TWNMUS BCOPY "..\sound\town.vgm.spf"
 DNGMUS BCOPY "..\sound\dungeon.vgm.spf"
 
 * Map buffer, for copying a section of the map from AMS into ordinary RAM
