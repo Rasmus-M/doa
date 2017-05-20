@@ -64,30 +64,30 @@ DSPSH4 BL   @DSPTXT
 *      Check keys
 DSPSH5 BL   @RELKEY
 *      Down
-       BL   @CHKDN
-       JEQ  DSPSH6
-       MOV  @SHPNXT,R0
-       DECT R0
-       C    @ITMSEL,R0
-       JHE  DSPSH6
-       INCT @ITMSEL
-       MOV  @ITM1ST,R0
-       AI   R0,SWINH-2*2
-       C    @ITMSEL,R0
-       JL   DSPSH1
-       INCT @ITM1ST
-       JMP  DSPS11
+       BL   @CHKDN                     ; Check down key
+       JEQ  DSPSH6                     ; Skip if not down
+       MOV  @SHPNXT,R0                 ; Get pointer to next free slot in shop
+       DECT R0                         ; Decrement to last used slot in shop
+       C    @ITMSEL,R0                 ; Is selected item the last in the list?
+       JHE  DSPSH6                     ; Yes - we cannot scroll further down, move on
+       INCT @ITMSEL                    ; No - select next item
+       MOV  @ITM1ST,R0                 ; Get first displayed item in list
+       AI   R0,SWINH-2*2               ; Go to last displayed item
+       C    @ITMSEL,R0                 ; Is newly seleted item within view?
+       JL   DSPSH1                     ; Yes - display items
+       INCT @ITM1ST                    ; No - scroll down
+       JMP  DSPSH1                     ; Diplay items
 *      Up
-DSPSH6 BL   @CHKUP
-       JEQ  DSPSH7
-       LI   R0,SHOP
-       C    @ITMSEL,R0
-       JLE  DSPSH7
-       DECT @ITMSEL
-       C    @ITMSEL,@ITM1ST
-       JHE  DSPSH1
-       DECT @ITM1ST
-       JMP  DSPS11
+DSPSH6 BL   @CHKUP                     ; Check up key
+       JEQ  DSPSH7                     ; Skip if not up
+       LI   R0,SHOP                    ; First item in shop
+       C    @ITMSEL,R0                 ; Check if selected item is the first
+       JLE  DSPSH7                     ; Yes - we cannot scroll further up, move on
+       DECT @ITMSEL                    ; No - select previous item
+       C    @ITMSEL,@ITM1ST            ; Is newly selected item within view?
+       JHE  DSPSH1                     ; Yes - display items
+       DECT @ITM1ST                    ; No - scroll up
+       JMP  DSPSH1                     ; Display items
 *      Buy
 DSPSH7 LI   R0,KEY_B
        BL   @CHKKEY
@@ -201,7 +201,7 @@ DSPIN5 BL   @RELKEY
        C    @ITMSEL,R0
        JL   DSPIN1
        INCT @ITM1ST
-       B    @DSPI15
+       B    @DSPI15                    ; Jump to DSPIN1 ?
 *      Up
 DSPIN6 BL   @CHKUP
        JEQ  DSPIN7
@@ -212,7 +212,7 @@ DSPIN6 BL   @CHKUP
        C    @ITMSEL,@ITM1ST
        JHE  DSPIN1
        DECT @ITM1ST
-       B    @DSPI15
+       B    @DSPI15                    ; Jump to DSPIN1 ?
 *      Use
 DSPIN7 LI   R0,KEY_U
        BL   @CHKKEY
@@ -331,7 +331,7 @@ DSPI16 BL   @SPRSHW
 EWINC  EQU  1                          ; Column
 EWINR  EQU  1                          ; Row
 EWINW  EQU  30                         ; Window width
-EWINH  EQU  10                          ; Window height
+EWINH  EQU  10                         ; Window height
 *
 DSPEQU MOV  R11,*R10+                  ; Push return address onto the stack
        BL   @SPRHDE
@@ -389,7 +389,7 @@ DSPEQ5 BL   @RELKEY
        C    @ITMSEL,R0
        JL   DSPEQ1
        INCT @ITM1ST
-       JMP  DSPEQ0
+       JMP  DSPEQ0                    ; Jump to DSPEQ1 ?
 *      Up
 DSPEQ6 BL   @CHKUP
        JEQ  DSPEQ7
@@ -400,7 +400,7 @@ DSPEQ6 BL   @CHKUP
        C    @ITMSEL,@ITM1ST
        JHE  DSPEQ1
        DECT @ITM1ST
-       JMP  DSPEQ0
+       JMP  DSPEQ0                    ; Jump to DSPEQ1 ?
 *      Use
 DSPEQ7 LI   R0,KEY_U
        BL   @CHKKEY

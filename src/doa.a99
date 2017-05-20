@@ -51,7 +51,7 @@ MAXINV EQU  32                         ; Max inventory size
 MAXEQU EQU  8                          ; Max equipment size
 MAXSHP EQU  64                         ; Max shop size
 OBJ1ST EQU  10                         ; Number of first object tile
-OBJLST EQU  32                         ; Number of last object tile
+OBJLST EQU  33                         ; Number of last object tile
 NMONST EQU  13                         ; Number of unique monsters
 NMONAL EQU  8                          ; Number of monsters allocated per level
 MAXMON EQU  128                        ; Max monster instances
@@ -151,7 +151,7 @@ DX     EQU  Y+2                        ; Player movement direction x
 DY     EQU  DX+2                       ; Player movement direction y
 COL    EQU  DY+2                       ; Screen column
 ROW    EQU  COL+2                      ; Screen row
-ITM1ST EQU  ROW+2                     ; First displayed item
+ITM1ST EQU  ROW+2                      ; First displayed item
 ITMCUR EQU  ITM1ST+2                   ; Current displayed item
 ITMSEL EQU  ITMCUR+2                   ; Selected item
 CTILE  EQU  ITMSEL+2                   ; Current tile
@@ -329,7 +329,10 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R0,IT_TRCH
        BL   @GENITM
        BL   @ADDEQU
-       BL   @CLCEQU
+       LI   R0,IT_PICK
+       BL   @GENITM
+       BL   @ADDINV
+       BL   @CLCEQU                    ; Calculate effect of equipment
 *      Initialize shop
        LI   R0,SHOP
        MOV  R0,@SHPNXT
@@ -1155,7 +1158,16 @@ XDNS2  SETO @GODOWN
        BL   @GENLVL
 XDNS1  B    @XEND
 *      Tunnel
-XTNL   MOV  @NTILE,R1
+XTNL   MOV  @EQWIEL,R1                 ; Get wielded item instance
+       MOV  @IIITEM(R1),R1             ; Get item
+       MOVB @ITCPBL(R1),R1             ; Get capability
+       SRL  R1,8
+       CI   R1,CBMINE                  ; Check for mining
+       JEQ  XTNL3
+       LI   R2,TXNOTU
+       BL   @MSGLN
+       JMP  XTNL2
+XTNL3  MOV  @NTILE,R1
        CI   R1,TSTONE
        JEQ  XTNL1
        CI   R1,TRUBBL
@@ -1170,7 +1182,7 @@ XTNL1  MOV  @X,R0
        MOV  @Y,R1
        A    @DY,R1
        MOVB @BYTES+TFLOOR,R2
-       BL   @STILE                     ; Open door
+       BL   @STILE                     ; Clear tile
 XTNL2  B    @XEND
 *      Attack
 XATT   MOV  @X,R0

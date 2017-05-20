@@ -39,7 +39,7 @@ TROBE  EQU  29                         ; Robes
 TSHLD  EQU  30                         ; Shield
 TGNTL  EQU  31                         ; Gauntlets
 TMYST  EQU  32                         ; Mystery?
-T33    EQU  33                         ;
+TPICK  EQU  33                         ; Pick axe
 T34    EQU  34                         ;
 T35    EQU  35                         ;
 T36    EQU  36                         ;
@@ -114,7 +114,7 @@ TNAMES DATA TXFLR                      ; 0: Floor
        DATA TXSHLD                     ; 30: Shield
        DATA TXGNTL                     ; 31: Gauntlets
        DATA TXMYST                     ; 32: Mystery?
-       DATA TXNONE                     ; 33:
+       DATA TXPICK                     ; 33: Pick axe
        DATA TXNONE                     ; 34:
        DATA TXNONE                     ; 35:
        DATA TXNONE                     ; 36:
@@ -190,7 +190,7 @@ TCMAP  BYTE PFLOOR                     ; 0: Floor
        BYTE PSHLD                      ; 30: Shield
        BYTE PGLVS                      ; 31: Gauntlets
        BYTE PQUEST                     ; 32: Mystery?
-       BYTE PFLOOR                     ; 33:
+       BYTE PPICK                      ; 33: Pick axe
        BYTE PFLOOR                     ; 34:
        BYTE PFLOOR                     ; 35:
        BYTE PFLOOR                     ; 36:
@@ -266,7 +266,7 @@ TMMAP  DATA MFLOOR                     ; 0: Floor
        DATA MSHLD                      ; 30: Shield
        DATA MGLVS                      ; 31: Gauntlets
        DATA MQUEST                     ; 32: Mystery
-       DATA MFLOOR                     ; 33:
+       DATA MPICK                      ; 33: Pick axe
        DATA MFLOOR                     ; 34:
        DATA MFLOOR                     ; 35:
        DATA MFLOOR                     ; 36:
@@ -336,6 +336,7 @@ PGLVS  EQU  24                         ; Gloves
 PROBE  EQU  25                         ; Robes
 PSHLD  EQU  26                         ; Shield
 PQUEST EQU  27                         ; Question mark
+PPICK  EQu  28                         ; Pick axe
 PMONS1 EQU  96                         ; Monster 1
 PMONS2 EQU  97                         ; Monster 2
 PMONS3 EQU  98                         ; Monster 3
@@ -386,6 +387,7 @@ MGLVS  BYTE >70,>71,>78,>79            ; Gloves
 MROBE  BYTE >72,>73,>7A,>7B            ; Robes
 MSHLD  BYTE >74,>75,>7C,>7D            ; Shield
 MQUEST BYTE >76,>77,>7E,>7F            ; Question mark
+MPICK  BYTE >C2,>6E,>6F,>CB            ; Pick axe
 MMONS1 BYTE >E0,>E1,>E8,>E9            ; Monster 1
 MMONS2 BYTE >E2,>E3,>EA,>EB            ; Monster 2
 MMONS3 BYTE >E4,>E5,>EC,>ED            ; Monster 3

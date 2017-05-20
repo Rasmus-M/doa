@@ -58,6 +58,8 @@ CBSLP  EQU  10                         ; Sleeping
        DATA TXSLP
 CBRECA EQU  11                         ; Recall
        DATA TXRECA
+CBMINE EQU  12                         ; Mining
+       DATA TXMINE
 
 * Materials
 MTRLS
@@ -330,5 +332,14 @@ IT_SHLD                                ; Shield
        BYTE 4                          ; Damage/AC
        BYTE 1                          ; Rarity
        DATA 80                         ; Value
+
+IT_PICK                                ; Pick axe
+       BYTE TPICK                      ; Tile
+       BYTE IYWEAP                     ; Type
+       BYTE CBMINE                     ; Capability
+       BYTE MADFLT                     ; Material
+       BYTE 2                          ; Damage/AC
+       BYTE 4                          ; Rarity
+       DATA 20                         ; Value
 
 IT_END
