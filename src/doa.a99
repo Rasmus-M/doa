@@ -1159,12 +1159,13 @@ XDNS2  SETO @GODOWN
 XDNS1  B    @XEND
 *      Tunnel
 XTNL   MOV  @EQWIEL,R1                 ; Get wielded item instance
+       JEQ  XTNL4
        MOV  @IIITEM(R1),R1             ; Get item
        MOVB @ITCPBL(R1),R1             ; Get capability
        SRL  R1,8
        CI   R1,CBMINE                  ; Check for mining
        JEQ  XTNL3
-       LI   R2,TXNOTU
+XTNL4  LI   R2,TXNOTU
        BL   @MSGLN
        JMP  XTNL2
 XTNL3  MOV  @NTILE,R1
