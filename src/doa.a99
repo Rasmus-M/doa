@@ -1016,7 +1016,14 @@ EXEC   MOV  R11,*R10+                  ; Push return address onto the stack
        MOV  @CMDTBL(R4),R4
        B    *R4
 *      None
-XNONE  B    @XEND
+XNONE  MOV  @CTILE,R1
+       CI   R1,TFOUNT
+       JNE  XNON1
+*      Fountain
+       LI   R1,1
+       LI   R2,1
+       BL   @HEAL
+XNON1  B    @XEND
 *      Tile size 1
 XTL1   CLR  @DRWMTL
        BL   @LAYOUT

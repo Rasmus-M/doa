@@ -21,6 +21,20 @@ MOVILL DATA TXVILL
        BYTE 2                          ; HP
        BYTE 1                          ; AC
        BYTE 1                          ; Damage
+*      Giant mouse
+MOMOUS DATA TXMOUS
+       DATA 13                         ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 12                         ; HP
+       BYTE 1                          ; AC
+       BYTE 2                          ; Damage
+*      Bat
+MOBAT  DATA TXBAT
+       DATA 14                         ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 6                          ; HP
+       BYTE 2                          ; AC
+       BYTE 2                          ; Damage
 *      Spider
 MOSPID DATA TXSPID
        DATA 0                          ; Pattern number
@@ -35,20 +49,6 @@ MOFLY  DATA TXFLY
        BYTE 10                         ; HP
        BYTE 2                          ; AC
        BYTE 3                          ; Damage
-*      Giant mouse
-MOMOUS DATA TXMOUS
-       DATA 13                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 10                         ; HP
-       BYTE 1                          ; AC
-       BYTE 2                          ; Damage
-*      Bat
-MOBAT  DATA TXBAT
-       DATA 14                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 6                          ; HP
-       BYTE 2                          ; AC
-       BYTE 2                          ; Damage
 *      Mushroom
 MOMUSH DATA TXMUSH
        DATA 4                          ; Pattern number
