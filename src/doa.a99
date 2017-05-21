@@ -52,7 +52,7 @@ MAXEQU EQU  8                          ; Max equipment size
 MAXSHP EQU  64                         ; Max shop size
 OBJ1ST EQU  10                         ; Number of first object tile
 OBJLST EQU  33                         ; Number of last object tile
-NMONST EQU  13                         ; Number of unique monsters
+NMONST EQU  16                         ; Number of unique monsters
 NMONAL EQU  8                          ; Number of monsters allocated per level
 MAXMON EQU  128                        ; Max monster instances
 RECSPD EQU  50                         ; Base recovering speed
@@ -329,9 +329,6 @@ INIGME MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R0,IT_TRCH
        BL   @GENITM
        BL   @ADDEQU
-       LI   R0,IT_PICK
-       BL   @GENITM
-       BL   @ADDINV
        BL   @CLCEQU                    ; Calculate effect of equipment
 *      Initialize shop
        LI   R0,SHOP
@@ -387,8 +384,15 @@ GENLV1 LI   R2,TXDGN
        BL   @ARMENA                    ; Page in AMS at >C000->FFFF
        BL   @GENDGN
        BL   @ARMDIS                    ; Page out AMS at >C000->FFFF
+*      Clear map window
+GENLV2 CLR  R0
+       CLR  R1
+       MOV  @MWINSW,R2
+       MOV  @MWINSH,R3
+       BL   @CLRWIN
+       BL   @CHGBUF
 *      Upload monster graphics
-GENLV2 BL   @UPLMON
+       BL   @UPLMON
 *      Place player
        MOV  @STAIRX,@X
        MOV  @STAIRY,@Y

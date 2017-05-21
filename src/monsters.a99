@@ -35,6 +35,20 @@ MOFLY  DATA TXFLY
        BYTE 10                         ; HP
        BYTE 2                          ; AC
        BYTE 3                          ; Damage
+*      Giant mouse
+MOMOUS DATA TXMOUS
+       DATA 13                         ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 10                         ; HP
+       BYTE 1                          ; AC
+       BYTE 2                          ; Damage
+*      Bat
+MOBAT  DATA TXBAT
+       DATA 14                         ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 6                          ; HP
+       BYTE 2                          ; AC
+       BYTE 2                          ; Damage
 *      Mushroom
 MOMUSH DATA TXMUSH
        DATA 4                          ; Pattern number
@@ -94,6 +108,13 @@ MOROBO DATA TXROBO
 *      Fire elemental
 MOFIEL DATA TXFIEL
        DATA 10                         ; Pattern number
+       BYTE 5                          ; Level
+       BYTE 20                         ; HP
+       BYTE 5                          ; AC
+       BYTE 14                         ; Damage
+*      Water elemental
+MOWAEL DATA TXWAEL
+       DATA 15                         ; Pattern number
        BYTE 5                          ; Level
        BYTE 20                         ; HP
        BYTE 5                          ; AC
