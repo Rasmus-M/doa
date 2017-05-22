@@ -4,10 +4,11 @@
 
 ### System requirements
 
-TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system for saving and loading.
+TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system (DSK1) for saving and loading.
 
-### Controls:
+### Controls
 
+* **Key: action**
 * 1: Set 8x8 tile mode.
 * 2: Set 16x16 tile mode.
 * 3: Set 2 rows message area.
@@ -16,12 +17,13 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 * 6: Enable stats panel.
 * Joystick right, left, up, down: Move player; Attack; Specify direction for directional command; Select item in dialog (inventory, equipment, shop).
 * Joystick fire, space: Close dialog (inventory, equipment, shop, map).
+* D, S, E, X, Space: Same as joystick right, left, up, down, fire.
 * G: Get item.
 * O: Open door (directional).
 * C: Close door (directional).
 * L: Look (directional).
 * T: Tunnel (directional).
-* >: Go down staircase.
+* \>: Go down staircase.
 * <: Go up staircase.
 * I: Inventory.
 * W: Wear/wield (from inventory).
@@ -37,6 +39,21 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 * Ctrl+R: Restart game.
 
 ### History
+
+#### New features in version 0.4.0
+
+* Pickaxe of mining must be used for tunneling
+* 4 New monsters
+* Fountains in town heal
+
+#### Bugs fixed in version 0.3.2
+
+* Fixed bug in shop/inventory scrolling 
+* Screen cleared before entering dungeon
+
+#### New features in version 0.3.1
+
+* Small changes to music
 
 #### New features in version 0.3.0
 
