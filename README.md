@@ -46,7 +46,7 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 * 4 New monsters
 * Fountains in town heal
 
-#### Bugs fixed in version 0.3.2
+#### Bugs fixed in version 0.4.0
 
 * Fixed bug in shop/inventory scrolling 
 * Screen cleared before entering dungeon
