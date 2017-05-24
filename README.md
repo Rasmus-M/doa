@@ -42,7 +42,7 @@ TI-99/4A console with AMS memory expansion (min 128 KiB); joystick; disk system 
 
 #### New features in version 0.4.0
 
-* Pickaxe of mining must be used for tunneling
+* Pickaxe of mining must be used for tunnelling
 * 4 New monsters
 * Fountains in town heal
 
