@@ -1259,7 +1259,7 @@ ARECT3 INC  R6                         ; Increment row index
 
 *********************************************************************************
 *
-* Map 8K AMS for ROOMS structure at >C000->FFFF
+* Map 8K AMS for ROOMS structure at >E000->FFFF
 *
 ARMENA MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R0,>0000

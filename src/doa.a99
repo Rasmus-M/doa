@@ -371,9 +371,9 @@ GENLVL MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R2,TXTWN
        BL   @IMMMSG
 *      Generate town
-       BL   @ARMENA                    ; Page in AMS at >C000->FFFF
+       BL   @ARMENA                    ; Page in AMS at >E000->FFFF
        BL   @GENTWN
-       BL   @ARMDIS                    ; Page out AMS at >C000->FFFF
+       BL   @ARMDIS                    ; Page out AMS at >E000->FFFF
 *      Upload tiles
        BL   @UPLTLS
        JMP  GENLV2
@@ -381,9 +381,9 @@ GENLVL MOV  R11,*R10+                  ; Push return address onto the stack
 GENLV1 LI   R2,TXDGN
        BL   @IMMMSG
 *      Generate dungeon
-       BL   @ARMENA                    ; Page in AMS at >C000->FFFF
+       BL   @ARMENA                    ; Page in AMS at >E000->FFFF
        BL   @GENDGN
-       BL   @ARMDIS                    ; Page out AMS at >C000->FFFF
+       BL   @ARMDIS                    ; Page out AMS at >E000->FFFF
 *      Clear map window
 GENLV2 CLR  R0
        CLR  R1
