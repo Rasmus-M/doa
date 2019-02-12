@@ -1060,23 +1060,30 @@ STILE  MOV  R1,R14                     ; Save vertical position
 * with the given width and height
 *
 * R0: Horizontal position
-* R1: Vertical position
+* R1: Vertical position (4 bits bank no, 4 bits row within bank)
 * R2: Width
 * R3: Height
 * R4: Address of destination buffer in CPU RAM
+*
+* This will page in one AMS page at AMSBUF that is not restored
+* by this routine.
 *
 * R14-R15 are modified
 *
 GRECT  MOV  R1,R14                     ; Save vertical position
        MOV  R2,R15                     ; Save width
-       SLA  R1,4                       ; Move bank number into MSB
-       AI   R1,>1000                   ; Add base bank number
+*      Source bank no
+       SLA  R1,4                       ; Move bank number into MSB (16 rows per bank)
+       AI   R1,>1000                   ; Add base bank number (16)
+*      Source address
        ANDI R14,>000F                  ; Isolate row number
        SWPB R14                        ; Multiply by 256
-       A    R14,R0                     ; Add to horizontal
+       A    R14,R0                     ; Add to horizontal offset
        AI   R0,AMSBUF                  ; Add AMS buffer base
+*      Offset to next row
        LI   R14,MAPW                   ; Map width
        S    R2,R14                     ; Map width - rect width
+*      Copy
 GRECT2 MOVB R1,@AMSREG                 ; Map bank to >2000
 GRECT1 MOVB *R0+,*R4+                  ; Read tile
        DEC  R2                         ; Column counter
