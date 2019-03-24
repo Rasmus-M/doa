@@ -3910,9 +3910,30 @@ MONGFX COPY "monster-graphics.a99"
 * Sound/music player
 TIPLYR COPY "tiplayersfx.a99"
 
+* Tile definitions
+       COPY "tiles.a99"
+
 * Music
 TWNMUS BCOPY "..\sound\town.vgm.spf"
 DNGMUS BCOPY "..\sound\dungeon.vgm.spf"
+
+* Light sources
+LNONE  DATA 1                          ; Size
+       BYTE >80
+LTORCH DATA 5                          ; Size
+       BYTE >00,>80,>80,>80,>00
+       BYTE >80,>80,>80,>80,>80
+       BYTE >80,>80,>80,>80,>80
+       BYTE >80,>80,>80,>80,>80
+       BYTE >00,>80,>80,>80,>00
+LLAMP  DATA 7                          ; Size
+       BYTE >00,>00,>80,>80,>80,>00,>00
+       BYTE >00,>80,>80,>80,>80,>80,>00
+       BYTE >80,>80,>80,>80,>80,>80,>80
+       BYTE >80,>80,>80,>80,>80,>80,>80
+       BYTE >00,>80,>80,>80,>00,>80,>80
+       BYTE >00,>80,>80,>80,>80,>80,>00
+       BYTE >00,>00,>80,>80,>80,>00,>00
 
 * Map buffer, for copying a section of the map from AMS into ordinary RAM
 MAPBUF BSS  32*22
@@ -3934,31 +3955,10 @@ TLEGFX COPY "tile-graphics.a99"
 * Text
        COPY "text.a99"
 
-* Tile definitions
-       COPY "tiles.a99"
-
 * Item definitions
        COPY "items.a99"
 
 * Monster definition
        COPY "monsters.a99"
-
-* Light sources
-LNONE  DATA 1                          ; Size
-       BYTE >80
-LTORCH DATA 5                          ; Size
-       BYTE >00,>80,>80,>80,>00
-       BYTE >80,>80,>80,>80,>80
-       BYTE >80,>80,>80,>80,>80
-       BYTE >80,>80,>80,>80,>80
-       BYTE >00,>80,>80,>80,>00
-LLAMP  DATA 7                          ; Size
-       BYTE >00,>00,>80,>80,>80,>00,>00
-       BYTE >00,>80,>80,>80,>80,>80,>00
-       BYTE >80,>80,>80,>80,>80,>80,>80
-       BYTE >80,>80,>80,>80,>80,>80,>80
-       BYTE >00,>80,>80,>80,>00,>80,>80
-       BYTE >00,>80,>80,>80,>80,>80,>00
-       BYTE >00,>00,>80,>80,>80,>00,>00
 
        END  MAIN

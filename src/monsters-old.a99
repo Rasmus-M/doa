@@ -1,0 +1,129 @@
+*********************************************************************
+*
+* Monsters
+*
+
+* Monster data structure
+
+MONAME EQU  0                          ; Name of monster. Pointer to null terminated string.
+MOPAT  EQU  2                          ; Pattern number
+MOLVL  EQU  4                          ; Level
+MOHP   EQU  5                          ; Hit points (max)
+MOAC   EQU  6                          ; Armor class
+MODMG  EQU  7                          ; Damage
+MOSIZE EQU  8                          ; Structure size
+
+MONSTR
+*      Villain
+MOVILL DATA TXVILL
+       DATA 12                         ; Pattern number
+       BYTE 0                          ; Level
+       BYTE 2                          ; HP
+       BYTE 1                          ; AC
+       BYTE 1                          ; Damage
+*      Giant mouse
+MOMOUS DATA TXMOUS
+       DATA 13                         ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 12                         ; HP
+       BYTE 1                          ; AC
+       BYTE 2                          ; Damage
+*      Bat
+MOBAT  DATA TXBAT
+       DATA 14                         ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 6                          ; HP
+       BYTE 2                          ; AC
+       BYTE 2                          ; Damage
+*      Spider
+MOSPID DATA TXSPID
+       DATA 0                          ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 8                          ; HP
+       BYTE 2                          ; AC
+       BYTE 2                          ; Damage
+*      Fly
+MOFLY  DATA TXFLY
+       DATA 1                          ; Pattern number
+       BYTE 1                          ; Level
+       BYTE 10                         ; HP
+       BYTE 2                          ; AC
+       BYTE 3                          ; Damage
+*      Mushroom
+MOMUSH DATA TXMUSH
+       DATA 4                          ; Pattern number
+       BYTE 2                          ; Level
+       BYTE 10                         ; HP
+       BYTE 2                          ; AC
+       BYTE 4                          ; Damage
+*      Nether worm
+MOWORM DATA TXWORM
+       DATA 7                          ; Pattern number
+       BYTE 2                          ; Level
+       BYTE 16                         ; HP
+       BYTE 1                          ; AC
+       BYTE 6                          ; Damage
+*      Ghost
+MOGHOS DATA TXGHOS
+       DATA 2                          ; Pattern number
+       BYTE 3                          ; Level
+       BYTE 10                         ; HP
+       BYTE 6                          ; AC
+       BYTE 8                          ; Damage
+*      Evil eye
+MOEYE  DATA TXEYE
+       DATA 6                          ; Pattern number
+       BYTE 3                          ; Level
+       BYTE 15                         ; HP
+       BYTE 2                          ; AC
+       BYTE 10                         ; Damage
+*      Draconian
+MODRAC DATA TXDRAC
+       DATA 3                          ; Pattern number
+       BYTE 4                          ; Level
+       BYTE 25                         ; HP
+       BYTE 6                          ; AC
+       BYTE 12                         ; Damage
+*      Ogre
+MOOGRE DATA TXOGRE
+       DATA 5                          ; Pattern number
+       BYTE 4                          ; Level
+       BYTE 20                         ; HP
+       BYTE 5                          ; AC
+       BYTE 14                         ; Damage
+*      Enchanter
+MOENCH DATA TXENCH
+       DATA 8                          ; Pattern number
+       BYTE 4                          ; Level
+       BYTE 10                         ; HP
+       BYTE 3                          ; AC
+       BYTE 20                         ; Damage
+*      Death robot
+MOROBO DATA TXROBO
+       DATA 9                          ; Pattern number
+       BYTE 4                          ; Level
+       BYTE 20                         ; HP
+       BYTE 10                         ; AC
+       BYTE 14                         ; Damage
+*      Fire elemental
+MOFIEL DATA TXFIEL
+       DATA 10                         ; Pattern number
+       BYTE 5                          ; Level
+       BYTE 20                         ; HP
+       BYTE 5                          ; AC
+       BYTE 14                         ; Damage
+*      Water elemental
+MOWAEL DATA TXWAEL
+       DATA 15                         ; Pattern number
+       BYTE 5                          ; Level
+       BYTE 20                         ; HP
+       BYTE 5                          ; AC
+       BYTE 14                         ; Damage
+*      Dragon
+MODRAG DATA TXDRAG
+       DATA 11                         ; Pattern number
+       BYTE 6                          ; Level
+       BYTE 40                         ; HP
+       BYTE 10                         ; AC
+       BYTE 22                         ; Damage
+MO_END
