@@ -52,7 +52,7 @@ MAXEQU EQU  8                          ; Max equipment size
 MAXSHP EQU  64                         ; Max shop size
 OBJ1ST EQU  10                         ; Number of first object tile
 OBJLST EQU  33                         ; Number of last object tile
-NMONST EQU  16                         ; Number of unique monsters
+NMONST EQU  129                        ; Number of unique monsters
 NMONAL EQU  8                          ; Number of monsters allocated per level
 MAXMON EQU  128                        ; Max monster instances
 RECSPD EQU  50                         ; Base recovering speed
