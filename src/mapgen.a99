@@ -578,7 +578,7 @@ GENRM  MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R1,2                       ; Minimum dx = 2
        MOV  R3,R2                      ; Get old width
        S    R0,R2                      ; old width - new width
-       DEC  R2                         , -1
+       DEC  R2                         ; -1
        BL   @RANDI                     ; R0 = rand[2; old width - new width - 1[
        AB   @R0LB,@ROOMX(R9)           ; Add to old X
 *      New height
@@ -593,7 +593,7 @@ GENRM  MOV  R11,*R10+                  ; Push return address onto the stack
        LI   R1,2                       ; Minimum dy = 2
        MOV  R3,R2                      ; Get old height
        S    R0,R2                      ; old height - new height
-       DEC  R2                         , -1
+       DEC  R2                         ; -1
        BL   @RANDI                     ; R0 = rand[2; old height - new height -1[
        AB   @R0LB,@ROOMY(R9)           ; Add to old Y
 *      Write room to map
