@@ -9,14 +9,14 @@ xdm99.py DOA360.dsk --set-geometry 2S1D80T
 
 :dsk2ok
 
-xas99.py -R -L doa.lst src/doa.a99
+xas99.py -R -q -L doa.lst src/doa.a99
 @IF %ERRORLEVEL% NEQ 0 GOTO :end
 
 xdm99.py DOA.dsk -a doa.obj -f DF80 -n DOA3
 
 xdm99.py DOA360.dsk -a doa.obj -f DF80 -n DOA3
 
-xas99.py -R -i src/doa.a99 -o doa
+xas99.py -R -q -i src/doa.a99 -o doa
 
 xdm99.py DOA.dsk -a doa -n DOA
 xdm99.py DOA.dsk -a dob -n DOB

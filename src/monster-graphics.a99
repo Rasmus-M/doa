@@ -1,214 +1,422 @@
 ****************************************
-* Colorset Definitions                  
+* Colorset Definitions
 ****************************************
-MCOL0   DATA >4141,>5151,>5151,>4151    ;
-MCOL1   DATA >71F1,>7171,>8161,>61A1    ;
-MCOL2   DATA >F1E1,>E1E1,>E1E1,>E1F1    ;
-MCOL3   DATA >E131,>3831,>2121,>2161    ;
-MCOL4   DATA >818F,>8F81,>F1FE,>F1E1    ;
-MCOL5   DATA >9191,>2121,>2121,>2121    ;
-MCOL6   DATA >F1F1,>F1F5,>F4F1,>F1F1    ;
-MCOL7   DATA >2121,>2121,>A121,>A121    ;
-MCOL8   DATA >D1D1,>DFD1,>D1D1,>D1D1    ;
-MCOL9   DATA >F1F1,>51FE,>F8F1,>51F1    ;
-MCOL10  DATA >81A1,>A181,>A1A8,>A1B1    ;
-MCOL11  DATA >7171,>7171,>7171,>7171    ;
-MCOL12  DATA >9191,>F1F1,>F191,>9161    ;
-MCOL13  DATA >E1E1,>E1E1,>E6E1,>E1E1    ;
-MCOL14  DATA >E1E1,>E1E1,>E1E1,>E1E1    ;
-MCOL15  DATA >5141,>4141,>4151,>4154    ;
-MCOL16  DATA >1010,>1010,>1010,>1010    ;
-MCOL17  DATA >1010,>1010,>1010,>1010    ;
-MCOL18  DATA >1010,>1010,>1010,>1010    ;
-MCOL19  DATA >1010,>1010,>1010,>1010    ;
-MCOL20  DATA >1010,>1010,>1010,>1010    ;
-MCOL21  DATA >1010,>1010,>1010,>1010    ;
-MCOL22  DATA >1010,>1010,>1010,>1010    ;
-MCOL23  DATA >1010,>1010,>1010,>1010    ;
-MCOL24  DATA >1010,>1010,>1010,>1010    ;
-MCOL25  DATA >1010,>1010,>1010,>1010    ;
-MCOL26  DATA >1010,>1010,>1010,>1010    ;
-MCOL27  DATA >1010,>1010,>1010,>1010    ;
-MCOL28  DATA >1010,>1010,>1010,>1010    ;
-MCOL29  DATA >1010,>1010,>1010,>1010    ;
-MCOL30  DATA >1010,>1010,>1010,>1010    ;
-MCOL31  DATA >1010,>1010,>1010,>1010    ;
-MCOL32  DATA >1010,>1010,>1010,>1010    ;
-MCOL33  DATA >1010,>1010,>1010,>1010    ;
-MCOL34  DATA >1010,>1010,>1010,>1010    ;
-MCOL35  DATA >1010,>1010,>1010,>1010    ;
-MCOL36  DATA >1010,>1010,>1010,>1010    ;
-MCOL37  DATA >1010,>1010,>1010,>1010    ;
-MCOL38  DATA >1010,>1010,>1010,>1010    ;
-MCOL39  DATA >1010,>1010,>1010,>1010    ;
-MCOL40  DATA >E141,>5151,>5151,>5151    ;
-MCOL41  DATA >E141,>4141,>4141,>5151    ;
-MCOL42  DATA >7171,>7171,>F171,>7171    ;
-MCOL43  DATA >5171,>71F1,>7171,>7171    ;
-MCOL44  DATA >F1E1,>E1E1,>E6E9,>E1E1    ;
-MCOL45  DATA >E1E1,>E1F1,>E1E1,>E1E1    ;
-MCOL46  DATA >E1E1,>3231,>383F,>3131    ;
-MCOL47  DATA >2121,>2121,>21C1,>C1C1    ;
-MCOL48  DATA >5151,>4141,>4141,>41E1    ;
-MCOL49  DATA >5151,>5151,>5151,>51E1    ;
-MCOL50  DATA >8181,>6161,>61A1,>A1A1    ;
-MCOL51  DATA >8761,>61A1,>A1B1,>A1A1    ;
-MCOL52  DATA >E1E1,>E1E1,>E1E1,>F1E1    ;
-MCOL53  DATA >E1E1,>E1E1,>E1E1,>E1F1    ;
-MCOL54  DATA >C121,>2121,>C161,>81C1    ;
-MCOL55  DATA >C1C1,>C1C1,>C1C1,>C161    ;
-MCOL56  DATA >8181,>8181,>818F,>8F8F    ;
-MCOL57  DATA >F1F1,>8161,>616F,>6F6F    ;
-MCOL58  DATA >9191,>9191,>9191,>2121    ;
-MCOL59  DATA >9161,>6161,>6161,>C1C1    ;
-MCOL60  DATA >F1F1,>F1F1,>F1FE,>F5F5    ;
-MCOL61  DATA >F1F1,>F1F1,>F1FE,>F5F5    ;
-MCOL62  DATA >3131,>212F,>21C1,>C1A1    ;
-MCOL63  DATA >C121,>A1B1,>C121,>A1B1    ;
-MCOL64  DATA >8181,>F1F1,>F1F1,>F1E1    ;
-MCOL65  DATA >6161,>E1E1,>E1E1,>E1E1    ;
-MCOL66  DATA >2121,>2121,>2121,>21C1    ;
-MCOL67  DATA >C1C1,>C1C1,>C1C1,>C1C1    ;
-MCOL68  DATA >F5F4,>F4F1,>F1F1,>F1F1    ;
-MCOL69  DATA >F4F4,>F4F1,>F1F1,>F1F1    ;
-MCOL70  DATA >A1C1,>A2AC,>B1C1,>21A1    ;
-MCOL71  DATA >C121,>A1B1,>C121,>A1B1    ;
-MCOL72  DATA >D1D1,>D1D1,>DFD1,>D1D1    ;
-MCOL73  DATA >D1D1,>D1D1,>DFD1,>D1D1    ;
-MCOL74  DATA >E1F1,>F1F1,>F1F1,>51F1    ;
-MCOL75  DATA >E1E1,>E1E1,>E1E1,>41E1    ;
-MCOL76  DATA >B1B1,>B181,>B1A1,>A1B1    ;
-MCOL77  DATA >81B1,>B1A1,>A1A1,>81A1    ;
-MCOL78  DATA >7171,>7171,>71A1,>8171    ;
-MCOL79  DATA >7171,>7171,>7171,>7171    ;
-MCOL80  DATA >D1D1,>D1D1,>D1D1,>D1D1    ;
-MCOL81  DATA >D1D1,>D1D1,>D1D1,>D1D1    ;
-MCOL82  DATA >F9F8,>F151,>F1F1,>F151    ;
-MCOL83  DATA >E8E6,>E141,>E1E1,>E141    ;
-MCOL84  DATA >A1A1,>A8A9,>A8A6,>A1B1    ;
-MCOL85  DATA >B1A8,>A1A1,>A181,>8181    ;
-MCOL86  DATA >7171,>7171,>7171,>7171    ;
-MCOL87  DATA >7171,>7171,>7171,>7171    ;
-MCOL88  DATA >A191,>9191,>9191,>F1F1    ;
-MCOL89  DATA >A161,>6161,>6161,>E1E1    ;
-MCOL90  DATA >61E1,>E1F1,>E1E1,>E1E1    ;
-MCOL91  DATA >E1E1,>E1E1,>E1E1,>E1E1    ;
-MCOL92  DATA >E1F1,>F1F1,>F1F1,>F1F1    ;
-MCOL93  DATA >E1E1,>E1E1,>E1E1,>E1E1    ;
-MCOL94  DATA >5141,>4745,>4141,>4141    ;
-MCOL95  DATA >4151,>4141,>5141,>4141    ;
-MCOL96  DATA >F1F1,>F191,>9191,>9181    ;
-MCOL97  DATA >E1E1,>E191,>9191,>9161    ;
-MCOL98  DATA >E8E6,>E1E1,>E161,>6161    ;
-MCOL99  DATA >E1E1,>E1E1,>E1E1,>E161    ;
-MCOL100 DATA >E1E1,>E1E1,>E1E1,>E1E1    ;
-MCOL101 DATA >F1F1,>F1F1,>F1F1,>E1E1    ;
-MCOL102 DATA >5141,>4141,>4141,>5151    ;
-MCOL103 DATA >4141,>5141,>5151,>4154    ;
+mcol0:
+       data >4141,>5151,>5151,>4151    ;
+mcol1:
+       data >71f1,>7171,>8161,>61a1    ;
+mcol2:
+       data >f1e1,>e1e1,>e1e1,>e1f1    ;
+mcol3:
+       data >e131,>3831,>2121,>2161    ;
+mcol4:
+       data >818f,>8f81,>f1fe,>f1e1    ;
+mcol5:
+       data >9191,>2121,>2121,>2121    ;
+mcol6:
+       data >f1f1,>f1f5,>f4f1,>f1f1    ;
+mcol7:
+       data >2121,>2121,>a121,>a121    ;
+mcol8:
+       data >d1d1,>dfd1,>d1d1,>d1d1    ;
+mcol9:
+       data >f1f1,>51fe,>f8f1,>51f1    ;
+mcol10:
+       data >81a1,>a181,>a1a8,>a1b1    ;
+mcol11:
+       data >7171,>7171,>7171,>7171    ;
+mcol12:
+       data >9191,>f1f1,>f191,>9161    ;
+mcol13:
+       data >e1e1,>e1e1,>e6e1,>e1e1    ;
+mcol14:
+       data >e1e1,>e1e1,>e1e1,>e1e1    ;
+mcol15:
+       data >5141,>4141,>4151,>4154    ;
+mcol16:
+       data >1010,>1010,>1010,>1010    ;
+mcol17:
+       data >1010,>1010,>1010,>1010    ;
+mcol18:
+       data >1010,>1010,>1010,>1010    ;
+mcol19:
+       data >1010,>1010,>1010,>1010    ;
+mcol20:
+       data >1010,>1010,>1010,>1010    ;
+mcol21:
+       data >1010,>1010,>1010,>1010    ;
+mcol22:
+       data >1010,>1010,>1010,>1010    ;
+mcol23:
+       data >1010,>1010,>1010,>1010    ;
+mcol24:
+       data >1010,>1010,>1010,>1010    ;
+mcol25:
+       data >1010,>1010,>1010,>1010    ;
+mcol26:
+       data >1010,>1010,>1010,>1010    ;
+mcol27:
+       data >1010,>1010,>1010,>1010    ;
+mcol28:
+       data >1010,>1010,>1010,>1010    ;
+mcol29:
+       data >1010,>1010,>1010,>1010    ;
+mcol30:
+       data >1010,>1010,>1010,>1010    ;
+mcol31:
+       data >1010,>1010,>1010,>1010    ;
+mcol32:
+       data >1010,>1010,>1010,>1010    ;
+mcol33:
+       data >1010,>1010,>1010,>1010    ;
+mcol34:
+       data >1010,>1010,>1010,>1010    ;
+mcol35:
+       data >1010,>1010,>1010,>1010    ;
+mcol36:
+       data >1010,>1010,>1010,>1010    ;
+mcol37:
+       data >1010,>1010,>1010,>1010    ;
+mcol38:
+       data >1010,>1010,>1010,>1010    ;
+mcol39:
+       data >1010,>1010,>1010,>1010    ;
+mcol40:
+       data >e141,>5151,>5151,>5151    ;
+mcol41:
+       data >e141,>4141,>4141,>5151    ;
+mcol42:
+       data >7171,>7171,>f171,>7171    ;
+mcol43:
+       data >5171,>71f1,>7171,>7171    ;
+mcol44:
+       data >f1e1,>e1e1,>e6e9,>e1e1    ;
+mcol45:
+       data >e1e1,>e1f1,>e1e1,>e1e1    ;
+mcol46:
+       data >e1e1,>3231,>383f,>3131    ;
+mcol47:
+       data >2121,>2121,>21c1,>c1c1    ;
+mcol48:
+       data >5151,>4141,>4141,>41e1    ;
+mcol49:
+       data >5151,>5151,>5151,>51e1    ;
+mcol50:
+       data >8181,>6161,>61a1,>a1a1    ;
+mcol51:
+       data >8761,>61a1,>a1b1,>a1a1    ;
+mcol52:
+       data >e1e1,>e1e1,>e1e1,>f1e1    ;
+mcol53:
+       data >e1e1,>e1e1,>e1e1,>e1f1    ;
+mcol54:
+       data >c121,>2121,>c161,>81c1    ;
+mcol55:
+       data >c1c1,>c1c1,>c1c1,>c161    ;
+mcol56:
+       data >8181,>8181,>818f,>8f8f    ;
+mcol57:
+       data >f1f1,>8161,>616f,>6f6f    ;
+mcol58:
+       data >9191,>9191,>9191,>2121    ;
+mcol59:
+       data >9161,>6161,>6161,>c1c1    ;
+mcol60:
+       data >f1f1,>f1f1,>f1fe,>f5f5    ;
+mcol61:
+       data >f1f1,>f1f1,>f1fe,>f5f5    ;
+mcol62:
+       data >3131,>212f,>21c1,>c1a1    ;
+mcol63:
+       data >c121,>a1b1,>c121,>a1b1    ;
+mcol64:
+       data >8181,>f1f1,>f1f1,>f1e1    ;
+mcol65:
+       data >6161,>e1e1,>e1e1,>e1e1    ;
+mcol66:
+       data >2121,>2121,>2121,>21c1    ;
+mcol67:
+       data >c1c1,>c1c1,>c1c1,>c1c1    ;
+mcol68:
+       data >f5f4,>f4f1,>f1f1,>f1f1    ;
+mcol69:
+       data >f4f4,>f4f1,>f1f1,>f1f1    ;
+mcol70:
+       data >a1c1,>a2ac,>b1c1,>21a1    ;
+mcol71:
+       data >c121,>a1b1,>c121,>a1b1    ;
+mcol72:
+       data >d1d1,>d1d1,>dfd1,>d1d1    ;
+mcol73:
+       data >d1d1,>d1d1,>dfd1,>d1d1    ;
+mcol74:
+       data >e1f1,>f1f1,>f1f1,>51f1    ;
+mcol75:
+       data >e1e1,>e1e1,>e1e1,>41e1    ;
+mcol76:
+       data >b1b1,>b181,>b1a1,>a1b1    ;
+mcol77:
+       data >81b1,>b1a1,>a1a1,>81a1    ;
+mcol78:
+       data >7171,>7171,>71a1,>8171    ;
+mcol79:
+       data >7171,>7171,>7171,>7171    ;
+mcol80:
+       data >d1d1,>d1d1,>d1d1,>d1d1    ;
+mcol81:
+       data >d1d1,>d1d1,>d1d1,>d1d1    ;
+mcol82:
+       data >f9f8,>f151,>f1f1,>f151    ;
+mcol83:
+       data >e8e6,>e141,>e1e1,>e141    ;
+mcol84:
+       data >a1a1,>a8a9,>a8a6,>a1b1    ;
+mcol85:
+       data >b1a8,>a1a1,>a181,>8181    ;
+mcol86:
+       data >7171,>7171,>7171,>7171    ;
+mcol87:
+       data >7171,>7171,>7171,>7171    ;
+mcol88:
+       data >a191,>9191,>9191,>f1f1    ;
+mcol89:
+       data >a161,>6161,>6161,>e1e1    ;
+mcol90:
+       data >61e1,>e1f1,>e1e1,>e1e1    ;
+mcol91:
+       data >e1e1,>e1e1,>e1e1,>e1e1    ;
+mcol92:
+       data >e1f1,>f1f1,>f1f1,>f1f1    ;
+mcol93:
+       data >e1e1,>e1e1,>e1e1,>e1e1    ;
+mcol94:
+       data >5141,>4745,>4141,>4141    ;
+mcol95:
+       data >4151,>4141,>5141,>4141    ;
+mcol96:
+       data >f1f1,>f191,>9191,>9181    ;
+mcol97:
+       data >e1e1,>e191,>9191,>9161    ;
+mcol98:
+       data >e8e6,>e1e1,>e161,>6161    ;
+mcol99:
+       data >e1e1,>e1e1,>e1e1,>e161    ;
+mcol100:
+       data >e1e1,>e1e1,>e1e1,>e1e1    ;
+mcol101:
+       data >f1f1,>f1f1,>f1f1,>e1e1    ;
+mcol102:
+       data >5141,>4141,>4141,>5151    ;
+mcol103:
+       data >4141,>5141,>5151,>4154    ;
 ****************************************
-* Character Patterns                    
+* Character Patterns
 ****************************************
-MPAT0   DATA >1257,>A638,>FB3C,>D2D4    ;
-MPAT1   DATA >66FF,>7736,>7FBE,>CA55    ;
-MPAT2   DATA >70F8,>A8FD,>DE73,>AC12    ;
-MPAT3   DATA >95F3,>AFFE,>5FAB,>5E14    ;
-MPAT4   DATA >7EDB,>7666,>3C3C,>3C18    ;
-MPAT5   DATA >1818,>3C7E,>DBDD,>1436    ;
-MPAT6   DATA >3C52,>FDE7,>E7BF,>4A3C    ;
-MPAT7   DATA >62B7,>F66E,>E7E7,>7E3C    ;
-MPAT8   DATA >C3DB,>D76E,>3C56,>BBFF    ;
-MPAT9   DATA >1898,>A4BE,>AB7D,>2566    ;
-MPAT10  DATA >4428,>AA50,>6B9E,>F060    ;
-MPAT11  DATA >78AC,>4C19,>7EFF,>A52A    ;
-MPAT12  DATA >1819,>257E,>5C58,>1436    ;
-MPAT13  DATA >1428,>142E,>7F3D,>5106    ;
-MPAT14  DATA >2335,>EA5A,>344B,>B4C4    ;
-MPAT15  DATA >72A9,>FF5A,>B4D5,>7AFC    ;
-MPAT16  DATA >0000,>0000,>0000,>0000    ;
-MPAT17  DATA >0000,>0000,>0000,>0000    ;
-MPAT18  DATA >0000,>0000,>0000,>0000    ;
-MPAT19  DATA >0000,>0000,>0000,>0000    ;
-MPAT20  DATA >0000,>0000,>0000,>0000    ;
-MPAT21  DATA >0000,>0000,>0000,>0000    ;
-MPAT22  DATA >0000,>0000,>0000,>0000    ;
-MPAT23  DATA >0000,>0000,>0000,>0000    ;
-MPAT24  DATA >0000,>0000,>0000,>0000    ;
-MPAT25  DATA >0000,>0000,>0000,>0000    ;
-MPAT26  DATA >0000,>0000,>0000,>0000    ;
-MPAT27  DATA >0000,>0000,>0000,>0000    ;
-MPAT28  DATA >0000,>0000,>0000,>0000    ;
-MPAT29  DATA >0000,>0000,>0000,>0000    ;
-MPAT30  DATA >0000,>0000,>0000,>0000    ;
-MPAT31  DATA >0000,>0000,>0000,>0000    ;
-MPAT32  DATA >0000,>0000,>0000,>0000    ;
-MPAT33  DATA >0000,>0000,>0000,>0000    ;
-MPAT34  DATA >0000,>0000,>0000,>0000    ;
-MPAT35  DATA >0000,>0000,>0000,>0000    ;
-MPAT36  DATA >0000,>0000,>0000,>0000    ;
-MPAT37  DATA >0000,>0000,>0000,>0000    ;
-MPAT38  DATA >0000,>0000,>0000,>0000    ;
-MPAT39  DATA >0000,>0000,>0000,>0000    ;
-MPAT40  DATA >0001,>0804,>0232,>0D03    ;
-MPAT41  DATA >000E,>93AF,>BF1E,>CCE0    ;
-MPAT42  DATA >1826,>3B3F,>1F0F,>0F07    ;
-MPAT43  DATA >000E,>1FB3,>AF7E,>7C78    ;
-MPAT44  DATA >1C3E,>7F7F,>DBDB,>FFE7    ;
-MPAT45  DATA >0000,>0008,>ACB0,>C8E0    ;
-MPAT46  DATA >4266,>3CFF,>BBBB,>FFA5    ;
-MPAT47  DATA >0818,>391B,>D7EF,>DFF1    ;
-MPAT48  DATA >7B03,>357A,>BADA,>7200    ;
-MPAT49  DATA >ECC2,>2190,>4848,>4000    ;
-MPAT50  DATA >073F,>5F6E,>3804,>0A08    ;
-MPAT51  DATA >1FFE,>F854,>AAAA,>A880    ;
-MPAT52  DATA >677F,>3F1F,>6B25,>5000    ;
-MPAT53  DATA >E0D8,>FC2B,>D04A,>AC34    ;
-MPAT54  DATA >817F,>235C,>F3A7,>0200    ;
-MPAT55  DATA >FEDE,>BF7F,>F6CE,>1C78    ;
-MPAT56  DATA >0000,>000F,>79B7,>EE7B    ;
-MPAT57  DATA >0000,>00F8,>9EFB,>DFB7    ;
-MPAT58  DATA >0307,>0507,>0603,>1C3F    ;
-MPAT59  DATA >C0E0,>60E0,>E0C0,>38FC    ;
-MPAT60  DATA >479E,>335F,>7F7C,>F8FA    ;
-MPAT61  DATA >E219,>E4FA,>FE3E,>1F1F    ;
-MPAT62  DATA >3C7E,>FFD7,>FFEF,>7E7C    ;
-MPAT63  DATA >1C36,>2F5F,>5D7C,>7C3E    ;
-MPAT64  DATA >7E0D,>0717,>5F27,>0703    ;
-MPAT65  DATA >7EB8,>E0E4,>F8EC,>E8C0    ;
-MPAT66  DATA >3F3B,>74F7,>E767,>0E1E    ;
-MPAT67  DATA >FEDE,>2EE7,>EF66,>7078    ;
-MPAT68  DATA >F8F8,>FC7F,>5F27,>9847    ;
-MPAT69  DATA >1F1F,>3FFA,>FECC,>79E2    ;
-MPAT70  DATA >7CFE,>8CFF,>5F67,>380F    ;
-MPAT71  DATA >3E7E,>FAFA,>F4EC,>F8E0    ;
-MPAT72  DATA >70A8,>89DB,>FD7F,>7E3E    ;
-MPAT73  DATA >0E15,>91DB,>BFFE,>7E7C    ;
-MPAT74  DATA >0316,>1F17,>C683,>DCBF    ;
-MPAT75  DATA >C0A8,>F868,>20C0,>38FC    ;
-MPAT76  DATA >1296,>4923,>3536,>6A3D    ;
-MPAT77  DATA >2088,>4850,>32A6,>4CC0    ;
-MPAT78  DATA >071B,>3E0C,>68E0,>C003    ;
-MPAT79  DATA >C0F0,>7838,>3878,>F1E3    ;
-MPAT80  DATA >1F0F,>1D1B,>3B37,>777F    ;
-MPAT81  DATA >F8F0,>B8D8,>DCEC,>EEFE    ;
-MPAT82  DATA >E6E6,>3F1F,>0706,>1E1E    ;
-MPAT83  DATA >6767,>FDFB,>7133,>3C3C    ;
-MPAT84  DATA >3B7F,>C7AB,>83C7,>7E38    ;
-MPAT85  DATA >FA2F,>D860,>8000,>0000    ;
-MPAT86  DATA >0F1F,>1F37,>3B77,>0F00    ;
-MPAT87  DATA >FEFE,>FFFF,>3737,>6E00    ;
-MPAT88  DATA >0303,>0507,>0203,>041F    ;
-MPAT89  DATA >8080,>40C0,>8C84,>4CFC    ;
-MPAT90  DATA >0000,>001B,>3D1B,>0F1B    ;
-MPAT91  DATA >0000,>0000,>8000,>E0B8    ;
-MPAT92  DATA >0008,>0C0E,>7A37,>1E04    ;
-MPAT93  DATA >0F31,>42BA,>848C,>5030    ;
-MPAT94  DATA >3E7F,>DB7E,>E3C1,>553F    ;
-MPAT95  DATA >442E,>43C3,>E7FE,>FEDC    ;
-MPAT96  DATA >1D36,>3323,>3306,>060E    ;
-MPAT97  DATA >70C0,>8080,>C0C0,>6070    ;
-MPAT98  DATA >3F3F,>0F05,>1A00,>0000    ;
-MPAT99  DATA >7E79,>B931,>C20C,>F000    ;
-MPAT100 DATA >1C22,>5153,>948C,>B0C0    ;
-MPAT101 DATA >203C,>C840,>6040,>0000    ;
-MPAT102 DATA >9FFB,>7D9D,>0F6F,>B35F    ;
-MPAT103 DATA >B870,>61E1,>F3BE,>DEF0    ;
+mpat0:
+       data >1257,>a638,>fb3c,>d2d4    ;
+mpat1:
+       data >66ff,>7736,>7fbe,>ca55    ;
+mpat2:
+       data >70f8,>a8fd,>de73,>ac12    ;
+mpat3:
+       data >95f3,>affe,>5fab,>5e14    ;
+mpat4:
+       data >7edb,>7666,>3c3c,>3c18    ;
+mpat5:
+       data >1818,>3c7e,>dbdd,>1436    ;
+mpat6:
+       data >3c52,>fde7,>e7bf,>4a3c    ;
+mpat7:
+       data >62b7,>f66e,>e7e7,>7e3c    ;
+mpat8:
+       data >c3db,>d76e,>3c56,>bbff    ;
+mpat9:
+       data >1898,>a4be,>ab7d,>2566    ;
+mpat10:
+       data >4428,>aa50,>6b9e,>f060    ;
+mpat11:
+       data >78ac,>4c19,>7eff,>a52a    ;
+mpat12:
+       data >1819,>257e,>5c58,>1436    ;
+mpat13:
+       data >1428,>142e,>7f3d,>5106    ;
+mpat14:
+       data >2335,>ea5a,>344b,>b4c4    ;
+mpat15:
+       data >72a9,>ff5a,>b4d5,>7afc    ;
+mpat16:
+       data >0000,>0000,>0000,>0000    ;
+mpat17:
+       data >0000,>0000,>0000,>0000    ;
+mpat18:
+       data >0000,>0000,>0000,>0000    ;
+mpat19:
+       data >0000,>0000,>0000,>0000    ;
+mpat20:
+       data >0000,>0000,>0000,>0000    ;
+mpat21:
+       data >0000,>0000,>0000,>0000    ;
+mpat22:
+       data >0000,>0000,>0000,>0000    ;
+mpat23:
+       data >0000,>0000,>0000,>0000    ;
+mpat24:
+       data >0000,>0000,>0000,>0000    ;
+mpat25:
+       data >0000,>0000,>0000,>0000    ;
+mpat26:
+       data >0000,>0000,>0000,>0000    ;
+mpat27:
+       data >0000,>0000,>0000,>0000    ;
+mpat28:
+       data >0000,>0000,>0000,>0000    ;
+mpat29:
+       data >0000,>0000,>0000,>0000    ;
+mpat30:
+       data >0000,>0000,>0000,>0000    ;
+mpat31:
+       data >0000,>0000,>0000,>0000    ;
+mpat32:
+       data >0000,>0000,>0000,>0000    ;
+mpat33:
+       data >0000,>0000,>0000,>0000    ;
+mpat34:
+       data >0000,>0000,>0000,>0000    ;
+mpat35:
+       data >0000,>0000,>0000,>0000    ;
+mpat36:
+       data >0000,>0000,>0000,>0000    ;
+mpat37:
+       data >0000,>0000,>0000,>0000    ;
+mpat38:
+       data >0000,>0000,>0000,>0000    ;
+mpat39:
+       data >0000,>0000,>0000,>0000    ;
+mpat40:
+       data >0001,>0804,>0232,>0d03    ;
+mpat41:
+       data >000e,>93af,>bf1e,>cce0    ;
+mpat42:
+       data >1826,>3b3f,>1f0f,>0f07    ;
+mpat43:
+       data >000e,>1fb3,>af7e,>7c78    ;
+mpat44:
+       data >1c3e,>7f7f,>dbdb,>ffe7    ;
+mpat45:
+       data >0000,>0008,>acb0,>c8e0    ;
+mpat46:
+       data >4266,>3cff,>bbbb,>ffa5    ;
+mpat47:
+       data >0818,>391b,>d7ef,>dff1    ;
+mpat48:
+       data >7b03,>357a,>bada,>7200    ;
+mpat49:
+       data >ecc2,>2190,>4848,>4000    ;
+mpat50:
+       data >073f,>5f6e,>3804,>0a08    ;
+mpat51:
+       data >1ffe,>f854,>aaaa,>a880    ;
+mpat52:
+       data >677f,>3f1f,>6b25,>5000    ;
+mpat53:
+       data >e0d8,>fc2b,>d04a,>ac34    ;
+mpat54:
+       data >817f,>235c,>f3a7,>0200    ;
+mpat55:
+       data >fede,>bf7f,>f6ce,>1c78    ;
+mpat56:
+       data >0000,>000f,>79b7,>ee7b    ;
+mpat57:
+       data >0000,>00f8,>9efb,>dfb7    ;
+mpat58:
+       data >0307,>0507,>0603,>1c3f    ;
+mpat59:
+       data >c0e0,>60e0,>e0c0,>38fc    ;
+mpat60:
+       data >479e,>335f,>7f7c,>f8fa    ;
+mpat61:
+       data >e219,>e4fa,>fe3e,>1f1f    ;
+mpat62:
+       data >3c7e,>ffd7,>ffef,>7e7c    ;
+mpat63:
+       data >1c36,>2f5f,>5d7c,>7c3e    ;
+mpat64:
+       data >7e0d,>0717,>5f27,>0703    ;
+mpat65:
+       data >7eb8,>e0e4,>f8ec,>e8c0    ;
+mpat66:
+       data >3f3b,>74f7,>e767,>0e1e    ;
+mpat67:
+       data >fede,>2ee7,>ef66,>7078    ;
+mpat68:
+       data >f8f8,>fc7f,>5f27,>9847    ;
+mpat69:
+       data >1f1f,>3ffa,>fecc,>79e2    ;
+mpat70:
+       data >7cfe,>8cff,>5f67,>380f    ;
+mpat71:
+       data >3e7e,>fafa,>f4ec,>f8e0    ;
+mpat72:
+       data >70a8,>89db,>fd7f,>7e3e    ;
+mpat73:
+       data >0e15,>91db,>bffe,>7e7c    ;
+mpat74:
+       data >0316,>1f17,>c683,>dcbf    ;
+mpat75:
+       data >c0a8,>f868,>20c0,>38fc    ;
+mpat76:
+       data >1296,>4923,>3536,>6a3d    ;
+mpat77:
+       data >2088,>4850,>32a6,>4cc0    ;
+mpat78:
+       data >071b,>3e0c,>68e0,>c003    ;
+mpat79:
+       data >c0f0,>7838,>3878,>f1e3    ;
+mpat80:
+       data >1f0f,>1d1b,>3b37,>777f    ;
+mpat81:
+       data >f8f0,>b8d8,>dcec,>eefe    ;
+mpat82:
+       data >e6e6,>3f1f,>0706,>1e1e    ;
+mpat83:
+       data >6767,>fdfb,>7133,>3c3c    ;
+mpat84:
+       data >3b7f,>c7ab,>83c7,>7e38    ;
+mpat85:
+       data >fa2f,>d860,>8000,>0000    ;
+mpat86:
+       data >0f1f,>1f37,>3b77,>0f00    ;
+mpat87:
+       data >fefe,>ffff,>3737,>6e00    ;
+mpat88:
+       data >0303,>0507,>0203,>041f    ;
+mpat89:
+       data >8080,>40c0,>8c84,>4cfc    ;
+mpat90:
+       data >0000,>001b,>3d1b,>0f1b    ;
+mpat91:
+       data >0000,>0000,>8000,>e0b8    ;
+mpat92:
+       data >0008,>0c0e,>7a37,>1e04    ;
+mpat93:
+       data >0f31,>42ba,>848c,>5030    ;
+mpat94:
+       data >3e7f,>db7e,>e3c1,>553f    ;
+mpat95:
+       data >442e,>43c3,>e7fe,>fedc    ;
+mpat96:
+       data >1d36,>3323,>3306,>060e    ;
+mpat97:
+       data >70c0,>8080,>c0c0,>6070    ;
+mpat98:
+       data >3f3f,>0f05,>1a00,>0000    ;
+mpat99:
+       data >7e79,>b931,>c20c,>f000    ;
+mpat100:
+       data >1c22,>5153,>948c,>b0c0    ;
+mpat101:
+       data >203c,>c840,>6040,>0000    ;
+mpat102:
+       data >9ffb,>7d9d,>0f6f,>b35f    ;
+mpat103:
+       data >b870,>61e1,>f3be,>def0    ;

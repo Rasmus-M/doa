@@ -1,920 +1,1056 @@
 *********************************************************************
-*
+* 
 * Monsters
-*
+* 
 
 * Monster data structure
 
-MONAME EQU  0                          ; Name of monster. Pointer to null terminated string.
-MOPAT  EQU  2                          ; Pattern number
-MOLVL  EQU  4                          ; Level
-MOHP   EQU  5                          ; Hit points (max)
-MOAC   EQU  6                          ; Armor class
-MODMG  EQU  7                          ; Damage
-MOSIZE EQU  8                          ; Structure size
+moname:
+       equ  0                                  ; Name of monster. Pointer to null terminated string.
+mopat:
+       equ  2                                  ; Pattern number
+molvl:
+       equ  4                                  ; Level
+mohp:
+       equ  5                                  ; Hit points (max)
+moac:
+       equ  6                                  ; Armor class
+modmg:
+       equ  7                                  ; Damage
+mosize:
+       equ  8                                  ; Structure size
 
-MONSTR
-;*      Villain
-;MOGRIC DATA TXVILL
-;       DATA 12                         ; Pattern number
-;       BYTE 10                         ; Level
-;       BYTE 270                        ; HP
-;       BYTE 22                         ; AC
-;       BYTE 50                         ; Damage
-*      Villain
-MOVILL DATA TXVILL
-       DATA 12                         ; Pattern number
-       BYTE 0                          ; Level
-       BYTE 2                          ; HP
-       BYTE 1                          ; AC
-       BYTE 1                          ; Damage
-*      Aarakocra
-MOAARA DATA TXAARA
-       DATA 14                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 13                         ; HP
-       BYTE 12                         ; AC
-       BYTE 5                          ; Damage
-*      Aboleth
-MOABOL DATA TXABOL
-       DATA 15                         ; Pattern number
-       BYTE 10                         ; Level
-       BYTE 135                        ; HP
-       BYTE 17                         ; AC
-       BYTE 21                         ; Damage
-*      Ankheg
-MOANKH DATA TXANKH
-       DATA 8                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 39                         ; HP
-       BYTE 14                         ; AC
-       BYTE 12                         ; Damage
-*      Azer
-MOAZER DATA TXAZER
-       DATA 10                         ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 39                         ; HP
-       BYTE 17                         ; AC
-       BYTE 11                         ; Damage
-*      Banshee
-MOBANS DATA TXBANS
-       DATA 2                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 58                         ; HP
-       BYTE 12                         ; AC
-       BYTE 12                         ; Damage
-*      Basilisk
-MOBASI DATA TXBASI
-       DATA 7                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 52                         ; HP
-       BYTE 15                         ; AC
-       BYTE 17                         ; Damage
-*      Behir
-MOBEHI DATA TXBEHI
-       DATA 0                          ; Pattern number
-       BYTE 11                         ; Level
-       BYTE 168                        ; HP
-       BYTE 17                         ; AC
-       BYTE 66                         ; Damage
-*      Beholder
-MOBEHO DATA TXBEHO
-       DATA 6                          ; Pattern number
-       BYTE 13                         ; Level
-       BYTE 180                        ; HP
-       BYTE 18                         ; AC
-       BYTE 55                         ; Damage
-*      Bugbear
-MOBUGB DATA TXBUGB
-       DATA 5                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 27                         ; HP
-       BYTE 16                         ; AC
-       BYTE 11                         ; Damage
-*      Bulette
-MOBULE DATA TXBULE
-       DATA 0                          ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 94                         ; HP
-       BYTE 17                         ; AC
-       BYTE 28                         ; Damage
-*      Bullywug
-MOBULL DATA TXBULL
-       DATA 7                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 11                         ; HP
-       BYTE 15                         ; AC
-       BYTE 5                          ; Damage
-*      Cambion
-MOCAMB DATA TXCAMB
-       DATA 1                          ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 82                         ; HP
-       BYTE 19                         ; AC
-       BYTE 11                         ; Damage
-*      Carrion Crawler
-MOCARR DATA TXCARR
-       DATA 1                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 51                         ; HP
-       BYTE 13                         ; AC
-       BYTE 7                          ; Damage
-*      Centaur
-MOCENT DATA TXCENT
-       DATA 8                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 45                         ; HP
-       BYTE 12                         ; AC
-       BYTE 11                         ; Damage
-*      Chimera
-MOCHIM DATA TXCHIM
-       DATA 3                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 114                        ; HP
-       BYTE 14                         ; AC
-       BYTE 31                         ; Damage
-*      Chuul
-MOCHUU DATA TXCHUU
-       DATA 0                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 93                         ; HP
-       BYTE 16                         ; AC
-       BYTE 11                         ; Damage
-*      Cloaker
-MOCLOA DATA TXCLOA
-       DATA 15                         ; Pattern number
-       BYTE 8                          ; Level
-       BYTE 78                         ; HP
-       BYTE 14                         ; AC
-       BYTE 10                         ; Damage
-*      Cockatrice
-MOCOCK DATA TXCOCK
-       DATA 3                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 27                         ; HP
-       BYTE 11                         ; AC
-       BYTE 3                          ; Damage
-*      Couatl
-MOCOUA DATA TXCOUA
-       DATA 1                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 97                         ; HP
-       BYTE 19                         ; AC
-       BYTE 10                         ; Damage
-*      Cyclops
-MOCYCL DATA TXCYCL
-       DATA 6                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 138                        ; HP
-       BYTE 14                         ; AC
-       BYTE 28                         ; Damage
-*      Darkmantle
-MODARK DATA TXDARK
-       DATA 15                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 11                         ; AC
-       BYTE 6                          ; Damage
-*      Death Knight
-MODEAT DATA TXDEAT
-       DATA 5                          ; Pattern number
-       BYTE 17                         ; Level
-       BYTE 180                        ; HP
-       BYTE 20                         ; AC
-       BYTE 35                         ; Damage
-*      Demi Lich
-MODEMI DATA TXDEMI
-       DATA 8                          ; Pattern number
-       BYTE 18                         ; Level
-       BYTE 80                         ; HP
-       BYTE 20                         ; AC
-       BYTE 21                         ; Damage
-*      Displacer Beast
-MODISP DATA TXDISP
-       DATA 16                         ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 85                         ; HP
-       BYTE 13                         ; AC
-       BYTE 10                         ; Damage
-*      Doppleganger
-MODOPP DATA TXDOPP
-       DATA 4                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 52                         ; HP
-       BYTE 14                         ; AC
-       BYTE 7                          ; Damage
-*      Dracolich
-MODRAC DATA TXDRAC
-       DATA 11                         ; Pattern number
-       BYTE 17                         ; Level
-       BYTE 225                        ; HP
-       BYTE 19                         ; AC
-       BYTE 66                         ; Damage
-*      Drider
-MODRID DATA TXDRID
-       DATA 0                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 123                        ; HP
-       BYTE 19                         ; AC
-       BYTE 11                         ; Damage
-*      Dryad
-MODRYA DATA TXDRYA
-       DATA 4                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 11                         ; AC
-       BYTE 8                          ; Damage
-*      Dueregar
-MODUER DATA TXDUER
-       DATA 8                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 26                         ; HP
-       BYTE 16                         ; AC
-       BYTE 11                         ; Damage
-*      Air Elemental
-MOAIRE DATA TXAIRE
-       DATA 15                         ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 90                         ; HP
-       BYTE 15                         ; AC
-       BYTE 15                         ; Damage
-*      Earth Elemental
-MOEART DATA TXEART
-       DATA 8                          ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 126                        ; HP
-       BYTE 17                         ; AC
-       BYTE 24                         ; Damage
-*      Fire Elemental
-MOFIRE DATA TXFIRE
-       DATA 10                         ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 102                        ; HP
-       BYTE 13                         ; AC
-       BYTE 10                         ; Damage
-*      Water Elemental
-MOWATE DATA TXWAEL
-       DATA 15                         ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 114                        ; HP
-       BYTE 14                         ; AC
-       BYTE 13                         ; Damage
-*      Drow
-MODROW DATA TXDROW
-       DATA 0                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 13                         ; HP
-       BYTE 15                         ; AC
-       BYTE 5                          ; Damage
-*      Empyrean
-MOEMPY DATA TXEMPY
-       DATA 5                          ; Pattern number
-       BYTE 23                         ; Level
-       BYTE 313                        ; HP
-       BYTE 22                         ; AC
-       BYTE 31                         ; Damage
-*      Ettercap
-MOETTE DATA TXETTE
-       DATA 0                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 44                         ; HP
-       BYTE 13                         ; AC
-       BYTE 7                          ; Damage
-*      Ettin
-MOETTI DATA TXETTI
-       DATA 8                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 85                         ; HP
-       BYTE 12                         ; AC
-       BYTE 14                         ; Damage
-*      Faerie Dragon
-MOFAER DATA TXFAER
-       DATA 2                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 14                         ; HP
-       BYTE 15                         ; AC
-       BYTE 1                          ; Damage
-*      Flameskull
-MOFLAM DATA TXFLAM
-       DATA 10                         ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 40                         ; HP
-       BYTE 13                         ; AC
-       BYTE 10                         ; Damage
-*      Flumph
-MOFLUM DATA TXFLUM
-       DATA 1                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 7                          ; HP
-       BYTE 12                         ; AC
-       BYTE 6                          ; Damage
-*      Fomorian
-MOFOMO DATA TXFOMO
-       DATA 5                          ; Pattern number
-       BYTE 8                          ; Level
-       BYTE 149                        ; HP
-       BYTE 14                         ; AC
-       BYTE 27                         ; Damage
-*      Galeb Duhr
-MOGALE DATA TXGALE
-       DATA 0                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 85                         ; HP
-       BYTE 16                         ; AC
-       BYTE 12                         ; Damage
-*      Gargoyle
-MOGARG DATA TXGARG
-       DATA 3                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 52                         ; HP
-       BYTE 15                         ; AC
-       BYTE 5                          ; Damage
-*      Ghost
-MOGHOS DATA TXGHOS
-       DATA 2                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 45                         ; HP
-       BYTE 11                         ; AC
-       BYTE 17                         ; Damage
-*      Ghast
-MOGHAS DATA TXGHAS
-       DATA 2                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 36                         ; HP
-       BYTE 13                         ; AC
-       BYTE 12                         ; Damage
-*      Ghoul
-MOGHOU DATA TXGHOU
-       DATA 2                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 12                         ; AC
-       BYTE 9                          ; Damage
-*      Cloud Giant
-MOCLOU DATA TXCLOU
-       DATA 5                          ; Pattern number
-       BYTE 9                          ; Level
-       BYTE 200                        ; HP
-       BYTE 14                         ; AC
-       BYTE 30                         ; Damage
-*      Fire Giant
-MOFIGI DATA TXFIGI
-       DATA 10                         ; Pattern number
-       BYTE 9                          ; Level
-       BYTE 162                        ; HP
-       BYTE 18                         ; AC
-       BYTE 29                         ; Damage
-*      Frost Giant
-MOFRGI DATA TXFRGI
-       DATA 15                         ; Pattern number
-       BYTE 8                          ; Level
-       BYTE 138                        ; HP
-       BYTE 15                         ; AC
-       BYTE 28                         ; Damage
-*      Hill Giant
-MOHILL DATA TXHILL
-       DATA 5                          ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 105                        ; HP
-       BYTE 13                         ; AC
-       BYTE 21                         ; Damage
-*      Stone Giant
-MOSTON DATA TXSTON
-       DATA 5                          ; Pattern number
-       BYTE 7                          ; Level
-       BYTE 126                        ; HP
-       BYTE 17                         ; AC
-       BYTE 28                         ; Damage
-*      Storm Giant
-MOSTOR DATA TXSTOR
-       DATA 5                          ; Pattern number
-       BYTE 13                         ; Level
-       BYTE 230                        ; HP
-       BYTE 16                         ; AC
-       BYTE 54                         ; Damage
-*      Gibbering Mouther
-MOGIBB DATA TXGIBB
-       DATA 3                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 67                         ; HP
-       BYTE 9                          ; AC
-       BYTE 17                         ; Damage
-*      Githyanki Warrior
-MOGITW DATA TXGITW
-       DATA 8                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 49                         ; HP
-       BYTE 17                         ; AC
-       BYTE 16                         ; Damage
-*      Githyanki Knight
-MOGITK DATA TXGITK
-       DATA 8                          ; Pattern number
-       BYTE 8                          ; Level
-       BYTE 91                         ; HP
-       BYTE 18                         ; AC
-       BYTE 23                         ; Damage
-*      Githzerai Monk
-MOGITM DATA TXGITM
-       DATA 8                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 38                         ; HP
-       BYTE 14                         ; AC
-       BYTE 15                         ; Damage
-*      Githzerai Zerth
-MOGITZ DATA TXGITZ
-       DATA 8                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 84                         ; HP
-       BYTE 17                         ; AC
-       BYTE 24                         ; Damage
-*      Gnoll
-MOGNOL DATA TXGNOL
-       DATA 4                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 15                         ; AC
-       BYTE 6                          ; Damage
-*      Gnoll Pack Lord
-MOGNOP DATA TXGNOP
-       DATA 4                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 49                         ; HP
-       BYTE 15                         ; AC
-       BYTE 8                          ; Damage
-*      Gnoll Fang of Yeenoghu
-MOGNOF DATA TXGNOF
-       DATA 4                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 65                         ; HP
-       BYTE 14                         ; AC
-       BYTE 13                         ; Damage
-*      Deep Gnome
-MODEEP DATA TXDEEP
-       DATA 5                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 16                         ; HP
-       BYTE 15                         ; AC
-       BYTE 6                          ; Damage
-*      Goblin
-MOGOBL DATA TXGOBL
-       DATA 3                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 7                          ; HP
-       BYTE 15                         ; AC
-       BYTE 5                          ; Damage
-*      Goblin Boss
-MOGOBB DATA TXGOBB
-       DATA 3                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 21                         ; HP
-       BYTE 17                         ; AC
-       BYTE 5                          ; Damage
-*      Clay Golem
-MOCLAY DATA TXCLAY
-       DATA 5                          ; Pattern number
-       BYTE 9                          ; Level
-       BYTE 133                        ; HP
-       BYTE 14                         ; AC
-       BYTE 16                         ; Damage
-*      Flesh Golem
-MOFLES DATA TXFLES
-       DATA 5                          ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 93                         ; HP
-       BYTE 9                          ; AC
-       BYTE 13                         ; Damage
-*      Iron Golem
-MOIRON DATA TXIRON
-       DATA 5                          ; Pattern number
-       BYTE 16                         ; Level
-       BYTE 210                        ; HP
-       BYTE 20                         ; AC
-       BYTE 45                         ; Damage
-*      Stone Golem
-MOSTOG DATA TXSTOG
-       DATA 5                          ; Pattern number
-       BYTE 10                         ; Level
-       BYTE 178                        ; HP
-       BYTE 17                         ; AC
-       BYTE 19                         ; Damage
-*      Gorgon
-MOGORG DATA TXGORG
-       DATA 11                         ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 114                        ; HP
-       BYTE 19                         ; AC
-       BYTE 18                         ; Damage
-*      Grell
-MOGREL DATA TXGREL
-       DATA 1                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 55                         ; HP
-       BYTE 12                         ; AC
-       BYTE 7                          ; Damage
-*      Grick
-MOGRIC DATA TXGRIC
-       DATA 2                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 27                         ; HP
-       BYTE 14                         ; AC
-       BYTE 9                          ; Damage
-*      Grick Alpha
-MOGRIA DATA TXGRIA
-       DATA 2                          ; Pattern number
-       BYTE 7                          ; Level
-       BYTE 75                         ; HP
-       BYTE 18                         ; AC
-       BYTE 22                         ; Damage
-*      Griffon
-MOGrIF DATA TXGRIF
-       DATA 1                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 59                         ; HP
-       BYTE 12                         ; AC
-       BYTE 11                         ; Damage
-*      Grimlock
-MOGRIM DATA TXGRIM
-       DATA 3                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 11                         ; HP
-       BYTE 11                         ; AC
-       BYTE 7                          ; Damage
-*      Green Hag
-MOGREE DATA TXGREE
-       DATA 3                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 82                         ; HP
-       BYTE 17                         ; AC
-       BYTE 13                         ; Damage
-*      Night Hag
-MONIGH DATA TXNIGH
-       DATA 15                         ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 112                        ; HP
-       BYTE 17                         ; AC
-       BYTE 13                         ; Damage
-*      Sea Hag
-MOSEAH DATA TXSEAH
-       DATA 15                         ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 52                         ; HP
-       BYTE 14                         ; AC
-       BYTE 10                         ; Damage
-*      Half-Red Dragon Veteran
-MOHALF DATA TXHALF
-       DATA 5                          ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 65                         ; HP
-       BYTE 18                         ; AC
-       BYTE 24                         ; Damage
-*      Harpy
-MOHARP DATA TXHARP
-       DATA 3                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 38                         ; HP
-       BYTE 11                         ; AC
-       BYTE 6                          ; Damage
-*      Hell Hound
-MOHELL DATA TXHELL
-       DATA 10                         ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 45                         ; HP
-       BYTE 15                         ; AC
-       BYTE 21                         ; Damage
-*      Helmed Horror
-MOHELM DATA TXHELM
-       DATA 8                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 60                         ; HP
-       BYTE 20                         ; AC
-       BYTE 9                          ; Damage
-*      Hippogriff
-MOHIPP DATA TXHIPP
-       DATA 1                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 19                         ; HP
-       BYTE 11                         ; AC
-       BYTE 10                         ; Damage
-*      Hobgoblin
-MOHOBG DATA TXHOBG
-       DATA 5                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 11                         ; HP
-       BYTE 18                         ; AC
-       BYTE 6                          ; Damage
-*      Hobgoblin Captain
-MOHOBC DATA TXHOBC
-       DATA 5                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 39                         ; HP
-       BYTE 17                         ; AC
-       BYTE 9                          ; Damage
-*      Hobgoblin Warlord
-MOHOBW DATA TXHOBW
-       DATA 5                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 97                         ; HP
-       BYTE 20                         ; AC
-       BYTE 14                         ; Damage
-*      Hook Horror
-MOHOOK DATA TXHOOK
-       DATA 7                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 75                         ; HP
-       BYTE 15                         ; AC
-       BYTE 11                         ; Damage
-*      Hydra
-MOHYDR DATA TXHYDR
-       DATA 11                         ; Pattern number
-       BYTE 8                          ; Level
-       BYTE 172                        ; HP
-       BYTE 15                         ; AC
-       BYTE 10                         ; Damage
-*      Intellect Devourer
-MOINTE DATA TXINTE
-       DATA 6                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 21                         ; HP
-       BYTE 12                         ; AC
-       BYTE 11                         ; Damage
-*      Invisible Stalker
-MOINVI DATA TXINVI
-       DATA 2                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 104                        ; HP
-       BYTE 14                         ; AC
-       BYTE 10                         ; Damage
-*      Jackalwere
-MOJACK DATA TXJACK
-       DATA 8                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 18                         ; HP
-       BYTE 12                         ; AC
-       BYTE 5                          ; Damage
-*      Kenku
-MOKENK DATA TXKENK
-       DATA 1                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 13                         ; HP
-       BYTE 13                         ; AC
-       BYTE 6                          ; Damage
-*      Kobold
-MOKOBO DATA TXKOBO
-       DATA 3                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 5                          ; HP
-       BYTE 12                         ; AC
-       BYTE 4                          ; Damage
-*      Winged Kobold
-MOKOBW DATA TXKOBW
-       DATA 3                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 7                          ; HP
-       BYTE 13                         ; AC
-       BYTE 6                          ; Damage
-*      Kraken
-MOKRAK DATA TXKRAK
-       DATA 15                         ; Pattern number
-       BYTE 23                         ; Level
-       BYTE 472                        ; HP
-       BYTE 18                         ; AC
-       BYTE 42                         ; Damage
-*      Kuo-Toa
-MOKUOT DATA TXKUOT
-       DATA 7                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 18                         ; HP
-       BYTE 13                         ; AC
-       BYTE 5                          ; Damage
-*      Kou-Toa Archpriest
-MOKOUA DATA TXKOUA
-       DATA 7                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 97                         ; HP
-       BYTE 13                         ; AC
-       BYTE 20                         ; Damage
-*      Kou-Toa Whip
-MOKOUW DATA TXKOUW
-       DATA 7                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 65                         ; HP
-       BYTE 11                         ; AC
-       BYTE 5                          ; Damage
-*      Lamia
-MOLAMI DATA TXLAMI
-       DATA 3                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 97                         ; HP
-       BYTE 13                         ; AC
-       BYTE 14                         ; Damage
-*      Lich
-MOLICH DATA TXLICH
-       DATA 6                          ; Pattern number
-       BYTE 21                         ; Level
-       BYTE 135                        ; HP
-       BYTE 17                         ; AC
-       BYTE 21                         ; Damage
-*      Lizardfolk
-MOLIZA DATA TXLIZA
-       DATA 3                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 15                         ; AC
-       BYTE 5                          ; Damage
-*      Lizardfolk Shaman
-MOLIZS DATA TXLIZS
-       DATA 3                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 27                         ; HP
-       BYTE 13                         ; AC
-       BYTE 7                          ; Damage
-*      Lizard Queen
-MOLIZQ DATA TXLIZQ
-       DATA 3                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 78                         ; HP
-       BYTE 15                         ; AC
-       BYTE 7                          ; Damage
-*      Werebear
-MOWERB DATA TXWERB
-       DATA 8                          ; Pattern number
-       BYTE 5                          ; Level
-       BYTE 135                        ; HP
-       BYTE 11                         ; AC
-       BYTE 15                         ; Damage
-*      Wereboar
-MOWERE DATA TXWERE
-       DATA 8                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 78                         ; HP
-       BYTE 11                         ; AC
-       BYTE 10                         ; Damage
-*      Wererat
-MOWERR DATA TXWERR
-       DATA 13                         ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 33                         ; HP
-       BYTE 12                         ; AC
-       BYTE 5                          ; Damage
-*      Weretiger
-MOWERT DATA TXWERT
-       DATA 8                          ; Pattern number
-       BYTE 4                          ; Level
-       BYTE 120                        ; HP
-       BYTE 12                         ; AC
-       BYTE 8                          ; Damage
-*      Werewolf
-MOWERW DATA TXWERW
-       DATA 8                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 58                         ; HP
-       BYTE 11                         ; AC
-       BYTE 7                          ; Damage
-*      Magmin
-MOMAGM DATA TXMAGM
-       DATA 10                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 9                          ; HP
-       BYTE 14                         ; AC
-       BYTE 7                          ; Damage
-*      Manticore
-MOMANT DATA TXMANT
-       DATA 7                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 68                         ; HP
-       BYTE 14                         ; AC
-       BYTE 7                          ; Damage
-*      Medusa
-MOMEDU DATA TXMEDU
-       DATA 6                          ; Pattern number
-       BYTE 6                          ; Level
-       BYTE 127                        ; HP
-       BYTE 15                         ; AC
-       BYTE 13                         ; Damage
-*      Dust Mephit
-MOMEPD DATA TXMEPD
-       DATA 10                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 17                         ; HP
-       BYTE 12                         ; AC
-       BYTE 4                          ; Damage
-*      Ice Mephit
-MOMEPI DATA TXMEPI
-       DATA 15                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 21                         ; HP
-       BYTE 11                         ; AC
-       BYTE 5                          ; Damage
-*      Magma Mephit
-MOMEPM DATA TXMEPM
-       DATA 10                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 11                         ; AC
-       BYTE 7                          ; Damage
-*      Mud Mephit
-MOMUDM DATA TXMUDM
-       DATA 15                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 27                         ; HP
-       BYTE 11                         ; AC
-       BYTE 4                          ; Damage
-*      Smoke Mephit
-MOSMOK DATA TXSMOK
-       DATA 10                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 12                         ; AC
-       BYTE 4                          ; Damage
-*      Steam Mephit
-MOMEPS DATA TXMEPS
-       DATA 15                         ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 21                         ; HP
-       BYTE 10                         ; AC
-       BYTE 4                          ; Damage
-*      Merfolk
-MOMERF DATA TXMERF
-       DATA 7                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 11                         ; HP
-       BYTE 11                         ; AC
-       BYTE 4                          ; Damage
-*      Merrow
-MOMERR DATA TXMERR
-       DATA 7                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 45                         ; HP
-       BYTE 13                         ; AC
-       BYTE 11                         ; Damage
-*      Mimic
-MOMIMI DATA TXMIMI
-       DATA 13                         ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 58                         ; HP
-       BYTE 12                         ; AC
-       BYTE 11                         ; Damage
-*      Mind Flayer
-MOMIND DATA TXMIND
-       DATA 6                          ; Pattern number
-       BYTE 7                          ; Level
-       BYTE 71                         ; HP
-       BYTE 15                         ; AC
-       BYTE 55                         ; Damage
-*      Minotaur
-MOMINO DATA TXMINO
-       DATA 8                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 76                         ; HP
-       BYTE 14                         ; AC
-       BYTE 17                         ; Damage
-*      Monodrone
-MOMONO DATA TXMONO
-       DATA 9                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 5                          ; HP
-       BYTE 15                         ; AC
-       BYTE 4                          ; Damage
-*      Duodrone
-MODUOD DATA TXDUOD
-       DATA 9                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 11                         ; HP
-       BYTE 15                         ; AC
-       BYTE 4                          ; Damage
-*      Tridrone
-MOTRID DATA TXTRID
-       DATA 9                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 16                         ; HP
-       BYTE 15                         ; AC
-       BYTE 4                          ; Damage
-*      Quadrone
-MOQUAD DATA TXQUAD
-       DATA 9                          ; Pattern number
-       BYTE 1                          ; Level
-       BYTE 22                         ; HP
-       BYTE 16                         ; AC
-       BYTE 5                          ; Damage
-*      Pentadrone
-MOPENT DATA TXPENT
-       DATA 9                          ; Pattern number
-       BYTE 2                          ; Level
-       BYTE 32                         ; HP
-       BYTE 16                         ; AC
-       BYTE 5                          ; Damage
-*      Mummy
-MOMUMM DATA TXMUMM
-       DATA 1                          ; Pattern number
-       BYTE 3                          ; Level
-       BYTE 58                         ; HP
-       BYTE 11                         ; AC
-       BYTE 20                         ; Damage
-*      Mummy Lord
-MOMUML DATA TXMUML
-       DATA 1                          ; Pattern number
-       BYTE 15                         ; Level
-       BYTE 97                         ; HP
-       BYTE 17                         ; AC
-       BYTE 35                         ; Damage
-MO_END
+monstr:
+       equ  $
+**      Villain
+* MOGRIC DATA TXVILL
+* DATA 12                         ; Pattern number
+* BYTE 10                         ; Level
+* BYTE 270                        ; HP
+* BYTE 22                         ; AC
+* BYTE 50                         ; Damage
+* Villain
+movill:
+       data txvill
+       data 12                                 ; Pattern number
+       byte 0                                  ; Level
+       byte 2                                  ; HP
+       byte 1                                  ; AC
+       byte 1                                  ; Damage
+* Aarakocra
+moaara:
+       data txaara
+       data 14                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 13                                 ; HP
+       byte 12                                 ; AC
+       byte 5                                  ; Damage
+* Aboleth
+moabol:
+       data txabol
+       data 15                                 ; Pattern number
+       byte 10                                 ; Level
+       byte 135                                ; HP
+       byte 17                                 ; AC
+       byte 21                                 ; Damage
+* Ankheg
+moankh:
+       data txankh
+       data 8                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 39                                 ; HP
+       byte 14                                 ; AC
+       byte 12                                 ; Damage
+* Azer
+moazer:
+       data txazer
+       data 10                                 ; Pattern number
+       byte 2                                  ; Level
+       byte 39                                 ; HP
+       byte 17                                 ; AC
+       byte 11                                 ; Damage
+* Banshee
+mobans:
+       data txbans
+       data 2                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 58                                 ; HP
+       byte 12                                 ; AC
+       byte 12                                 ; Damage
+* Basilisk
+mobasi:
+       data txbasi
+       data 7                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 52                                 ; HP
+       byte 15                                 ; AC
+       byte 17                                 ; Damage
+* Behir
+mobehi:
+       data txbehi
+       data 0                                  ; Pattern number
+       byte 11                                 ; Level
+       byte 168                                ; HP
+       byte 17                                 ; AC
+       byte 66                                 ; Damage
+* Beholder
+mobeho:
+       data txbeho
+       data 6                                  ; Pattern number
+       byte 13                                 ; Level
+       byte 180                                ; HP
+       byte 18                                 ; AC
+       byte 55                                 ; Damage
+* Bugbear
+mobugb:
+       data txbugb
+       data 5                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 27                                 ; HP
+       byte 16                                 ; AC
+       byte 11                                 ; Damage
+* Bulette
+mobule:
+       data txbule
+       data 0                                  ; Pattern number
+       byte 5                                  ; Level
+       byte 94                                 ; HP
+       byte 17                                 ; AC
+       byte 28                                 ; Damage
+* Bullywug
+mobull:
+       data txbull
+       data 7                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 11                                 ; HP
+       byte 15                                 ; AC
+       byte 5                                  ; Damage
+* Cambion
+mocamb:
+       data txcamb
+       data 1                                  ; Pattern number
+       byte 5                                  ; Level
+       byte 82                                 ; HP
+       byte 19                                 ; AC
+       byte 11                                 ; Damage
+* Carrion Crawler
+mocarr:
+       data txcarr
+       data 1                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 51                                 ; HP
+       byte 13                                 ; AC
+       byte 7                                  ; Damage
+* Centaur
+mocent:
+       data txcent
+       data 8                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 45                                 ; HP
+       byte 12                                 ; AC
+       byte 11                                 ; Damage
+* Chimera
+mochim:
+       data txchim
+       data 3                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 114                                ; HP
+       byte 14                                 ; AC
+       byte 31                                 ; Damage
+* Chuul
+mochuu:
+       data txchuu
+       data 0                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 93                                 ; HP
+       byte 16                                 ; AC
+       byte 11                                 ; Damage
+* Cloaker
+mocloa:
+       data txcloa
+       data 15                                 ; Pattern number
+       byte 8                                  ; Level
+       byte 78                                 ; HP
+       byte 14                                 ; AC
+       byte 10                                 ; Damage
+* Cockatrice
+mocock:
+       data txcock
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 27                                 ; HP
+       byte 11                                 ; AC
+       byte 3                                  ; Damage
+* Couatl
+mocoua:
+       data txcoua
+       data 1                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 97                                 ; HP
+       byte 19                                 ; AC
+       byte 10                                 ; Damage
+* Cyclops
+mocycl:
+       data txcycl
+       data 6                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 138                                ; HP
+       byte 14                                 ; AC
+       byte 28                                 ; Damage
+* Darkmantle
+modark:
+       data txdark
+       data 15                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 11                                 ; AC
+       byte 6                                  ; Damage
+* Death Knight
+modeat:
+       data txdeat
+       data 5                                  ; Pattern number
+       byte 17                                 ; Level
+       byte 180                                ; HP
+       byte 20                                 ; AC
+       byte 35                                 ; Damage
+* Demi Lich
+modemi:
+       data txdemi
+       data 8                                  ; Pattern number
+       byte 18                                 ; Level
+       byte 80                                 ; HP
+       byte 20                                 ; AC
+       byte 21                                 ; Damage
+* Displacer Beast
+modisp:
+       data txdisp
+       data 16                                 ; Pattern number
+       byte 3                                  ; Level
+       byte 85                                 ; HP
+       byte 13                                 ; AC
+       byte 10                                 ; Damage
+* Doppleganger
+modopp:
+       data txdopp
+       data 4                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 52                                 ; HP
+       byte 14                                 ; AC
+       byte 7                                  ; Damage
+* Dracolich
+modrac:
+       data txdrac
+       data 11                                 ; Pattern number
+       byte 17                                 ; Level
+       byte 225                                ; HP
+       byte 19                                 ; AC
+       byte 66                                 ; Damage
+* Drider
+modrid:
+       data txdrid
+       data 0                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 123                                ; HP
+       byte 19                                 ; AC
+       byte 11                                 ; Damage
+* Dryad
+modrya:
+       data txdrya
+       data 4                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 11                                 ; AC
+       byte 8                                  ; Damage
+* Dueregar
+moduer:
+       data txduer
+       data 8                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 26                                 ; HP
+       byte 16                                 ; AC
+       byte 11                                 ; Damage
+* Air Elemental
+moaire:
+       data txaire
+       data 15                                 ; Pattern number
+       byte 5                                  ; Level
+       byte 90                                 ; HP
+       byte 15                                 ; AC
+       byte 15                                 ; Damage
+* Earth Elemental
+moeart:
+       data txeart
+       data 8                                  ; Pattern number
+       byte 5                                  ; Level
+       byte 126                                ; HP
+       byte 17                                 ; AC
+       byte 24                                 ; Damage
+* Fire Elemental
+mofire:
+       data txfire
+       data 10                                 ; Pattern number
+       byte 5                                  ; Level
+       byte 102                                ; HP
+       byte 13                                 ; AC
+       byte 10                                 ; Damage
+* Water Elemental
+mowate:
+       data txwael
+       data 15                                 ; Pattern number
+       byte 5                                  ; Level
+       byte 114                                ; HP
+       byte 14                                 ; AC
+       byte 13                                 ; Damage
+* Drow
+modrow:
+       data txdrow
+       data 0                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 13                                 ; HP
+       byte 15                                 ; AC
+       byte 5                                  ; Damage
+* Empyrean
+moempy:
+       data txempy
+       data 5                                  ; Pattern number
+       byte 23                                 ; Level
+       byte 313                                ; HP
+       byte 22                                 ; AC
+       byte 31                                 ; Damage
+* Ettercap
+moette:
+       data txette
+       data 0                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 44                                 ; HP
+       byte 13                                 ; AC
+       byte 7                                  ; Damage
+* Ettin
+moetti:
+       data txetti
+       data 8                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 85                                 ; HP
+       byte 12                                 ; AC
+       byte 14                                 ; Damage
+* Faerie Dragon
+mofaer:
+       data txfaer
+       data 2                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 14                                 ; HP
+       byte 15                                 ; AC
+       byte 1                                  ; Damage
+* Flameskull
+moflam:
+       data txflam
+       data 10                                 ; Pattern number
+       byte 4                                  ; Level
+       byte 40                                 ; HP
+       byte 13                                 ; AC
+       byte 10                                 ; Damage
+* Flumph
+moflum:
+       data txflum
+       data 1                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 7                                  ; HP
+       byte 12                                 ; AC
+       byte 6                                  ; Damage
+* Fomorian
+mofomo:
+       data txfomo
+       data 5                                  ; Pattern number
+       byte 8                                  ; Level
+       byte 149                                ; HP
+       byte 14                                 ; AC
+       byte 27                                 ; Damage
+* Galeb Duhr
+mogale:
+       data txgale
+       data 0                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 85                                 ; HP
+       byte 16                                 ; AC
+       byte 12                                 ; Damage
+* Gargoyle
+mogarg:
+       data txgarg
+       data 3                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 52                                 ; HP
+       byte 15                                 ; AC
+       byte 5                                  ; Damage
+* Ghost
+moghos:
+       data txghos
+       data 2                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 45                                 ; HP
+       byte 11                                 ; AC
+       byte 17                                 ; Damage
+* Ghast
+moghas:
+       data txghas
+       data 2                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 36                                 ; HP
+       byte 13                                 ; AC
+       byte 12                                 ; Damage
+* Ghoul
+moghou:
+       data txghou
+       data 2                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 12                                 ; AC
+       byte 9                                  ; Damage
+* Cloud Giant
+moclou:
+       data txclou
+       data 5                                  ; Pattern number
+       byte 9                                  ; Level
+       byte 200                                ; HP
+       byte 14                                 ; AC
+       byte 30                                 ; Damage
+* Fire Giant
+mofigi:
+       data txfigi
+       data 10                                 ; Pattern number
+       byte 9                                  ; Level
+       byte 162                                ; HP
+       byte 18                                 ; AC
+       byte 29                                 ; Damage
+* Frost Giant
+mofrgi:
+       data txfrgi
+       data 15                                 ; Pattern number
+       byte 8                                  ; Level
+       byte 138                                ; HP
+       byte 15                                 ; AC
+       byte 28                                 ; Damage
+* Hill Giant
+mohill:
+       data txhill
+       data 5                                  ; Pattern number
+       byte 5                                  ; Level
+       byte 105                                ; HP
+       byte 13                                 ; AC
+       byte 21                                 ; Damage
+* Stone Giant
+moston:
+       data txston
+       data 5                                  ; Pattern number
+       byte 7                                  ; Level
+       byte 126                                ; HP
+       byte 17                                 ; AC
+       byte 28                                 ; Damage
+* Storm Giant
+mostor:
+       data txstor
+       data 5                                  ; Pattern number
+       byte 13                                 ; Level
+       byte 230                                ; HP
+       byte 16                                 ; AC
+       byte 54                                 ; Damage
+* Gibbering Mouther
+mogibb:
+       data txgibb
+       data 3                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 67                                 ; HP
+       byte 9                                  ; AC
+       byte 17                                 ; Damage
+* Githyanki Warrior
+mogitw:
+       data txgitw
+       data 8                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 49                                 ; HP
+       byte 17                                 ; AC
+       byte 16                                 ; Damage
+* Githyanki Knight
+mogitk:
+       data txgitk
+       data 8                                  ; Pattern number
+       byte 8                                  ; Level
+       byte 91                                 ; HP
+       byte 18                                 ; AC
+       byte 23                                 ; Damage
+* Githzerai Monk
+mogitm:
+       data txgitm
+       data 8                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 38                                 ; HP
+       byte 14                                 ; AC
+       byte 15                                 ; Damage
+* Githzerai Zerth
+mogitz:
+       data txgitz
+       data 8                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 84                                 ; HP
+       byte 17                                 ; AC
+       byte 24                                 ; Damage
+* Gnoll
+mognol:
+       data txgnol
+       data 4                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 15                                 ; AC
+       byte 6                                  ; Damage
+* Gnoll Pack Lord
+mognop:
+       data txgnop
+       data 4                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 49                                 ; HP
+       byte 15                                 ; AC
+       byte 8                                  ; Damage
+* Gnoll Fang of Yeenoghu
+mognof:
+       data txgnof
+       data 4                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 65                                 ; HP
+       byte 14                                 ; AC
+       byte 13                                 ; Damage
+* Deep Gnome
+modeep:
+       data txdeep
+       data 5                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 16                                 ; HP
+       byte 15                                 ; AC
+       byte 6                                  ; Damage
+* Goblin
+mogobl:
+       data txgobl
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 7                                  ; HP
+       byte 15                                 ; AC
+       byte 5                                  ; Damage
+* Goblin Boss
+mogobb:
+       data txgobb
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 21                                 ; HP
+       byte 17                                 ; AC
+       byte 5                                  ; Damage
+* Clay Golem
+moclay:
+       data txclay
+       data 5                                  ; Pattern number
+       byte 9                                  ; Level
+       byte 133                                ; HP
+       byte 14                                 ; AC
+       byte 16                                 ; Damage
+* Flesh Golem
+mofles:
+       data txfles
+       data 5                                  ; Pattern number
+       byte 5                                  ; Level
+       byte 93                                 ; HP
+       byte 9                                  ; AC
+       byte 13                                 ; Damage
+* Iron Golem
+moiron:
+       data txiron
+       data 5                                  ; Pattern number
+       byte 16                                 ; Level
+       byte 210                                ; HP
+       byte 20                                 ; AC
+       byte 45                                 ; Damage
+* Stone Golem
+mostog:
+       data txstog
+       data 5                                  ; Pattern number
+       byte 10                                 ; Level
+       byte 178                                ; HP
+       byte 17                                 ; AC
+       byte 19                                 ; Damage
+* Gorgon
+mogorg:
+       data txgorg
+       data 11                                 ; Pattern number
+       byte 5                                  ; Level
+       byte 114                                ; HP
+       byte 19                                 ; AC
+       byte 18                                 ; Damage
+* Grell
+mogrel:
+       data txgrel
+       data 1                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 55                                 ; HP
+       byte 12                                 ; AC
+       byte 7                                  ; Damage
+* Grick
+mogric:
+       data txgric
+       data 2                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 27                                 ; HP
+       byte 14                                 ; AC
+       byte 9                                  ; Damage
+* Grick Alpha
+mogria:
+       data txgria
+       data 2                                  ; Pattern number
+       byte 7                                  ; Level
+       byte 75                                 ; HP
+       byte 18                                 ; AC
+       byte 22                                 ; Damage
+* Griffon
+mogrif:
+       data txgrif
+       data 1                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 59                                 ; HP
+       byte 12                                 ; AC
+       byte 11                                 ; Damage
+* Grimlock
+mogrim:
+       data txgrim
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 11                                 ; HP
+       byte 11                                 ; AC
+       byte 7                                  ; Damage
+* Green Hag
+mogree:
+       data txgree
+       data 3                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 82                                 ; HP
+       byte 17                                 ; AC
+       byte 13                                 ; Damage
+* Night Hag
+monigh:
+       data txnigh
+       data 15                                 ; Pattern number
+       byte 5                                  ; Level
+       byte 112                                ; HP
+       byte 17                                 ; AC
+       byte 13                                 ; Damage
+* Sea Hag
+moseah:
+       data txseah
+       data 15                                 ; Pattern number
+       byte 2                                  ; Level
+       byte 52                                 ; HP
+       byte 14                                 ; AC
+       byte 10                                 ; Damage
+* Half-Red Dragon Veteran
+mohalf:
+       data txhalf
+       data 5                                  ; Pattern number
+       byte 5                                  ; Level
+       byte 65                                 ; HP
+       byte 18                                 ; AC
+       byte 24                                 ; Damage
+* Harpy
+moharp:
+       data txharp
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 38                                 ; HP
+       byte 11                                 ; AC
+       byte 6                                  ; Damage
+* Hell Hound
+mohell:
+       data txhell
+       data 10                                 ; Pattern number
+       byte 3                                  ; Level
+       byte 45                                 ; HP
+       byte 15                                 ; AC
+       byte 21                                 ; Damage
+* Helmed Horror
+mohelm:
+       data txhelm
+       data 8                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 60                                 ; HP
+       byte 20                                 ; AC
+       byte 9                                  ; Damage
+* Hippogriff
+mohipp:
+       data txhipp
+       data 1                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 19                                 ; HP
+       byte 11                                 ; AC
+       byte 10                                 ; Damage
+* Hobgoblin
+mohobg:
+       data txhobg
+       data 5                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 11                                 ; HP
+       byte 18                                 ; AC
+       byte 6                                  ; Damage
+* Hobgoblin Captain
+mohobc:
+       data txhobc
+       data 5                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 39                                 ; HP
+       byte 17                                 ; AC
+       byte 9                                  ; Damage
+* Hobgoblin Warlord
+mohobw:
+       data txhobw
+       data 5                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 97                                 ; HP
+       byte 20                                 ; AC
+       byte 14                                 ; Damage
+* Hook Horror
+mohook:
+       data txhook
+       data 7                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 75                                 ; HP
+       byte 15                                 ; AC
+       byte 11                                 ; Damage
+* Hydra
+mohydr:
+       data txhydr
+       data 11                                 ; Pattern number
+       byte 8                                  ; Level
+       byte 172                                ; HP
+       byte 15                                 ; AC
+       byte 10                                 ; Damage
+* Intellect Devourer
+mointe:
+       data txinte
+       data 6                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 21                                 ; HP
+       byte 12                                 ; AC
+       byte 11                                 ; Damage
+* Invisible Stalker
+moinvi:
+       data txinvi
+       data 2                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 104                                ; HP
+       byte 14                                 ; AC
+       byte 10                                 ; Damage
+* Jackalwere
+mojack:
+       data txjack
+       data 8                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 18                                 ; HP
+       byte 12                                 ; AC
+       byte 5                                  ; Damage
+* Kenku
+mokenk:
+       data txkenk
+       data 1                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 13                                 ; HP
+       byte 13                                 ; AC
+       byte 6                                  ; Damage
+* Kobold
+mokobo:
+       data txkobo
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 5                                  ; HP
+       byte 12                                 ; AC
+       byte 4                                  ; Damage
+* Winged Kobold
+mokobw:
+       data txkobw
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 7                                  ; HP
+       byte 13                                 ; AC
+       byte 6                                  ; Damage
+* Kraken
+mokrak:
+       data txkrak
+       data 15                                 ; Pattern number
+       byte 23                                 ; Level
+       byte 472                                ; HP
+       byte 18                                 ; AC
+       byte 42                                 ; Damage
+* Kuo-Toa
+mokuot:
+       data txkuot
+       data 7                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 18                                 ; HP
+       byte 13                                 ; AC
+       byte 5                                  ; Damage
+* Kou-Toa Archpriest
+mokoua:
+       data txkoua
+       data 7                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 97                                 ; HP
+       byte 13                                 ; AC
+       byte 20                                 ; Damage
+* Kou-Toa Whip
+mokouw:
+       data txkouw
+       data 7                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 65                                 ; HP
+       byte 11                                 ; AC
+       byte 5                                  ; Damage
+* Lamia
+molami:
+       data txlami
+       data 3                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 97                                 ; HP
+       byte 13                                 ; AC
+       byte 14                                 ; Damage
+* Lich
+molich:
+       data txlich
+       data 6                                  ; Pattern number
+       byte 21                                 ; Level
+       byte 135                                ; HP
+       byte 17                                 ; AC
+       byte 21                                 ; Damage
+* Lizardfolk
+moliza:
+       data txliza
+       data 3                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 15                                 ; AC
+       byte 5                                  ; Damage
+* Lizardfolk Shaman
+molizs:
+       data txlizs
+       data 3                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 27                                 ; HP
+       byte 13                                 ; AC
+       byte 7                                  ; Damage
+* Lizard Queen
+molizq:
+       data txlizq
+       data 3                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 78                                 ; HP
+       byte 15                                 ; AC
+       byte 7                                  ; Damage
+* Werebear
+mowerb:
+       data txwerb
+       data 8                                  ; Pattern number
+       byte 5                                  ; Level
+       byte 135                                ; HP
+       byte 11                                 ; AC
+       byte 15                                 ; Damage
+* Wereboar
+mowere:
+       data txwere
+       data 8                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 78                                 ; HP
+       byte 11                                 ; AC
+       byte 10                                 ; Damage
+* Wererat
+mowerr:
+       data txwerr
+       data 13                                 ; Pattern number
+       byte 2                                  ; Level
+       byte 33                                 ; HP
+       byte 12                                 ; AC
+       byte 5                                  ; Damage
+* Weretiger
+mowert:
+       data txwert
+       data 8                                  ; Pattern number
+       byte 4                                  ; Level
+       byte 120                                ; HP
+       byte 12                                 ; AC
+       byte 8                                  ; Damage
+* Werewolf
+mowerw:
+       data txwerw
+       data 8                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 58                                 ; HP
+       byte 11                                 ; AC
+       byte 7                                  ; Damage
+* Magmin
+momagm:
+       data txmagm
+       data 10                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 9                                  ; HP
+       byte 14                                 ; AC
+       byte 7                                  ; Damage
+* Manticore
+momant:
+       data txmant
+       data 7                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 68                                 ; HP
+       byte 14                                 ; AC
+       byte 7                                  ; Damage
+* Medusa
+momedu:
+       data txmedu
+       data 6                                  ; Pattern number
+       byte 6                                  ; Level
+       byte 127                                ; HP
+       byte 15                                 ; AC
+       byte 13                                 ; Damage
+* Dust Mephit
+momepd:
+       data txmepd
+       data 10                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 17                                 ; HP
+       byte 12                                 ; AC
+       byte 4                                  ; Damage
+* Ice Mephit
+momepi:
+       data txmepi
+       data 15                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 21                                 ; HP
+       byte 11                                 ; AC
+       byte 5                                  ; Damage
+* Magma Mephit
+momepm:
+       data txmepm
+       data 10                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 11                                 ; AC
+       byte 7                                  ; Damage
+* Mud Mephit
+momudm:
+       data txmudm
+       data 15                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 27                                 ; HP
+       byte 11                                 ; AC
+       byte 4                                  ; Damage
+* Smoke Mephit
+mosmok:
+       data txsmok
+       data 10                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 12                                 ; AC
+       byte 4                                  ; Damage
+* Steam Mephit
+momeps:
+       data txmeps
+       data 15                                 ; Pattern number
+       byte 1                                  ; Level
+       byte 21                                 ; HP
+       byte 10                                 ; AC
+       byte 4                                  ; Damage
+* Merfolk
+momerf:
+       data txmerf
+       data 7                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 11                                 ; HP
+       byte 11                                 ; AC
+       byte 4                                  ; Damage
+* Merrow
+momerr:
+       data txmerr
+       data 7                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 45                                 ; HP
+       byte 13                                 ; AC
+       byte 11                                 ; Damage
+* Mimic
+momimi:
+       data txmimi
+       data 13                                 ; Pattern number
+       byte 2                                  ; Level
+       byte 58                                 ; HP
+       byte 12                                 ; AC
+       byte 11                                 ; Damage
+* Mind Flayer
+momind:
+       data txmind
+       data 6                                  ; Pattern number
+       byte 7                                  ; Level
+       byte 71                                 ; HP
+       byte 15                                 ; AC
+       byte 55                                 ; Damage
+* Minotaur
+momino:
+       data txmino
+       data 8                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 76                                 ; HP
+       byte 14                                 ; AC
+       byte 17                                 ; Damage
+* Monodrone
+momono:
+       data txmono
+       data 9                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 5                                  ; HP
+       byte 15                                 ; AC
+       byte 4                                  ; Damage
+* Duodrone
+moduod:
+       data txduod
+       data 9                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 11                                 ; HP
+       byte 15                                 ; AC
+       byte 4                                  ; Damage
+* Tridrone
+motrid:
+       data txtrid
+       data 9                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 16                                 ; HP
+       byte 15                                 ; AC
+       byte 4                                  ; Damage
+* Quadrone
+moquad:
+       data txquad
+       data 9                                  ; Pattern number
+       byte 1                                  ; Level
+       byte 22                                 ; HP
+       byte 16                                 ; AC
+       byte 5                                  ; Damage
+* Pentadrone
+mopent:
+       data txpent
+       data 9                                  ; Pattern number
+       byte 2                                  ; Level
+       byte 32                                 ; HP
+       byte 16                                 ; AC
+       byte 5                                  ; Damage
+* Mummy
+momumm:
+       data txmumm
+       data 1                                  ; Pattern number
+       byte 3                                  ; Level
+       byte 58                                 ; HP
+       byte 11                                 ; AC
+       byte 20                                 ; Damage
+* Mummy Lord
+momuml:
+       data txmuml
+       data 1                                  ; Pattern number
+       byte 15                                 ; Level
+       byte 97                                 ; HP
+       byte 17                                 ; AC
+       byte 35                                 ; Damage
+mo_end:

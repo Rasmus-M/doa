@@ -1,509 +1,756 @@
 *********************************************************************
-*
+* 
 * Text
-*
+* 
 *********************************************************************
 
-*      Messages
-TXAMS  TEXT "SORRY, 128K AMS REQUIRED"
-       BYTE 0
-TXDOA  TEXT "DUNGEONS OF ASGARD V 0.5.0"
-       BYTE 0
-TXTWN  TEXT "ENTERING TOWN"
-       BYTE 0
-TXDGN  TEXT "ENTERING DUNGEON"
-       BYTE 0
-TXPLW  TEXT "PLEASE WAIT"
-       BYTE 0
-TXUHIT TEXT "YOU HIT THE "
-       BYTE 0
-TXUMIS TEXT "YOU MISS THE "
-       BYTE 0
-TXMHIT TEXT " HITS YOU FOR "
-       BYTE 0
-TXMMIS TEXT " MISS YOU "
-       BYTE 0
-TXUKIL TEXT "YOU KILL THE "
-       BYTE 0
-TXUDIE TEXT "YOU ARE KILLED - PRESS FIRE"
-       BYTE 0
-TXUGET TEXT "YOU GET THE "
-       BYTE 0
-TXUDRP TEXT "YOU DROP THE "
-       BYTE 0
-TXUWEA TEXT "YOU WEAR THE "
-       BYTE 0
-TXUUSE TEXT "YOU USE THE "
-       BYTE 0
-TXUSEL TEXT "YOU SELL THE "
-       BYTE 0
-TXUBUY TEXT "YOU BUY THE "
-       BYTE 0
-TXCUSE TEXT "YOU CAN'T USE THAT"
-       BYTE 0
-TXUREM TEXT "YOU REMOVE THE "
-       BYTE 0
-TXINFU TEXT "INVENTORY FULL"
-       BYTE 0
-TXNOTU TEXT "YOU CAN'T MINE WITH THAT"
-       BYTE 0
-TXLVLU TEXT "YOU HAVE REACHED LEVEL "
-       BYTE 0
-TXSAVE TEXT "SAVING..."
-       BYTE 0
-TXLOAD TEXT "LOADING..."
-       BYTE 0
-TXNOSV TEXT "SAVING ONLY ALLOWED IN TOWN"
-       BYTE 0
-TXOK   TEXT "OK"
-       BYTE 0
-TXERR  TEXT "ERROR "
-       BYTE 0
-*      Labels
-TXINV  TEXT "INVENTORY"
-       BYTE 0
-TXEQU  TEXT "EQUIPMENT"
-       BYTE 0
-*      Punctuation and conjunctions
-TXOF   TEXT " OF "
-       BYTE 0
-TXFOR  TEXT " FOR "
-       BYTE 0
-TXTHE  TEXT "THE "
-       BYTE 0
-TXGT   TEXT ">"
-       BYTE 0
-TXSPAC TEXT " "
-       BYTE 0
-TXCOLN TEXT ": "
-       BYTE 0
-TXSTOP TEXT "."
-TXNULL BYTE 0
-*      Stats
-TXLVL  TEXT "LEVEL:"
-       BYTE 0
-TXXP   TEXT "XP:"
-       BYTE 0
-TXNXT  TEXT "NXT:"
-       BYTE 0
-TXHP   TEXT "HP:"
-       BYTE 0
-TXAC   TEXT "AC:"
-       BYTE 0
-TXMAX  TEXT "MAX:"
-       BYTE 0
-TXSTR  TEXT "STR:"
-       BYTE 0
-TXINT  TEXT "INT:"
-       BYTE 0
-TXWIS  TEXT "WIS:"
-       BYTE 0
-TXDEX  TEXT "DEX:"
-       BYTE 0
-TXCON  TEXT "CON:"
-       BYTE 0
-TXGLD  TEXT "GLD:"
-       BYTE 0
-TXLGT  TEXT "LGT:"
-       BYTE 0
-TXDPT  TEXT "DEPTH:"
-       BYTE 0
-*      Tiles
-TXFLR  TEXT "FLOOR"
-       BYTE 0
-TXSTWL TEXT "STONE WALL"
-       BYTE 0
-TXBTWL TEXT "BRICK WALL"
-       BYTE 0
-TXPERM TEXT "PERMANENT ROCK"
-       BYTE 0
-TXORE  TEXT "ORE"
-       BYTE 0
-TXRBBL TEXT "RUBBLE"
-       BYTE 0
-TXCLDR TEXT "CLOSED DOOR"
-       BYTE 0
-TXOPDR TEXT "OPEN DOOR"
-       BYTE 0
-TXSTDN TEXT "DOWN STAIRCASE"
-       BYTE 0
-TXSTUP TEXT "UP STAIRCASE"
-       BYTE 0
-TXTREE TEXT "TREE"
-       BYTE 0
-TXSHOP TEXT "SHOP"
-       BYTE 0
-TXFOUN TEXT "FOUNTAIN"
-       BYTE 0
-TXGRAS TEXT "GRASS"
-       BYTE 0
-*      Items
-TXNOTH TEXT "NOTHING"
-       BYTE 0
-TXCOIN TEXT "COINS"
-       BYTE 0
-TXCHST TEXT "CHEST"
-       BYTE 0
-TXPOTI TEXT "POTION"
-       BYTE 0
-TXSCRL TEXT "SCROLL"
-       BYTE 0
-TXBOOK TEXT "BOOK"
-       BYTE 0
-TXRING TEXT "RING"
-       BYTE 0
-TXFOOD TEXT "FOOD"
-       BYTE 0
-TXTRCH TEXT "TORCH"
-       BYTE 0
-TXLAMP TEXT "LAMP"
-       BYTE 0
-TXSWRD TEXT "SWORD"
-       BYTE 0
-TXAXE  TEXT "AXE"
-       BYTE 0
-TXDGGR TEXT "DAGGER"
-       BYTE 0
-TXMACE TEXT "MACE"
-       BYTE 0
-TXARMR TEXT "ARMOR"
-       BYTE 0
-TXMARM TEXT "MAIL ARMOR"
-       BYTE 0
-TXPARM TEXT "PLATE ARMOR"
-       BYTE 0
-TXHELM TEXT "HELMET"
-       BYTE 0
-TXBOOT TEXT "BOOTS"
-       BYTE 0
-TXGLVS TEXT "GLOVES"
-       BYTE 0
-TXGNTL TEXT "GAUNTLETS"
-       BYTE 0
-TXROBE TEXT "ROBES"
-       BYTE 0
-TXSHLD TEXT "SHIELD"
-       BYTE 0
-TXMYST TEXT "MYSTERY"
-       BYTE 0
-TXPICK TEXT "PICKAXE"
-       BYTE 0
-*      Capabilities
-TXNONE TEXT "NONE"
-       BYTE 0
-TXHLNG TEXT "HEALING"
-       BYTE 0
-TXSPD  TEXT "SPEED"
-       BYTE 0
-TXFIRE TEXT "FIRE"
-       BYTE 0
-TXSLP  TEXT "SLEEPING"
-       BYTE 0
-TXSTRE TEXT "STRENGTH"
-       BYTE 0
-TXINTE TEXT "INTELLIGENCE"
-       BYTE 0
-TXWISD TEXT "WISDOM"
-       BYTE 0
-TXDEXT TEXT "DEXTERITY"
-       BYTE 0
-TXCONS TEXT "CONSTITUTION"
-       BYTE 0
-TXPROT TEXT "PROTECTION"
-       BYTE 0
-TXRECA TEXT "RECALL"
-       BYTE 0
-TXMINE TEXT "MINING"
-       BYTE 0
-*      Materials
-TXDFLT TEXT "DEFAULT"
-       BYTE 0
-TXLTHR TEXT "LEATHER"
-       BYTE 0
-TXIRON TEXT "IRON"
-       BYTE 0
-TXSTEL TEXT "STEEL"
-       BYTE 0
-TXSILV TEXT "SILVER"
-       BYTE 0
-TXGOLD TEXT "GOLD"
-       BYTE 0
-TXOBSI TEXT "OBSIDIAN"
-       BYTE 0
-*      Equipment
-TXWIEL TEXT "WIELD"
-       BYTE 0
-TXBODY TEXT "BODY"
-       BYTE 0
-TXARM  TEXT "ARM"
-       BYTE 0
-TXHEAD TEXT "HEAD"
-       BYTE 0
-TXHAND TEXT "HANDS"
-       BYTE 0
-TXFEET TEXT "FEET"
-       BYTE 0
-TXFING TEXT "FINGER"
-       BYTE 0
-TXLGHT TEXT "LIGHT"
-       BYTE 0
-*      Monsters
-TXMONS TEXT "MONSTER"
-       BYTE 0
-TXVILL TEXT "VILLAIN"
-       BYTE 0
-TXAARA TEXT "AARKAKOCRA"
-       BYTE 0
-TXABOL TEXT "ABOLETH"
-       BYTE 0
-TXANKH TEXT "ANKHEG"
-       BYTE 0
-TXAZER TEXT "AZER"
-       BYTE 0
-TXBANS TEXT "BANSHEE"
-       BYTE 0
-TXBASI TEXT "BASILISK"
-       BYTE 0
-TXBEHI TEXT "BEHIR"
-       BYTE 0
-TXBEHO TEXT "BEHOLDER"
-       BYTE 0
-TXBUGB TEXT "BUGBEAR"
-       BYTE 0
-TXBULE TEXT "BULETTE"
-       BYTE 0
-TXBULL TEXT "BULLYWUG"
-       BYTE 0
-TXCAMB TEXT "CAMBION"
-       BYTE 0
-TXCARR TEXT "CARRION CRAWLER"
-       BYTE 0
-TXCENT TEXT "CENTAUR"
-       BYTE 0
-TXCHIM TEXT "CHIMERA"
-       BYTE 0
-TXCHUU TEXT "CHUUL"
-       BYTE 0
-TXCLOA TEXT "CLOAKER"
-       BYTE 0
-TXCOCK TEXT "COCKATRICE"
-       BYTE 0
-TXCOUA TEXT "COUATL"
-       BYTE 0
-TXCYCL TEXT "CYCLOPS"
-       BYTE 0
-TXDARK TEXT "DARKMANTLE"
-       BYTE 0
-TXDEAT TEXT "DEATH KNIGHT"
-       BYTE 0
-TXDEMI TEXT "DEMI LICH"
-       BYTE 0
-TXDISP TEXT "DISPLACER BEAST"
-       BYTE 0
-TXDOPP TEXT "DOPPLEGANGER"
-       BYTE 0
-TXDRAC TEXT "DRACOLICH"
-       BYTE 0
-TXDRID TEXT "DRIDER"
-       BYTE 0
-TXDRYA TEXT "DRYAD"
-       BYTE 0
-TXDUER TEXT "DUEREGAR"
-       BYTE 0
-TXAIRE TEXT "AIR ELEMENTAL"
-       BYTE 0
-TXEART TEXT "EARTH ELEMENTAL"
-       BYTE 0
-TXFIEL TEXT "FIRE ELEMENTAL"
-       BYTE 0
-TXWAEL TEXT "WATER ELEMENTAL"
-       BYTE 0
-TXDROW TEXT "DROW"
-       BYTE 0
-TXEMPY TEXT "EMPYREAN"
-       BYTE 0
-TXETTE TEXT "ETTERCAP"
-       BYTE 0
-TXETTI TEXT "ETTIN"
-       BYTE 0
-TXFAER TEXT "FAERIE DRAGON"
-       BYTE 0
-TXFLAM TEXT "FLAMESKULL"
-       BYTE 0
-TXFLUM TEXT "FLUMPH"
-       BYTE 0
-TXFOMO TEXT "FOMORIAN"
-       BYTE 0
-TXGALE TEXT "GALEB DUHR"
-       BYTE 0
-TXGARG TEXT "GARGOYLE"
-       BYTE 0
-TXGHOS TEXT "GHOST"
-       BYTE 0
-TXGHAS TEXT "GHAST"
-       BYTE 0
-TXGHOU TEXT "GHOUL"
-       BYTE 0
-TXCLOU TEXT "CLOUD GIANT"
-       BYTE 0
-TXFIGI TEXT "FIRE GIANT"
-       BYTE 0
-TXFRGI TEXT "FROST GIANT"
-       BYTE 0
-TXHILL TEXT "HILL GIANT"
-       BYTE 0
-TXSTON TEXT "STONE GIANT"
-       BYTE 0
-TXSTOR TEXT "STORM GIANT"
-       BYTE 0
-TXGIBB TEXT "GIBBERING MOUTHER"
-       BYTE 0
-TXGITW TEXT "GITHYANKI WARRIOR"
-       BYTE 0
-TXGITK TEXT "GITHYANKI KNIGHT"
-       BYTE 0
-TXGITM TEXT "GITHZERAI MONK"
-       BYTE 0
-TXGITZ TEXT "GITHZERAI ZERTH"
-       BYTE 0
-TXGNOL TEXT "GNOLL"
-       BYTE 0
-TXGNOP TEXT "GNOLL PACK LORD"
-       BYTE 0
-TXGNOF TEXT "GNOLL FANG OF YEENOGHOU"
-       BYTE 0
-TXDEEP TEXT "DEEP GNOME"
-       BYTE 0
-TXGOBL TEXT "GOBLIN"
-       BYTE 0
-TXGOBB TEXT "GOBLIN BOSS"
-       BYTE 0
-TXCLAY TEXT "CLAY GOLEM"
-       BYTE 0
-TXFLES TEXT "FLESH GOLEM"
-       BYTE 0
-TXIRGO TEXT "IRON GOLEM"
-       BYTE 0
-TXSTOG TEXT "STONE GOLEM"
-       BYTE 0
-TXGORG TEXT "GORGON"
-       BYTE 0
-TXGREL TEXT "GRELL"
-       BYTE 0
-TXGRIC TEXT "GRICK"
-       BYTE 0
-TXGRIA TEXT "GRICK ALPHA"
-       BYTE 0
-TXGRIF TEXT "GRIFFON"
-       BYTE 0
-TXGRIM TEXT "GRIMLOCK"
-       BYTE 0
-TXGREE TEXT "GREEN HAG"
-       BYTE 0
-TXNIGH TEXT "NIGHT HAG"
-       BYTE 0
-TXSEAH TEXT "SEA HAG"
-       BYTE 0
-TXHALF TEXT "HALF RED-DRAGON VETERAN"
-       BYTE 0
-TXHARP TEXT "HARPY"
-       BYTE 0
-TXHELL TEXT "HELL HOUND"
-       BYTE 0
-TXHEHO TEXT "HELMED HORROR"
-       BYTE 0
-TXHIPP TEXT "HIPPOGRIFF"
-       BYTE 0
-TXHOBG TEXT "HOBGOBLIN"
-       BYTE 0
-TXHOBC TEXT "HOBGOBLIN CAPTAIN"
-       BYTE 0
-TXHOBW TEXT "HOBGOBLIN WIZARD"
-       BYTE 0
-TXHOOK TEXT "HOOK HORROR"
-       BYTE 0
-TXHYDR TEXT "HYDRA"
-       BYTE 0
-TXINTD TEXT "INTELLECT DEVOURER"
-       BYTE 0
-TXINVI TEXT "INVISIBLE STALKER"
-       BYTE 0
-TXJACK TEXT "JACKALWERE"
-       BYTE 0
-TXKENK TEXT "KENKU"
-       BYTE 0
-TXKOBO TEXT "KOBOLD"
-       BYTE 0
-TXKOBW TEXT "WINGED KOBOLD"
-       BYTE 0
-TXKRAK TEXT "KRAKEN"
-       BYTE 0
-TXKUOT TEXT "KUO-TOA"
-       BYTE 0
-TXKOUA TEXT "KUO-TOA ARCHPRIEST"
-       BYTE 0
-TXKOUW TEXT "KUO-TOA WHIP"
-       BYTE 0
-TXLAMI TEXT "LAMIA"
-       BYTE 0
-TXLICH TEXT "LICH"
-       BYTE 0
-TXLIZA TEXT "LIZARDFOLK"
-       BYTE 0
-TXLIZS TEXT "LIZARDFOLK SHAMAN"
-       BYTE 0
-TXLIZQ TEXT "LIZARDFOLK QUEEN"
-       BYTE 0
-TXWERB TEXT "WEREBEAR"
-       BYTE 0
-TXWERE TEXT "WEREBOAR"
-       BYTE 0
-TXWERR TEXT "WERERAT"
-       BYTE 0
-TXWERT TEXT "WERETIGER"
-       BYTE 0
-TXWERW TEXT "WEREWOLF"
-       BYTE 0
-TXMAGM TEXT "MAGMIN"
-       BYTE 0
-TXMANT TEXT "MANTICORE"
-       BYTE 0
-TXMEDU TEXT "MEDUSA"
-       BYTE 0
-TXMEPD TEXT "DUST MEPHIT"
-       BYTE 0
-TXMEPI TEXT "ICE MEPHIT"
-       BYTE 0
-TXMEPM TEXT "MAGMA MEPHIT"
-       BYTE 0
-TXMUDM TEXT "MUD MEPHIT"
-       BYTE 0
-TXSMOK TEXT "SMOKE MEPHIT"
-       BYTE 0
-TXMEPS TEXT "STEAM MEPHIT"
-       BYTE 0
-TXMERF TEXT "MERFOLK"
-       BYTE 0
-TXMERR TEXT "MERROW"
-       BYTE 0
-TXMIMI TEXT "MIMIC"
-       BYTE 0
-TXMIND TEXT "MIND FLAYER"
-       BYTE 0
-TXMINO TEXT "MINOTAUR"
-       BYTE 0
-TXMONO TEXT "MONODRONE"
-       BYTE 0
-TXDUOD TEXT "DUODRONE"
-       BYTE 0
-TXTRID TEXT "TRIDRONE"
-       BYTE 0
-TXQUAD TEXT "QUADRONE"
-       BYTE 0
-TXPENT TEXT "PENTADRONE"
-       BYTE 0
-TXMUMM TEXT "MUMMY"
-       BYTE 0
-TXMUML TEXT "MUMMY LORD"
-       BYTE 0
+* Messages
+txams:
+       text 'SORRY, 128K AMS REQUIRED'
+       byte 0
+txdoa:
+       text 'DUNGEONS OF ASGARD V 0.5.0'
+       byte 0
+txtwn:
+       text 'ENTERING TOWN'
+       byte 0
+txdgn:
+       text 'ENTERING DUNGEON'
+       byte 0
+txplw:
+       text 'PLEASE WAIT'
+       byte 0
+txuhit:
+       text 'YOU HIT THE '
+       byte 0
+txumis:
+       text 'YOU MISS THE '
+       byte 0
+txmhit:
+       text ' HITS YOU FOR '
+       byte 0
+txmmis:
+       text ' MISS YOU '
+       byte 0
+txukil:
+       text 'YOU KILL THE '
+       byte 0
+txudie:
+       text 'YOU ARE KILLED - PRESS FIRE'
+       byte 0
+txuget:
+       text 'YOU GET THE '
+       byte 0
+txudrp:
+       text 'YOU DROP THE '
+       byte 0
+txuwea:
+       text 'YOU WEAR THE '
+       byte 0
+txuuse:
+       text 'YOU USE THE '
+       byte 0
+txusel:
+       text 'YOU SELL THE '
+       byte 0
+txubuy:
+       text 'YOU BUY THE '
+       byte 0
+txcuse:
+       text 'YOU CAN''T USE THAT'
+       byte 0
+txurem:
+       text 'YOU REMOVE THE '
+       byte 0
+txinfu:
+       text 'INVENTORY FULL'
+       byte 0
+txnotu:
+       text 'YOU CAN''T MINE WITH THAT'
+       byte 0
+txlvlu:
+       text 'YOU HAVE REACHED LEVEL '
+       byte 0
+txsave:
+       text 'SAVING...'
+       byte 0
+txload:
+       text 'LOADING...'
+       byte 0
+txnosv:
+       text 'SAVING ONLY ALLOWED IN TOWN'
+       byte 0
+txok:
+       text 'OK'
+       byte 0
+txerr:
+       text 'ERROR '
+       byte 0
+* Labels
+txinv:
+       text 'INVENTORY'
+       byte 0
+txequ:
+       text 'EQUIPMENT'
+       byte 0
+* Punctuation and conjunctions
+txof:
+       text ' OF '
+       byte 0
+txfor:
+       text ' FOR '
+       byte 0
+txthe:
+       text 'THE '
+       byte 0
+txgt:
+       text '>'
+       byte 0
+txspac:
+       text ' '
+       byte 0
+txcoln:
+       text ': '
+       byte 0
+txstop:
+       text '.'
+txnull:
+       byte 0
+* Stats
+txlvl:
+       text 'LEVEL:'
+       byte 0
+txxp:
+       text 'XP:'
+       byte 0
+txnxt:
+       text 'NXT:'
+       byte 0
+txhp:
+       text 'HP:'
+       byte 0
+txac:
+       text 'AC:'
+       byte 0
+txmax:
+       text 'MAX:'
+       byte 0
+txstr:
+       text 'STR:'
+       byte 0
+txint:
+       text 'INT:'
+       byte 0
+txwis:
+       text 'WIS:'
+       byte 0
+txdex:
+       text 'DEX:'
+       byte 0
+txcon:
+       text 'CON:'
+       byte 0
+txgld:
+       text 'GLD:'
+       byte 0
+txlgt:
+       text 'LGT:'
+       byte 0
+txdpt:
+       text 'DEPTH:'
+       byte 0
+* Tiles
+txflr:
+       text 'FLOOR'
+       byte 0
+txstwl:
+       text 'STONE WALL'
+       byte 0
+txbtwl:
+       text 'BRICK WALL'
+       byte 0
+txperm:
+       text 'PERMANENT ROCK'
+       byte 0
+txore:
+       text 'ORE'
+       byte 0
+txrbbl:
+       text 'RUBBLE'
+       byte 0
+txcldr:
+       text 'CLOSED DOOR'
+       byte 0
+txopdr:
+       text 'OPEN DOOR'
+       byte 0
+txstdn:
+       text 'DOWN STAIRCASE'
+       byte 0
+txstup:
+       text 'UP STAIRCASE'
+       byte 0
+txtree:
+       text 'TREE'
+       byte 0
+txshop:
+       text 'SHOP'
+       byte 0
+txfoun:
+       text 'FOUNTAIN'
+       byte 0
+txgras:
+       text 'GRASS'
+       byte 0
+* Items
+txnoth:
+       text 'NOTHING'
+       byte 0
+txcoin:
+       text 'COINS'
+       byte 0
+txchst:
+       text 'CHEST'
+       byte 0
+txpoti:
+       text 'POTION'
+       byte 0
+txscrl:
+       text 'SCROLL'
+       byte 0
+txbook:
+       text 'BOOK'
+       byte 0
+txring:
+       text 'RING'
+       byte 0
+txfood:
+       text 'FOOD'
+       byte 0
+txtrch:
+       text 'TORCH'
+       byte 0
+txlamp:
+       text 'LAMP'
+       byte 0
+txswrd:
+       text 'SWORD'
+       byte 0
+txaxe:
+       text 'AXE'
+       byte 0
+txdggr:
+       text 'DAGGER'
+       byte 0
+txmace:
+       text 'MACE'
+       byte 0
+txarmr:
+       text 'ARMOR'
+       byte 0
+txmarm:
+       text 'MAIL ARMOR'
+       byte 0
+txparm:
+       text 'PLATE ARMOR'
+       byte 0
+txhelm:
+       text 'HELMET'
+       byte 0
+txboot:
+       text 'BOOTS'
+       byte 0
+txglvs:
+       text 'GLOVES'
+       byte 0
+txgntl:
+       text 'GAUNTLETS'
+       byte 0
+txrobe:
+       text 'ROBES'
+       byte 0
+txshld:
+       text 'SHIELD'
+       byte 0
+txmyst:
+       text 'MYSTERY'
+       byte 0
+txpick:
+       text 'PICKAXE'
+       byte 0
+* Capabilities
+txnone:
+       text 'NONE'
+       byte 0
+txhlng:
+       text 'HEALING'
+       byte 0
+txspd:
+       text 'SPEED'
+       byte 0
+txfire:
+       text 'FIRE'
+       byte 0
+txslp:
+       text 'SLEEPING'
+       byte 0
+txstre:
+       text 'STRENGTH'
+       byte 0
+txinte:
+       text 'INTELLIGENCE'
+       byte 0
+txwisd:
+       text 'WISDOM'
+       byte 0
+txdext:
+       text 'DEXTERITY'
+       byte 0
+txcons:
+       text 'CONSTITUTION'
+       byte 0
+txprot:
+       text 'PROTECTION'
+       byte 0
+txreca:
+       text 'RECALL'
+       byte 0
+txmine:
+       text 'MINING'
+       byte 0
+* Materials
+txdflt:
+       text 'DEFAULT'
+       byte 0
+txlthr:
+       text 'LEATHER'
+       byte 0
+txiron:
+       text 'IRON'
+       byte 0
+txstel:
+       text 'STEEL'
+       byte 0
+txsilv:
+       text 'SILVER'
+       byte 0
+txgold:
+       text 'GOLD'
+       byte 0
+txobsi:
+       text 'OBSIDIAN'
+       byte 0
+* Equipment
+txwiel:
+       text 'WIELD'
+       byte 0
+txbody:
+       text 'BODY'
+       byte 0
+txarm:
+       text 'ARM'
+       byte 0
+txhead:
+       text 'HEAD'
+       byte 0
+txhand:
+       text 'HANDS'
+       byte 0
+txfeet:
+       text 'FEET'
+       byte 0
+txfing:
+       text 'FINGER'
+       byte 0
+txlght:
+       text 'LIGHT'
+       byte 0
+* Monsters
+txmons:
+       text 'MONSTER'
+       byte 0
+txvill:
+       text 'VILLAIN'
+       byte 0
+txaara:
+       text 'AARKAKOCRA'
+       byte 0
+txabol:
+       text 'ABOLETH'
+       byte 0
+txankh:
+       text 'ANKHEG'
+       byte 0
+txazer:
+       text 'AZER'
+       byte 0
+txbans:
+       text 'BANSHEE'
+       byte 0
+txbasi:
+       text 'BASILISK'
+       byte 0
+txbehi:
+       text 'BEHIR'
+       byte 0
+txbeho:
+       text 'BEHOLDER'
+       byte 0
+txbugb:
+       text 'BUGBEAR'
+       byte 0
+txbule:
+       text 'BULETTE'
+       byte 0
+txbull:
+       text 'BULLYWUG'
+       byte 0
+txcamb:
+       text 'CAMBION'
+       byte 0
+txcarr:
+       text 'CARRION CRAWLER'
+       byte 0
+txcent:
+       text 'CENTAUR'
+       byte 0
+txchim:
+       text 'CHIMERA'
+       byte 0
+txchuu:
+       text 'CHUUL'
+       byte 0
+txcloa:
+       text 'CLOAKER'
+       byte 0
+txcock:
+       text 'COCKATRICE'
+       byte 0
+txcoua:
+       text 'COUATL'
+       byte 0
+txcycl:
+       text 'CYCLOPS'
+       byte 0
+txdark:
+       text 'DARKMANTLE'
+       byte 0
+txdeat:
+       text 'DEATH KNIGHT'
+       byte 0
+txdemi:
+       text 'DEMI LICH'
+       byte 0
+txdisp:
+       text 'DISPLACER BEAST'
+       byte 0
+txdopp:
+       text 'DOPPLEGANGER'
+       byte 0
+txdrac:
+       text 'DRACOLICH'
+       byte 0
+txdrid:
+       text 'DRIDER'
+       byte 0
+txdrya:
+       text 'DRYAD'
+       byte 0
+txduer:
+       text 'DUEREGAR'
+       byte 0
+txaire:
+       text 'AIR ELEMENTAL'
+       byte 0
+txeart:
+       text 'EARTH ELEMENTAL'
+       byte 0
+txfiel:
+       text 'FIRE ELEMENTAL'
+       byte 0
+txwael:
+       text 'WATER ELEMENTAL'
+       byte 0
+txdrow:
+       text 'DROW'
+       byte 0
+txempy:
+       text 'EMPYREAN'
+       byte 0
+txette:
+       text 'ETTERCAP'
+       byte 0
+txetti:
+       text 'ETTIN'
+       byte 0
+txfaer:
+       text 'FAERIE DRAGON'
+       byte 0
+txflam:
+       text 'FLAMESKULL'
+       byte 0
+txflum:
+       text 'FLUMPH'
+       byte 0
+txfomo:
+       text 'FOMORIAN'
+       byte 0
+txgale:
+       text 'GALEB DUHR'
+       byte 0
+txgarg:
+       text 'GARGOYLE'
+       byte 0
+txghos:
+       text 'GHOST'
+       byte 0
+txghas:
+       text 'GHAST'
+       byte 0
+txghou:
+       text 'GHOUL'
+       byte 0
+txclou:
+       text 'CLOUD GIANT'
+       byte 0
+txfigi:
+       text 'FIRE GIANT'
+       byte 0
+txfrgi:
+       text 'FROST GIANT'
+       byte 0
+txhill:
+       text 'HILL GIANT'
+       byte 0
+txston:
+       text 'STONE GIANT'
+       byte 0
+txstor:
+       text 'STORM GIANT'
+       byte 0
+txgibb:
+       text 'GIBBERING MOUTHER'
+       byte 0
+txgitw:
+       text 'GITHYANKI WARRIOR'
+       byte 0
+txgitk:
+       text 'GITHYANKI KNIGHT'
+       byte 0
+txgitm:
+       text 'GITHZERAI MONK'
+       byte 0
+txgitz:
+       text 'GITHZERAI ZERTH'
+       byte 0
+txgnol:
+       text 'GNOLL'
+       byte 0
+txgnop:
+       text 'GNOLL PACK LORD'
+       byte 0
+txgnof:
+       text 'GNOLL FANG OF YEENOGHOU'
+       byte 0
+txdeep:
+       text 'DEEP GNOME'
+       byte 0
+txgobl:
+       text 'GOBLIN'
+       byte 0
+txgobb:
+       text 'GOBLIN BOSS'
+       byte 0
+txclay:
+       text 'CLAY GOLEM'
+       byte 0
+txfles:
+       text 'FLESH GOLEM'
+       byte 0
+txirgo:
+       text 'IRON GOLEM'
+       byte 0
+txstog:
+       text 'STONE GOLEM'
+       byte 0
+txgorg:
+       text 'GORGON'
+       byte 0
+txgrel:
+       text 'GRELL'
+       byte 0
+txgric:
+       text 'GRICK'
+       byte 0
+txgria:
+       text 'GRICK ALPHA'
+       byte 0
+txgrif:
+       text 'GRIFFON'
+       byte 0
+txgrim:
+       text 'GRIMLOCK'
+       byte 0
+txgree:
+       text 'GREEN HAG'
+       byte 0
+txnigh:
+       text 'NIGHT HAG'
+       byte 0
+txseah:
+       text 'SEA HAG'
+       byte 0
+txhalf:
+       text 'HALF RED-DRAGON VETERAN'
+       byte 0
+txharp:
+       text 'HARPY'
+       byte 0
+txhell:
+       text 'HELL HOUND'
+       byte 0
+txheho:
+       text 'HELMED HORROR'
+       byte 0
+txhipp:
+       text 'HIPPOGRIFF'
+       byte 0
+txhobg:
+       text 'HOBGOBLIN'
+       byte 0
+txhobc:
+       text 'HOBGOBLIN CAPTAIN'
+       byte 0
+txhobw:
+       text 'HOBGOBLIN WIZARD'
+       byte 0
+txhook:
+       text 'HOOK HORROR'
+       byte 0
+txhydr:
+       text 'HYDRA'
+       byte 0
+txintd:
+       text 'INTELLECT DEVOURER'
+       byte 0
+txinvi:
+       text 'INVISIBLE STALKER'
+       byte 0
+txjack:
+       text 'JACKALWERE'
+       byte 0
+txkenk:
+       text 'KENKU'
+       byte 0
+txkobo:
+       text 'KOBOLD'
+       byte 0
+txkobw:
+       text 'WINGED KOBOLD'
+       byte 0
+txkrak:
+       text 'KRAKEN'
+       byte 0
+txkuot:
+       text 'KUO-TOA'
+       byte 0
+txkoua:
+       text 'KUO-TOA ARCHPRIEST'
+       byte 0
+txkouw:
+       text 'KUO-TOA WHIP'
+       byte 0
+txlami:
+       text 'LAMIA'
+       byte 0
+txlich:
+       text 'LICH'
+       byte 0
+txliza:
+       text 'LIZARDFOLK'
+       byte 0
+txlizs:
+       text 'LIZARDFOLK SHAMAN'
+       byte 0
+txlizq:
+       text 'LIZARDFOLK QUEEN'
+       byte 0
+txwerb:
+       text 'WEREBEAR'
+       byte 0
+txwere:
+       text 'WEREBOAR'
+       byte 0
+txwerr:
+       text 'WERERAT'
+       byte 0
+txwert:
+       text 'WERETIGER'
+       byte 0
+txwerw:
+       text 'WEREWOLF'
+       byte 0
+txmagm:
+       text 'MAGMIN'
+       byte 0
+txmant:
+       text 'MANTICORE'
+       byte 0
+txmedu:
+       text 'MEDUSA'
+       byte 0
+txmepd:
+       text 'DUST MEPHIT'
+       byte 0
+txmepi:
+       text 'ICE MEPHIT'
+       byte 0
+txmepm:
+       text 'MAGMA MEPHIT'
+       byte 0
+txmudm:
+       text 'MUD MEPHIT'
+       byte 0
+txsmok:
+       text 'SMOKE MEPHIT'
+       byte 0
+txmeps:
+       text 'STEAM MEPHIT'
+       byte 0
+txmerf:
+       text 'MERFOLK'
+       byte 0
+txmerr:
+       text 'MERROW'
+       byte 0
+txmimi:
+       text 'MIMIC'
+       byte 0
+txmind:
+       text 'MIND FLAYER'
+       byte 0
+txmino:
+       text 'MINOTAUR'
+       byte 0
+txmono:
+       text 'MONODRONE'
+       byte 0
+txduod:
+       text 'DUODRONE'
+       byte 0
+txtrid:
+       text 'TRIDRONE'
+       byte 0
+txquad:
+       text 'QUADRONE'
+       byte 0
+txpent:
+       text 'PENTADRONE'
+       byte 0
+txmumm:
+       text 'MUMMY'
+       byte 0
+txmuml:
+       text 'MUMMY LORD'
+       byte 0
 

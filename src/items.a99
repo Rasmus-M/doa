@@ -1,345 +1,418 @@
 *********************************************************************
-*
+* 
 * Items
-*
+* 
 
 * Item types
-IYUSEA EQU  0                          ; Useable objects
-IYWEAP EQU  1                          ; Weapons
-IYARMR EQU  2                          ; Armors, robes
-IYSHLD EQU  3                          ; Shields
-IYHELM EQU  4                          ; Helmets
-IYGLVS EQU  5                          ; Gloves, gauntlets
-IYBOOT EQU  6                          ; Boots
-IYRING EQU  7                          ; Rings, specials
-IYLGHT EQU  8                          ; Light sources
+iyusea:
+       equ  0                                  ; Useable objects
+iyweap:
+       equ  1                                  ; Weapons
+iyarmr:
+       equ  2                                  ; Armors, robes
+iyshld:
+       equ  3                                  ; Shields
+iyhelm:
+       equ  4                                  ; Helmets
+iyglvs:
+       equ  5                                  ; Gloves, gauntlets
+iyboot:
+       equ  6                                  ; Boots
+iyring:
+       equ  7                                  ; Rings, specials
+iylght:
+       equ  8                                  ; Light sources
 
 * Capability data structure
-CBNAME EQU  0                          ; Name of capability. Pointer to null terminated string.
-CBSIZE EQU  2                          ; Structure size
+cbname:
+       equ  0                                  ; Name of capability. Pointer to null terminated string.
+cbsize:
+       equ  2                                  ; Structure size
 
 * Material data structure
-MTNAME EQU  0                          ; Name of material. Pointer to null terminated string.
-MTSIZE EQU  2                          ; Structure size
+mtname:
+       equ  0                                  ; Name of material. Pointer to null terminated string.
+mtsize:
+       equ  2                                  ; Structure size
 
 * Item data structure
-ITTILE EQU  0                          ; Tile number
-ITTYPE EQU  1                          ; Item type
-ITCPBL EQU  2                          ; Capability
-ITMTRL EQU  3                          ; Material
-ITDMAC EQU  4                          ; Damage if weapon, AC bonus if armor
-ITRARI EQU  5                          ; Rarity within tile: 1-10. A low rarity means that a tile is more likely to turn ito this item when picked.
-ITVALU EQU  6                          ; Value in gold pieces
-ITSIZE EQU  8                          ; Structure size
+ittile:
+       equ  0                                  ; Tile number
+ittype:
+       equ  1                                  ; Item type
+itcpbl:
+       equ  2                                  ; Capability
+itmtrl:
+       equ  3                                  ; Material
+itdmac:
+       equ  4                                  ; Damage if weapon, AC bonus if armor
+itrari:
+       equ  5                                  ; Rarity within tile: 1-10. A low rarity means that a tile is more likely to turn ito this item when picked.
+itvalu:
+       equ  6                                  ; Value in gold pieces
+itsize:
+       equ  8                                  ; Structure size
 
 * Capabilities
-CPBLS
-CBNONE EQU  0                          ; None
-       DATA TXNONE
-CBSTR  EQU  1                          ; Strength
-       DATA TXSTRE
-CBINT  EQU  2                          ; Intelligence
-       DATA TXINTE
-CBWIS  EQU  3                          ; Wisdom
-       DATA TXWISD
-CBDEX  EQU  4                          ; Dexterity
-       DATA TXDEXT
-CBCON  EQU  5                          ; Constitution
-       DATA TXCONS
-CBPROT EQU  6                          ; Protection
-       DATA TXPROT
-CBHLNG EQU  7                          ; Healing
-       DATA TXHLNG
-CBSPD  EQU  8                          ; Speed
-       DATA TXSPD
-CBFIRE EQU  9                          ; Fire
-       DATA TXFIRE
-CBSLP  EQU  10                         ; Sleeping
-       DATA TXSLP
-CBRECA EQU  11                         ; Recall
-       DATA TXRECA
-CBMINE EQU  12                         ; Mining
-       DATA TXMINE
+cpbls:
+       equ  $
+cbnone:
+       equ  0                                  ; None
+       data txnone
+cbstr:
+       equ  1                                  ; Strength
+       data txstre
+cbint:
+       equ  2                                  ; Intelligence
+       data txinte
+cbwis:
+       equ  3                                  ; Wisdom
+       data txwisd
+cbdex:
+       equ  4                                  ; Dexterity
+       data txdext
+cbcon:
+       equ  5                                  ; Constitution
+       data txcons
+cbprot:
+       equ  6                                  ; Protection
+       data txprot
+cbhlng:
+       equ  7                                  ; Healing
+       data txhlng
+cbspd:
+       equ  8                                  ; Speed
+       data txspd
+cbfire:
+       equ  9                                  ; Fire
+       data txfire
+cbslp:
+       equ  10                                 ; Sleeping
+       data txslp
+cbreca:
+       equ  11                                 ; Recall
+       data txreca
+cbmine:
+       equ  12                                 ; Mining
+       data txmine
 
 * Materials
-MTRLS
-MADFLT EQU  0                          ; Default
-       DATA TXDFLT
-MALTHR EQU  1                          ; Leather
-       DATA TXLTHR
-MAIRON EQU  2                          ; Iron
-       DATA TXIRON
-MASTEL EQU  3                          ; Steel
-       DATA TXSTEL
-MASILV EQU  4                          ; Silver
-       DATA TXSILV
-MAGOLD EQU  5                          ; Gold
-       DATA TXGOLD
-MAOBSI EQU  6                          ; Obsidian
-       DATA TXOBSI
+mtrls:
+       equ  $
+madflt:
+       equ  0                                  ; Default
+       data txdflt
+malthr:
+       equ  1                                  ; Leather
+       data txlthr
+mairon:
+       equ  2                                  ; Iron
+       data txiron
+mastel:
+       equ  3                                  ; Steel
+       data txstel
+masilv:
+       equ  4                                  ; Silver
+       data txsilv
+magold:
+       equ  5                                  ; Gold
+       data txgold
+maobsi:
+       equ  6                                  ; Obsidian
+       data txobsi
 
 * Items
-ITEMS
+items:
+       equ  $
 
-IT_POTI_HEAL                           ; Potion of healing
-       BYTE TPOTI                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBHLNG                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 100                        ; Value
+it_poti_heal:
+       ;    potion of healing
+       byte tpoti                              ; Tile
+       byte iyusea                             ; Type
+       byte cbhlng                             ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 100                                ; Value
 
-IT_POTI_SPD                            ; Potion of speed
-       BYTE TPOTI                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBSPD                      ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 120                        ; Value
+it_poti_spd:
+       ;    potion of speed
+       byte tpoti                              ; Tile
+       byte iyusea                             ; Type
+       byte cbspd                              ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 120                                ; Value
 
-IT_SCRL_HLNG                           ; Scroll of healing
-       BYTE TSCRL                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBHLNG                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 140                        ; Value
+it_scrl_hlng:
+       ;    scroll of healing
+       byte tscrl                              ; Tile
+       byte iyusea                             ; Type
+       byte cbhlng                             ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 140                                ; Value
 
-IT_SCRL_SPD                            ; Scroll of speed
-       BYTE TSCRL                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBSPD                      ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 160                        ; Value
+it_scrl_spd:
+       ;    scroll of speed
+       byte tscrl                              ; Tile
+       byte iyusea                             ; Type
+       byte cbspd                              ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 160                                ; Value
 
-IT_SCRL_RECA                           ; Scroll of recall
-       BYTE TSCRL                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBRECA                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 80                         ; Value
+it_scrl_reca:
+       ;    scroll of recall
+       byte tscrl                              ; Tile
+       byte iyusea                             ; Type
+       byte cbreca                             ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 80                                 ; Value
 
-IT_BOOK_STR                            ; Book of strength
-       BYTE TBOOK                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBSTR                      ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 1000                       ; Value
+it_book_str:
+       ;    book of strength
+       byte tbook                              ; Tile
+       byte iyusea                             ; Type
+       byte cbstr                              ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 1000                               ; Value
 
-IT_BOOK_WIS                            ; Book of wisdom
-       BYTE TBOOK                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBWIS                      ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 1000                       ; Value
+it_book_wis:
+       ;    book of wisdom
+       byte tbook                              ; Tile
+       byte iyusea                             ; Type
+       byte cbwis                              ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 1000                               ; Value
 
-IT_SILV_RING_PROT                      ; Silver ring of protection
-       BYTE TRING                      ; Tile
-       BYTE IYRING                     ; Type
-       BYTE CBPROT                     ; Capability
-       BYTE MASILV                     ; Material
-       BYTE 2                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 600                        ; Value
+it_silv_ring_prot:
+       ;    silver ring of protection
+       byte tring                              ; Tile
+       byte iyring                             ; Type
+       byte cbprot                             ; Capability
+       byte masilv                             ; Material
+       byte 2                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 600                                ; Value
 
-IT_FOOD                                ; Food
-       BYTE TFOOD                      ; Tile
-       BYTE IYUSEA                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 1                          ; Value
+it_food:
+       ;    food
+       byte tfood                              ; Tile
+       byte iyusea                             ; Type
+       byte cbnone                             ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 1                                  ; Value
 
-IT_TRCH                                ; Torch
-       BYTE TTORCH                     ; Tile
-       BYTE IYLGHT                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 1                          ; Value
+it_trch:
+       ;    torch
+       byte ttorch                             ; Tile
+       byte iylght                             ; Type
+       byte cbnone                             ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 1                                  ; Value
 
-IT_LAMP                                ; Lamp
-       BYTE TLAMP                      ; Tile
-       BYTE IYLGHT                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 0                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 5                          ; Value
+it_lamp:
+       ;    lamp
+       byte tlamp                              ; Tile
+       byte iylght                             ; Type
+       byte cbnone                             ; Capability
+       byte madflt                             ; Material
+       byte 0                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 5                                  ; Value
 
-IT_IRON_SWRD                           ; Iron sword
-       BYTE TSWORD                     ; Tile
-       BYTE IYWEAP                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MAIRON                     ; Material
-       BYTE 6                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 40                         ; Value
+it_iron_swrd:
+       ;    iron sword
+       byte tsword                             ; Tile
+       byte iyweap                             ; Type
+       byte cbnone                             ; Capability
+       byte mairon                             ; Material
+       byte 6                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 40                                 ; Value
 
-IT_STEL_SWRD                           ; Steel sword
-       BYTE TSWORD                     ; Tile
-       BYTE IYWEAP                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MASTEL                     ; Material
-       BYTE 8                          ; Damage/AC
-       BYTE 3                          ; Rarity
-       DATA 150                        ; Value
+it_stel_swrd:
+       ;    steel sword
+       byte tsword                             ; Tile
+       byte iyweap                             ; Type
+       byte cbnone                             ; Capability
+       byte mastel                             ; Material
+       byte 8                                  ; Damage/AC
+       byte 3                                  ; Rarity
+       data 150                                ; Value
 
-IT_IRON_AXE                            ; Iron axe
-       BYTE TAXE                       ; Tile
-       BYTE IYWEAP                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MAIRON                     ; Material
-       BYTE 6                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 35                         ; Value
+it_iron_axe:
+       ;    iron axe
+       byte taxe                               ; Tile
+       byte iyweap                             ; Type
+       byte cbnone                             ; Capability
+       byte mairon                             ; Material
+       byte 6                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 35                                 ; Value
 
-IT_DGDR                                ; Dagger
-       BYTE TDGGR                      ; Tile
-       BYTE IYWEAP                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 4                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 10                         ; Value
+it_dgdr:
+       ;    dagger
+       byte tdggr                              ; Tile
+       byte iyweap                             ; Type
+       byte cbnone                             ; Capability
+       byte madflt                             ; Material
+       byte 4                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 10                                 ; Value
 
-IT_MACE                                ; Mace
-       BYTE TMACE                      ; Tile
-       BYTE IYWEAP                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 6                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 30                         ; Value
+it_mace:
+       ;    mace
+       byte tmace                              ; Tile
+       byte iyweap                             ; Type
+       byte cbnone                             ; Capability
+       byte madflt                             ; Material
+       byte 6                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 30                                 ; Value
 
-IT_LTHR_ARMR                           ; Leather armor
-       BYTE TARMR                      ; Tile
-       BYTE IYARMR                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MALTHR                     ; Material
-       BYTE 4                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 40                         ; Value
+it_lthr_armr:
+       ;    leather armor
+       byte tarmr                              ; Tile
+       byte iyarmr                             ; Type
+       byte cbnone                             ; Capability
+       byte malthr                             ; Material
+       byte 4                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 40                                 ; Value
 
-IT_IRON_ARMR                           ; Iron mail armor
-       BYTE TMARM                      ; Tile
-       BYTE IYARMR                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MAIRON                     ; Material
-       BYTE 6                          ; Damage/AC
-       BYTE 2                          ; Rarity
-       DATA 80                         ; Value
+it_iron_armr:
+       ;    iron mail armor
+       byte tmarm                              ; Tile
+       byte iyarmr                             ; Type
+       byte cbnone                             ; Capability
+       byte mairon                             ; Material
+       byte 6                                  ; Damage/AC
+       byte 2                                  ; Rarity
+       data 80                                 ; Value
 
-IT_STEL_ARMR                           ; Steel mail armor
-       BYTE TMARM                      ; Tile
-       BYTE IYARMR                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MASTEL                     ; Material
-       BYTE 8                          ; Damage/AC
-       BYTE 4                          ; Rarity
-       DATA 200                        ; Value
+it_stel_armr:
+       ;    steel mail armor
+       byte tmarm                              ; Tile
+       byte iyarmr                             ; Type
+       byte cbnone                             ; Capability
+       byte mastel                             ; Material
+       byte 8                                  ; Damage/AC
+       byte 4                                  ; Rarity
+       data 200                                ; Value
 
-IT_STEL_PARM                           ; Steel plate armor
-       BYTE TPARM                      ; Tile
-       BYTE IYARMR                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MASTEL                     ; Material
-       BYTE 12                         ; Damage/AC
-       BYTE 8                          ; Rarity
-       DATA 500                        ; Value
+it_stel_parm:
+       ;    steel plate armor
+       byte tparm                              ; Tile
+       byte iyarmr                             ; Type
+       byte cbnone                             ; Capability
+       byte mastel                             ; Material
+       byte 12                                 ; Damage/AC
+       byte 8                                  ; Rarity
+       data 500                                ; Value
 
-IT_IRON_HELM                           ; Iron helmet
-       BYTE THELM                      ; Tile
-       BYTE IYHELM                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MAIRON                     ; Material
-       BYTE 1                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 25                         ; Value
+it_iron_helm:
+       ;    iron helmet
+       byte thelm                              ; Tile
+       byte iyhelm                             ; Type
+       byte cbnone                             ; Capability
+       byte mairon                             ; Material
+       byte 1                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 25                                 ; Value
 
-IT_LTHR_BOOT                           ; Leather boots
-       BYTE TBOOT                      ; Tile
-       BYTE IYBOOT                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MALTHR                     ; Material
-       BYTE 1                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 15                         ; Value
+it_lthr_boot:
+       ;    leather boots
+       byte tboot                              ; Tile
+       byte iyboot                             ; Type
+       byte cbnone                             ; Capability
+       byte malthr                             ; Material
+       byte 1                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 15                                 ; Value
 
-IT_IRON_BOOT                           ; Iron boots
-       BYTE TBOOT                      ; Tile
-       BYTE IYBOOT                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MAIRON                     ; Material
-       BYTE 2                          ; Damage/AC
-       BYTE 2                          ; Rarity
-       DATA 40                         ; Value
+it_iron_boot:
+       ;    iron boots
+       byte tboot                              ; Tile
+       byte iyboot                             ; Type
+       byte cbnone                             ; Capability
+       byte mairon                             ; Material
+       byte 2                                  ; Damage/AC
+       byte 2                                  ; Rarity
+       data 40                                 ; Value
 
-IT_LTHR_GLVS                           ; Leather gloves
-       BYTE TGLVS                      ; Tile
-       BYTE IYGLVS                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MALTHR                     ; Material
-       BYTE 1                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 20                         ; Value
+it_lthr_glvs:
+       ;    leather gloves
+       byte tglvs                              ; Tile
+       byte iyglvs                             ; Type
+       byte cbnone                             ; Capability
+       byte malthr                             ; Material
+       byte 1                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 20                                 ; Value
 
-IT_IRON_GNTL                           ; Iron gauntlets
-       BYTE TGNTL                      ; Tile
-       BYTE IYGLVS                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MAIRON                     ; Material
-       BYTE 2                          ; Damage/AC
-       BYTE 2                          ; Rarity
-       DATA 60                         ; Value
+it_iron_gntl:
+       ;    iron gauntlets
+       byte tgntl                              ; Tile
+       byte iyglvs                             ; Type
+       byte cbnone                             ; Capability
+       byte mairon                             ; Material
+       byte 2                                  ; Damage/AC
+       byte 2                                  ; Rarity
+       data 60                                 ; Value
 
-IT_STEEL_GNTL                          ; Steel gauntlets
-       BYTE TGNTL                      ; Tile
-       BYTE IYGLVS                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MASTEL                     ; Material
-       BYTE 3                          ; Damage/AC
-       BYTE 4                          ; Rarity
-       DATA 100                        ; Value
+it_steel_gntl:
+       ;    steel gauntlets
+       byte tgntl                              ; Tile
+       byte iyglvs                             ; Type
+       byte cbnone                             ; Capability
+       byte mastel                             ; Material
+       byte 3                                  ; Damage/AC
+       byte 4                                  ; Rarity
+       data 100                                ; Value
 
-IT_ROBE                                ; Robes
-       BYTE TROBE                      ; Tile
-       BYTE IYARMR                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 4                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 12                         ; Value
+it_robe:
+       ;    robes
+       byte trobe                              ; Tile
+       byte iyarmr                             ; Type
+       byte cbnone                             ; Capability
+       byte madflt                             ; Material
+       byte 4                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 12                                 ; Value
 
-IT_SHLD                                ; Shield
-       BYTE TSHLD                      ; Tile
-       BYTE IYSHLD                     ; Type
-       BYTE CBNONE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 4                          ; Damage/AC
-       BYTE 1                          ; Rarity
-       DATA 80                         ; Value
+it_shld:
+       ;    shield
+       byte tshld                              ; Tile
+       byte iyshld                             ; Type
+       byte cbnone                             ; Capability
+       byte madflt                             ; Material
+       byte 4                                  ; Damage/AC
+       byte 1                                  ; Rarity
+       data 80                                 ; Value
 
-IT_PICK                                ; Pick axe
-       BYTE TPICK                      ; Tile
-       BYTE IYWEAP                     ; Type
-       BYTE CBMINE                     ; Capability
-       BYTE MADFLT                     ; Material
-       BYTE 2                          ; Damage/AC
-       BYTE 4                          ; Rarity
-       DATA 20                         ; Value
+it_pick:
+       ;    pick axe
+       byte tpick                              ; Tile
+       byte iyweap                             ; Type
+       byte cbmine                             ; Capability
+       byte madflt                             ; Material
+       byte 2                                  ; Damage/AC
+       byte 4                                  ; Rarity
+       data 20                                 ; Value
 
-IT_END
+it_end:

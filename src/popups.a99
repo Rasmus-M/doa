@@ -1,506 +1,567 @@
 *********************************************************************
-*
+* 
 * Popups for inventory, equipment, shop, etc.
-*
+* 
 
 *********************************************************************************
-*
+* 
 * Display shop
-*
-SWINC  EQU  1                          ; Column
-SWINR  EQU  1                          ; Row
-SWINW  EQU  30                         ; Window width
-SWINH  EQU  16                         ; Window height
+* 
+swinc:
+       equ  1                                  ; Column
+swinr:
+       equ  1                                  ; Row
+swinw:
+       equ  30                                 ; Window width
+swinh:
+       equ  16                                 ; Window height
 
-DSPSHP MOV  R11,*R10+                  ; Push return address onto the stack
-       BL   @SPRHDE
-*      Display window
-       LI   R0,SWINC                   ; Column
-       LI   R1,SWINR                   ; Row
-       LI   R2,SWINW                   ; Width
-       LI   R3,SWINH                   ; Height
-       LI   R4,TXSHOP                  ; Title
-       BL   @DSPWIN
-       BL   @SHWBUF                    ; Switch to view double buffer
-*      Display items
-       LI   R0,SHOP
-       MOV  R0,@ITM1ST                 ; First item displayed
-       MOV  R0,@ITMSEL                 ; Selected item
-DSPSH1 MOV  @ITM1ST,@ITMCUR            ; Current item
-       LI   R1,SWINC+1
-       MOV  R1,@COL                    ; Left column
-       LI   R0,SWINR+1
-       MOV  R0,@ROW                    ; Current row
-       LI   R9,SWINH-2                 ; Counter for max displayed items
-DSPSH2 MOV  @ITMCUR,R3
-       C    R3,@SHPNXT                 ; Check for end of inventory
-       JHE  DSPSH5
-       MOV  @COL,R0                    ; Column
-       MOV  @ROW,R1                    ; Row
-       C    R3,@ITMSEL                 ; Check if item is selected
-       JNE  DSPSH3
-       LI   R2,TXGT                    ; >
-       JMP  DSPSH4
-DSPSH3 LI   R2,TXSPAC                  ; Space
-DSPSH4 BL   @DSPTXT
-       MOV  *R3,R3
-       LI   R4,SWINW-7
-       BL   @DSPITM
-*      Value
-       MOV  @COL,R0
-       AI   R0,SWINW-3
-       SLA  R0,8
-       MOVB @ROW+1,@R0LB
-       MOV  @IIITEM(R3),R5             ; Get item
-       MOV  @ITVALU(R5),R1
-       BL   @BPRICE
-       LI   R2,5
-       BL   @DPNUR
-*      Next item
-       INCT @ITMCUR
-       INC  @ROW
-       DEC  R9
-       JNE  DSPSH2
-*      Check keys
-DSPSH5 BL   @RELKEY
-*      Down
-       BL   @CHKDN                     ; Check down key
-       JEQ  DSPSH6                     ; Skip if not down
-       MOV  @SHPNXT,R0                 ; Get pointer to next free slot in shop
-       DECT R0                         ; Decrement to last used slot in shop
-       C    @ITMSEL,R0                 ; Is selected item the last in the list?
-       JHE  DSPSH6                     ; Yes - we cannot scroll further down, move on
-       INCT @ITMSEL                    ; No - select next item
-       MOV  @ITM1ST,R0                 ; Get first displayed item in list
-       AI   R0,SWINH-2*2               ; Go to last displayed item
-       C    @ITMSEL,R0                 ; Is newly seleted item within view?
-       JL   DSPSH1                     ; Yes - display items
-       INCT @ITM1ST                    ; No - scroll down
-       JMP  DSPSH1                     ; Diplay items
-*      Up
-DSPSH6 BL   @CHKUP                     ; Check up key
-       JEQ  DSPSH7                     ; Skip if not up
-       LI   R0,SHOP                    ; First item in shop
-       C    @ITMSEL,R0                 ; Check if selected item is the first
-       JLE  DSPSH7                     ; Yes - we cannot scroll further up, move on
-       DECT @ITMSEL                    ; No - select previous item
-       C    @ITMSEL,@ITM1ST            ; Is newly selected item within view?
-       JHE  DSPSH1                     ; Yes - display items
-       DECT @ITM1ST                    ; No - scroll up
-       JMP  DSPSH1                     ; Display items
-*      Buy
-DSPSH7 LI   R0,KEY_B
-       BL   @CHKKEY
-       JEQ  DSPS10
-       MOV  @ITMSEL,R0
-       BL   @BUY
-       MOV  R0,R5                      ; R0 points to the inventory entry
-       JEQ  DSPS10                     ; or null if buying failed
-       LI   R2,TXUBUY
-       BL   @MSG
-       MOV  *R5,R5                     ; Get item instance
-       MOV  @IIITEM(R5),R5             ; Get item
-       CLR  R6
-       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       SLA  R6,1
-       MOV  @TNAMES(R6),R2             ; Get name
-       BL   @MSGLN
-       BL   @DMSSGS
-*      Remove from list
-DSPSH8 LI   R0,SWINC+1                 ; Column
-       LI   R1,SWINR+1                 ; Row
-       LI   R2,SWINW-2                 ; Width
-       LI   R3,SWINH-2                 ; Height
-       BL   @CLRWIN                    ; Clear window
-       C    @ITMSEL,@SHPNXT
-       JNE  DSPSH9
-       LI   R0,SHOP
-       C    @SHPNXT,R0
-       JEQ  DSPSH9
-       DECT @ITMSEL
-DSPSH9 B    @DSPSH1
-*      Sell
-DSPS10 LI   R0,KEY_S
-       BL   @CHKKEY
-       JEQ  DSPS11
-;      TODO?
-*      Escape keys
-DSPS11 BL   @CHKESC
-       JNE  DSPS12
-*      Call interrupt routine
-       BL   @INTRPT
-*      Loop
-       B    @DSPSH5
-*      Refresh screen
-DSPS12 BL   @SPRSHW
-*      Return
-       DECT R10                        ; Pop return address off the stack
-       MOV  *R10,R11
-       B    *R11
-*// DSPSHP
+dspshp:
+       mov  r11,*r10+                          ; Push return address onto the stack
+       bl   @sprhde
+* Display window
+       li   r0,swinc                           ; Column
+       li   r1,swinr                           ; Row
+       li   r2,swinw                           ; Width
+       li   r3,swinh                           ; Height
+       li   r4,txshop                          ; Title
+       bl   @dspwin
+       bl   @shwbuf                            ; Switch to view double buffer
+* Display items
+       li   r0,shop
+       mov  r0,@itm1st                         ; First item displayed
+       mov  r0,@itmsel                         ; Selected item
+dspsh1:
+       mov  @itm1st,@itmcur                    ; Current item
+       li   r1,swinc+1
+       mov  r1,@col                            ; Left column
+       li   r0,swinr+1
+       mov  r0,@row                            ; Current row
+       li   r9,swinh-2                         ; Counter for max displayed items
+dspsh2:
+       mov  @itmcur,r3
+       c    r3,@shpnxt                         ; Check for end of inventory
+       jhe  dspsh5
+       mov  @col,r0                            ; Column
+       mov  @row,r1                            ; Row
+       c    r3,@itmsel                         ; Check if item is selected
+       jne  dspsh3
+       li   r2,txgt                            ; >
+       jmp  dspsh4
+dspsh3:
+       li   r2,txspac                          ; Space
+dspsh4:
+       bl   @dsptxt
+       mov  *r3,r3
+       li   r4,swinw-7
+       bl   @dspitm
+* Value
+       mov  @col,r0
+       ai   r0,swinw-3
+       sla  r0,8
+       movb @row+1,@r0lb
+       mov  @iiitem(r3),r5                     ; Get item
+       mov  @itvalu(r5),r1
+       bl   @bprice
+       li   r2,5
+       bl   @dpnur
+* Next item
+       inct @itmcur
+       inc  @row
+       dec  r9
+       jne  dspsh2
+* Check keys
+dspsh5:
+       bl   @relkey
+* Down
+       bl   @chkdn                             ; Check down key
+       jeq  dspsh6                             ; Skip if not down
+       mov  @shpnxt,r0                         ; Get pointer to next free slot in shop
+       dect r0                                 ; Decrement to last used slot in shop
+       c    @itmsel,r0                         ; Is selected item the last in the list?
+       jhe  dspsh6                             ; Yes - we cannot scroll further down, move on
+       inct @itmsel                            ; No - select next item
+       mov  @itm1st,r0                         ; Get first displayed item in list
+       ai   r0,swinh-2*2                       ; Go to last displayed item
+       c    @itmsel,r0                         ; Is newly seleted item within view?
+       jl   dspsh1                             ; Yes - display items
+       inct @itm1st                            ; No - scroll down
+       jmp  dspsh1                             ; Diplay items
+* Up
+dspsh6:
+       bl   @chkup                             ; Check up key
+       jeq  dspsh7                             ; Skip if not up
+       li   r0,shop                            ; First item in shop
+       c    @itmsel,r0                         ; Check if selected item is the first
+       jle  dspsh7                             ; Yes - we cannot scroll further up, move on
+       dect @itmsel                            ; No - select previous item
+       c    @itmsel,@itm1st                    ; Is newly selected item within view?
+       jhe  dspsh1                             ; Yes - display items
+       dect @itm1st                            ; No - scroll up
+       jmp  dspsh1                             ; Display items
+* Buy
+dspsh7:
+       li   r0,key_b
+       bl   @chkkey
+       jeq  dsps10
+       mov  @itmsel,r0
+       bl   @buy
+       mov  r0,r5                              ; R0 points to the inventory entry
+       jeq  dsps10                             ; or null if buying failed
+       li   r2,txubuy
+       bl   @msg
+       mov  *r5,r5                             ; Get item instance
+       mov  @iiitem(r5),r5                     ; Get item
+       clr  r6
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       sla  r6,1
+       mov  @tnames(r6),r2                     ; Get name
+       bl   @msgln
+       bl   @dmssgs
+* Remove from list
+dspsh8:
+       li   r0,swinc+1                         ; Column
+       li   r1,swinr+1                         ; Row
+       li   r2,swinw-2                         ; Width
+       li   r3,swinh-2                         ; Height
+       bl   @clrwin                            ; Clear window
+       c    @itmsel,@shpnxt
+       jne  dspsh9
+       li   r0,shop
+       c    @shpnxt,r0
+       jeq  dspsh9
+       dect @itmsel
+dspsh9:
+       b    @dspsh1
+* Sell
+dsps10:
+       li   r0,key_s
+       bl   @chkkey
+       jeq  dsps11
+* TODO?
+* Escape keys
+dsps11:
+       bl   @chkesc
+       jne  dsps12
+* Call interrupt routine
+       bl   @intrpt
+* Loop
+       b    @dspsh5
+* Refresh screen
+dsps12:
+       bl   @sprshw
+* Return
+       dect r10                                ; Pop return address off the stack
+       mov  *r10,r11
+       b    *r11
+* // DSPSHP
 
 *********************************************************************************
-*
+* 
 * Display inventory
-*
-IWINC  EQU  1                          ; Column
-IWINR  EQU  1                          ; Row
-IWINW  EQU  30                         ; Window width
-IWINH  EQU  8                          ; Window height
-*
-DSPINV MOV  R11,*R10+                  ; Push return address onto the stack
-       BL   @SPRHDE
-*      Display window
-       LI   R0,IWINC                   ; Column
-       LI   R1,IWINR                   ; Row
-       LI   R2,IWINW                   ; Width
-       LI   R3,IWINH                   ; Height
-       LI   R4,TXINV                   ; Title
-       BL   @DSPWIN
-       BL   @SHWBUF                    ; Switch to view double buffer
-*      Display items
-       LI   R0,INVENT
-       MOV  R0,@ITM1ST                 ; First item displayed
-       MOV  R0,@ITMSEL                 ; Selected item
-DSPIN1 MOV  @ITM1ST,@ITMCUR            ; Current item
-       LI   R1,IWINC+1
-       MOV  R1,@COL                    ; Left column
-       LI   R0,IWINR+1
-       MOV  R0,@ROW                    ; Current row
-       LI   R14,IWINH-2                ; Counter for max displayed items
-DSPIN2 MOV  @ITMCUR,R3
-       C    R3,@INVNXT                 ; Check for end of inventory
-       JHE  DSPIN5
-       MOV  @COL,R0                    ; Column
-       MOV  @ROW,R1                    ; Row
-       C    R3,@ITMSEL                 ; Check if item is selected
-       JNE  DSPIN3
-       LI   R2,TXGT                    ; >
-       JMP  DSPIN4
-DSPIN3 LI   R2,TXSPAC                  ; Space
-DSPIN4 BL   @DSPTXT
-       MOV  *R3,R3
-       LI   R4,IWINW-3
-       BL   @DSPITM
-       INCT @ITMCUR
-       INC  @ROW
-       DEC  R14
-       JNE  DSPIN2
-*      Check keys
-DSPIN5 BL   @RELKEY
-*      Down
-       BL   @CHKDN
-       JEQ  DSPIN6
-       MOV  @INVNXT,R0
-       DECT R0
-       C    @ITMSEL,R0
-       JHE  DSPIN6
-       INCT @ITMSEL
-       MOV  @ITM1ST,R0
-       AI   R0,IWINH-2*2
-       C    @ITMSEL,R0
-       JL   DSPIN1
-       INCT @ITM1ST
-       B    @DSPIN1
-*      Up
-DSPIN6 BL   @CHKUP
-       JEQ  DSPIN7
-       LI   R0,INVENT
-       C    @ITMSEL,R0
-       JLE  DSPIN7
-       DECT @ITMSEL
-       C    @ITMSEL,@ITM1ST
-       JHE  DSPIN1
-       DECT @ITM1ST
-       B    @DSPIN1
-*      Use
-DSPIN7 LI   R0,KEY_U
-       BL   @CHKKEY
-       JEQ  DSPI10
-       MOV  @ITMSEL,R0
-       BL   @USEITM
-       MOV  R0,R5                      ; R0 points to the item
-       JNE  DSPIN8                     ; Or null if using failed
-       LI   R2,TXCUSE
-       JMP  DSPIN9
-DSPIN8 CI   R0,IT_SCRL_RECA
-       JNE  DSPI17
-       B    @DSPI16
-DSPI17 LI   R2,TXUUSE
-       BL   @MSG
-       CLR  R6
-       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       SLA  R6,1
-       MOV  @TNAMES(R6),R2             ; Get name
-DSPIN9 BL   @MSGLN
-       BL   @DMSSGS
-       BL   @CLCEQU
-       JMP  DSPI13                     ; Remove from list
-*      Wear
-DSPI10 LI   R0,KEY_W
-       BL   @CHKKEY
-       JEQ  DSPI11
-       MOV  @ITMSEL,R0
-       C    R0,@INVNXT
-       JEQ  DSPI11
-       BL   @WEAITM
-       MOV  R0,R5                      ; R0 points to equipment entry
-       JEQ  DSPI11                     ; or null if wearing failed.
-       LI   R2,TXUWEA
-       BL   @MSG
-       MOV  *R5,R5                     ; Get item instance
-       MOV  @IIITEM(R5),R5             ; Get item
-       CLR  R6
-       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       SLA  R6,1
-       MOV  @TNAMES(R6),R2             ; Get name
-       BL   @MSGLN
-       BL   @DMSSGS
-       BL   @CLCEQU
-       JMP  DSPI13                     ; Remove from list
-*      Drop
-DSPI11 LI   R0,KEY_D
-       BL   @CHKKEY
-       JEQ  DSPI12
-       MOV  @ITMSEL,R0
-       BL   @DRPITM
-       MOV  R0,R5                      ; R0 points to the item
-       JEQ  DSPI13                     ; or null if dropping failed
-       LI   R2,TXUDRP
-       BL   @MSG
-       CLR  R6
-       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       SLA  R6,1
-       MOV  @TNAMES(R6),R2             ; Get name
-       BL   @MSGLN
-       BL   @DMSSGS
-       JMP  DSPI13                     ; Remove from list
-*      Sell
-DSPI12 LI   R0,KEY_S
-       BL   @CHKKEY
-       JEQ  DSPI15
-       MOV  @CTILE,R1
-       CI   R1,TSHOP
-       JNE  DSPI13
-       MOV  @ITMSEL,R0
-       BL   @SELL
-       MOV  R0,R5                      ; R0 points to the item
-       JEQ  DSPI13                     ; or null if selling failed
-       LI   R2,TXUSEL
-       BL   @MSG
-       MOV  *R5,R5                     ; Get item instance
-       MOV  @IIITEM(R5),R5             ; Get item
-       CLR  R6
-       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       SLA  R6,1
-       MOV  @TNAMES(R6),R2             ; Get name
-       BL   @MSGLN
-       BL   @DMSSGS
-*      Remove from list
-DSPI13 LI   R0,IWINC+1                 ; Column
-       LI   R1,IWINR+1                 ; Row
-       LI   R2,IWINW-2                 ; Width
-       LI   R3,IWINH-2                 ; Height
-       BL   @CLRWIN                    ; Clear window
-       C    @ITMSEL,@INVNXT
-       JNE  DSPI14
-       LI   R0,INVENT
-       C    @INVNXT,R0
-       JEQ  DSPI14
-       DECT @ITMSEL
-DSPI14 B    @DSPIN1
-*      Escape keys
-DSPI15 BL   @CHKESC
-       JNE  DSPI16
-*      Call interrupt routine
-       BL   @INTRPT
-*      Loop
-       B    @DSPIN5
-*      Refresh screen
-DSPI16 BL   @SPRSHW
-*      Return
-       DECT R10                        ; Pop return address off the stack
-       MOV  *R10,R11
-       B    *R11
-*// DSPINV
+* 
+iwinc:
+       equ  1                                  ; Column
+iwinr:
+       equ  1                                  ; Row
+iwinw:
+       equ  30                                 ; Window width
+iwinh:
+       equ  8                                  ; Window height
+* 
+dspinv:
+       mov  r11,*r10+                          ; Push return address onto the stack
+       bl   @sprhde
+* Display window
+       li   r0,iwinc                           ; Column
+       li   r1,iwinr                           ; Row
+       li   r2,iwinw                           ; Width
+       li   r3,iwinh                           ; Height
+       li   r4,txinv                           ; Title
+       bl   @dspwin
+       bl   @shwbuf                            ; Switch to view double buffer
+* Display items
+       li   r0,invent
+       mov  r0,@itm1st                         ; First item displayed
+       mov  r0,@itmsel                         ; Selected item
+dspin1:
+       mov  @itm1st,@itmcur                    ; Current item
+       li   r1,iwinc+1
+       mov  r1,@col                            ; Left column
+       li   r0,iwinr+1
+       mov  r0,@row                            ; Current row
+       li   r14,iwinh-2                        ; Counter for max displayed items
+dspin2:
+       mov  @itmcur,r3
+       c    r3,@invnxt                         ; Check for end of inventory
+       jhe  dspin5
+       mov  @col,r0                            ; Column
+       mov  @row,r1                            ; Row
+       c    r3,@itmsel                         ; Check if item is selected
+       jne  dspin3
+       li   r2,txgt                            ; >
+       jmp  dspin4
+dspin3:
+       li   r2,txspac                          ; Space
+dspin4:
+       bl   @dsptxt
+       mov  *r3,r3
+       li   r4,iwinw-3
+       bl   @dspitm
+       inct @itmcur
+       inc  @row
+       dec  r14
+       jne  dspin2
+* Check keys
+dspin5:
+       bl   @relkey
+* Down
+       bl   @chkdn
+       jeq  dspin6
+       mov  @invnxt,r0
+       dect r0
+       c    @itmsel,r0
+       jhe  dspin6
+       inct @itmsel
+       mov  @itm1st,r0
+       ai   r0,iwinh-2*2
+       c    @itmsel,r0
+       jl   dspin1
+       inct @itm1st
+       b    @dspin1
+* Up
+dspin6:
+       bl   @chkup
+       jeq  dspin7
+       li   r0,invent
+       c    @itmsel,r0
+       jle  dspin7
+       dect @itmsel
+       c    @itmsel,@itm1st
+       jhe  dspin1
+       dect @itm1st
+       b    @dspin1
+* Use
+dspin7:
+       li   r0,key_u
+       bl   @chkkey
+       jeq  dspi10
+       mov  @itmsel,r0
+       bl   @useitm
+       mov  r0,r5                              ; R0 points to the item
+       jne  dspin8                             ; Or null if using failed
+       li   r2,txcuse
+       jmp  dspin9
+dspin8:
+       ci   r0,it_scrl_reca
+       jne  dspi17
+       b    @dspi16
+dspi17:
+       li   r2,txuuse
+       bl   @msg
+       clr  r6
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       sla  r6,1
+       mov  @tnames(r6),r2                     ; Get name
+dspin9:
+       bl   @msgln
+       bl   @dmssgs
+       bl   @clcequ
+       jmp  dspi13                             ; Remove from list
+* Wear
+dspi10:
+       li   r0,key_w
+       bl   @chkkey
+       jeq  dspi11
+       mov  @itmsel,r0
+       c    r0,@invnxt
+       jeq  dspi11
+       bl   @weaitm
+       mov  r0,r5                              ; R0 points to equipment entry
+       jeq  dspi11                             ; or null if wearing failed.
+       li   r2,txuwea
+       bl   @msg
+       mov  *r5,r5                             ; Get item instance
+       mov  @iiitem(r5),r5                     ; Get item
+       clr  r6
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       sla  r6,1
+       mov  @tnames(r6),r2                     ; Get name
+       bl   @msgln
+       bl   @dmssgs
+       bl   @clcequ
+       jmp  dspi13                             ; Remove from list
+* Drop
+dspi11:
+       li   r0,key_d
+       bl   @chkkey
+       jeq  dspi12
+       mov  @itmsel,r0
+       bl   @drpitm
+       mov  r0,r5                              ; R0 points to the item
+       jeq  dspi13                             ; or null if dropping failed
+       li   r2,txudrp
+       bl   @msg
+       clr  r6
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       sla  r6,1
+       mov  @tnames(r6),r2                     ; Get name
+       bl   @msgln
+       bl   @dmssgs
+       jmp  dspi13                             ; Remove from list
+* Sell
+dspi12:
+       li   r0,key_s
+       bl   @chkkey
+       jeq  dspi15
+       mov  @ctile,r1
+       ci   r1,tshop
+       jne  dspi13
+       mov  @itmsel,r0
+       bl   @sell
+       mov  r0,r5                              ; R0 points to the item
+       jeq  dspi13                             ; or null if selling failed
+       li   r2,txusel
+       bl   @msg
+       mov  *r5,r5                             ; Get item instance
+       mov  @iiitem(r5),r5                     ; Get item
+       clr  r6
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       sla  r6,1
+       mov  @tnames(r6),r2                     ; Get name
+       bl   @msgln
+       bl   @dmssgs
+* Remove from list
+dspi13:
+       li   r0,iwinc+1                         ; Column
+       li   r1,iwinr+1                         ; Row
+       li   r2,iwinw-2                         ; Width
+       li   r3,iwinh-2                         ; Height
+       bl   @clrwin                            ; Clear window
+       c    @itmsel,@invnxt
+       jne  dspi14
+       li   r0,invent
+       c    @invnxt,r0
+       jeq  dspi14
+       dect @itmsel
+dspi14:
+       b    @dspin1
+* Escape keys
+dspi15:
+       bl   @chkesc
+       jne  dspi16
+* Call interrupt routine
+       bl   @intrpt
+* Loop
+       b    @dspin5
+* Refresh screen
+dspi16:
+       bl   @sprshw
+* Return
+       dect r10                                ; Pop return address off the stack
+       mov  *r10,r11
+       b    *r11
+* // DSPINV
 
 *********************************************************************************
-*
+* 
 * Display equipment
-*
-EWINC  EQU  1                          ; Column
-EWINR  EQU  1                          ; Row
-EWINW  EQU  30                         ; Window width
-EWINH  EQU  10                         ; Window height
-*
-DSPEQU MOV  R11,*R10+                  ; Push return address onto the stack
-       BL   @SPRHDE
-*      Display window
-       LI   R0,EWINC                   ; Column
-       LI   R1,EWINR                   ; Row
-       LI   R2,EWINW                   ; Width
-       LI   R3,EWINH                   ; Height
-       LI   R4,TXEQU                   ; Title
-       BL   @DSPWIN
-       BL   @SHWBUF                    ; Switch to view double buffer
-*      Display items
-       LI   R0,EQUIPM
-       MOV  R0,@ITM1ST                 ; First item displayed
-       MOV  R0,@ITMSEL                 ; Selected item
-DSPEQ1 MOV  @ITM1ST,@ITMCUR            ; Current item
-       LI   R1,EWINC+1
-       MOV  R1,@COL                    ; Left column
-       LI   R0,EWINR+1
-       MOV  R0,@ROW                    ; Current row
-       LI   R14,EWINH-2                ; Counter for max displayed items
-DSPEQ2 MOV  @ITMCUR,R3
-       CI   R3,EQUIPE                  ; Check for end of equipment
-       JHE  DSPEQ5
-       MOV  @COL,R0                    ; Column
-       MOV  @ROW,R1                    ; Row
-       C    R3,@ITMSEL                 ; Check if item is selected
-       JNE  DSPEQ3
-       LI   R2,TXGT                    ; >
-       JMP  DSPEQ4
-DSPEQ3 LI   R2,TXSPAC                   ; Space
-DSPEQ4 BL   @DSPTXT
-       LI   R4,EWINW-3
-       MOV   @EQTEXT-EQUIPM(R3),R2
-       BL   @DTXT
-       LI   R2,TXCOLN
-       BL   @DTXT
-       MOV  *R3,R3
-       BL   @DSPITM
-       INCT @ITMCUR
-       INC  @ROW
-       DEC  R14
-       JNE  DSPEQ2
-*      Check keys
-DSPEQ5 BL   @RELKEY
-*      Down
-       BL   @CHKDN
-       JEQ  DSPEQ6
-       LI   R0,EQUIPE-2
-       C    @ITMSEL,R0
-       JHE  DSPEQ6
-       INCT @ITMSEL
-       MOV  @ITM1ST,R0
-       AI   R0,EWINH-2*2
-       C    @ITMSEL,R0
-       JL   DSPEQ1
-       INCT @ITM1ST
-       JMP  DSPEQ1
-*      Up
-DSPEQ6 BL   @CHKUP
-       JEQ  DSPEQ7
-       LI   R0,EQUIPM
-       C    @ITMSEL,R0
-       JLE  DSPEQ7
-       DECT @ITMSEL
-       C    @ITMSEL,@ITM1ST
-       JHE  DSPEQ1
-       DECT @ITM1ST
-       JMP  DSPEQ1
-*      Use
-DSPEQ7 LI   R0,KEY_U
-       BL   @CHKKEY
-       JEQ  DSPEQ8
-;      TODO
-*      Remove
-DSPEQ8 LI   R0,KEY_R
-       BL   @CHKKEY
-       JEQ  DSPEQ0
-       MOV  @ITMSEL,R0
-       MOV  *R0,R1
-       JEQ  DSPEQ0
-       BL   @REMITM
-       MOV  R0,R5
-       JEQ  DSPEQ0
-       LI   R2,TXUREM
-       BL   @MSG
-       MOV  *R5,R5                     ; Get item instance
-       MOV  @IIITEM(R5),R5             ; Get item
-       CLR  R6
-       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       SLA  R6,1
-       MOV  @TNAMES(R6),R2             ; Get name
-       BL   @MSGLN
-       BL   @DMSSGS
-       BL   @CLCEQU
-       B    @DSPEQ1
-*      Escape keys
-DSPEQ0 BL   @CHKESC
-       JNE  DSPEQA
-*      Call interrupt routine
-       BL   @INTRPT
-*      Loop
-       B    @DSPEQ5
-*      Refresh screen
-DSPEQA BL   @SPRSHW
-*      Return
-       DECT R10                        ; Pop return address off the stack
-       MOV  *R10,R11
-       B    *R11
-*// DSPEQU
+* 
+ewinc:
+       equ  1                                  ; Column
+ewinr:
+       equ  1                                  ; Row
+ewinw:
+       equ  30                                 ; Window width
+ewinh:
+       equ  10                                 ; Window height
+* 
+dspequ:
+       mov  r11,*r10+                          ; Push return address onto the stack
+       bl   @sprhde
+* Display window
+       li   r0,ewinc                           ; Column
+       li   r1,ewinr                           ; Row
+       li   r2,ewinw                           ; Width
+       li   r3,ewinh                           ; Height
+       li   r4,txequ                           ; Title
+       bl   @dspwin
+       bl   @shwbuf                            ; Switch to view double buffer
+* Display items
+       li   r0,equipm
+       mov  r0,@itm1st                         ; First item displayed
+       mov  r0,@itmsel                         ; Selected item
+dspeq1:
+       mov  @itm1st,@itmcur                    ; Current item
+       li   r1,ewinc+1
+       mov  r1,@col                            ; Left column
+       li   r0,ewinr+1
+       mov  r0,@row                            ; Current row
+       li   r14,ewinh-2                        ; Counter for max displayed items
+dspeq2:
+       mov  @itmcur,r3
+       ci   r3,equipe                          ; Check for end of equipment
+       jhe  dspeq5
+       mov  @col,r0                            ; Column
+       mov  @row,r1                            ; Row
+       c    r3,@itmsel                         ; Check if item is selected
+       jne  dspeq3
+       li   r2,txgt                            ; >
+       jmp  dspeq4
+dspeq3:
+       li   r2,txspac                          ; Space
+dspeq4:
+       bl   @dsptxt
+       li   r4,ewinw-3
+       mov  @eqtext-equipm(r3),r2
+       bl   @dtxt
+       li   r2,txcoln
+       bl   @dtxt
+       mov  *r3,r3
+       bl   @dspitm
+       inct @itmcur
+       inc  @row
+       dec  r14
+       jne  dspeq2
+* Check keys
+dspeq5:
+       bl   @relkey
+* Down
+       bl   @chkdn
+       jeq  dspeq6
+       li   r0,equipe-2
+       c    @itmsel,r0
+       jhe  dspeq6
+       inct @itmsel
+       mov  @itm1st,r0
+       ai   r0,ewinh-2*2
+       c    @itmsel,r0
+       jl   dspeq1
+       inct @itm1st
+       jmp  dspeq1
+* Up
+dspeq6:
+       bl   @chkup
+       jeq  dspeq7
+       li   r0,equipm
+       c    @itmsel,r0
+       jle  dspeq7
+       dect @itmsel
+       c    @itmsel,@itm1st
+       jhe  dspeq1
+       dect @itm1st
+       jmp  dspeq1
+* Use
+dspeq7:
+       li   r0,key_u
+       bl   @chkkey
+       jeq  dspeq8
+* TODO
+* Remove
+dspeq8:
+       li   r0,key_r
+       bl   @chkkey
+       jeq  dspeq0
+       mov  @itmsel,r0
+       mov  *r0,r1
+       jeq  dspeq0
+       bl   @remitm
+       mov  r0,r5
+       jeq  dspeq0
+       li   r2,txurem
+       bl   @msg
+       mov  *r5,r5                             ; Get item instance
+       mov  @iiitem(r5),r5                     ; Get item
+       clr  r6
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       sla  r6,1
+       mov  @tnames(r6),r2                     ; Get name
+       bl   @msgln
+       bl   @dmssgs
+       bl   @clcequ
+       b    @dspeq1
+* Escape keys
+dspeq0:
+       bl   @chkesc
+       jne  dspeqa
+* Call interrupt routine
+       bl   @intrpt
+* Loop
+       b    @dspeq5
+* Refresh screen
+dspeqa:
+       bl   @sprshw
+* Return
+       dect r10                                ; Pop return address off the stack
+       mov  *r10,r11
+       b    *r11
+* // DSPEQU
 
 *********************************************************************************
-*
+* 
 * Display item to VDP
 * VDP address should be set up in advance
-*
-* R3: Pointer to item instance
-* R4: Padding width
-*
-DSPITM MOV  R11,*R10+                  ; Push return address onto the stack
-       MOV  R3,R3
-       JNE  DSPIT0
-       LI   R2,TXNOTH
-       BL   @DTXT
-       JMP  DSPIT3
-DSPIT0 MOV  @IIITEM(R3),R5             ; Get item
-       CLR  R6
-*      Icon
-       MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       MOVB @TCMAP(R6),@VDPWD
-       LI   R1,>2000
-       MOVB R1,@VDPWD
-       DECT R4
-*      Material
-       MOVB @ITMTRL(R5),@R6LB          ; Get material number
-       JEQ  DSPIT1
-       LI   R7,MTSIZE                  ; Structure size
-       MPY  R7,R6                      ; Multiply by structure size (this is 2 so we could also use a shift)
-       AI   R7,MTRLS                   ; Add base
-       MOV  @MTNAME(R7),R2             ; Get name
-       BL   @DTXT
-       LI   R2,TXSPAC
-       BL   @DTXT
-*      Tile
-DSPIT1 MOVB @ITTILE(R5),@R6LB          ; Get tile number
-       MOV  R6,R7
-       SLA  R7,1
-       MOV  @TNAMES(R7),R2             ; Get name
-       BL   @DTXT
-*      Capability
-DSPIT2 MOVB @ITCPBL(R5),@R6LB          ; Get capability number
-       JEQ  DSPIT3
-       LI   R2,TXOF
-       BL   @DTXT
-       LI   R7,CBSIZE                  ; Structure size
-       MPY  R7,R6                      ; Multiply by structure size (this is 2 so we could also use a shift)
-       AI   R7,CPBLS                   ; Add base
-       MOV  @CBNAME(R7),R2             ; Get name
-       BL   @DTXT
-*      Padding
-DSPIT3 MOV  R4,R2
-       JLT  DSPIT5
-       JEQ  DSPIT5
-       LI   R1,>2000
-DSPIT4 MOVB R1,@VDPWD
-       DEC  R2
-       JNE  DSPIT4
-*      Return
-DSPIT5 DECT R10                        ; Pop return address off the stack
-       MOV  *R10,R11
-       B    *R11
-*// DSPITM
+* 
+* r3: Pointer to item instance
+* r4: Padding width
+* 
+dspitm:
+       mov  r11,*r10+                          ; Push return address onto the stack
+       mov  r3,r3
+       jne  dspit0
+       li   r2,txnoth
+       bl   @dtxt
+       jmp  dspit3
+dspit0:
+       mov  @iiitem(r3),r5                     ; Get item
+       clr  r6
+* Icon
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       movb @tcmap(r6),@vdpwd
+       li   r1,>2000
+       movb r1,@vdpwd
+       dect r4
+* Material
+       movb @itmtrl(r5),@r6lb                  ; Get material number
+       jeq  dspit1
+       li   r7,mtsize                          ; Structure size
+       mpy  r7,r6                              ; Multiply by structure size (this is 2 so we could also use a shift)
+       ai   r7,mtrls                           ; Add base
+       mov  @mtname(r7),r2                     ; Get name
+       bl   @dtxt
+       li   r2,txspac
+       bl   @dtxt
+* Tile
+dspit1:
+       movb @ittile(r5),@r6lb                  ; Get tile number
+       mov  r6,r7
+       sla  r7,1
+       mov  @tnames(r7),r2                     ; Get name
+       bl   @dtxt
+* Capability
+dspit2:
+       movb @itcpbl(r5),@r6lb                  ; Get capability number
+       jeq  dspit3
+       li   r2,txof
+       bl   @dtxt
+       li   r7,cbsize                          ; Structure size
+       mpy  r7,r6                              ; Multiply by structure size (this is 2 so we could also use a shift)
+       ai   r7,cpbls                           ; Add base
+       mov  @cbname(r7),r2                     ; Get name
+       bl   @dtxt
+* Padding
+dspit3:
+       mov  r4,r2
+       jlt  dspit5
+       jeq  dspit5
+       li   r1,>2000
+dspit4:
+       movb r1,@vdpwd
+       dec  r2
+       jne  dspit4
+* Return
+dspit5:
+       dect r10                                ; Pop return address off the stack
+       mov  *r10,r11
+       b    *r11
+* // DSPITM
