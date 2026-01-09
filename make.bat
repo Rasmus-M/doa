@@ -16,17 +16,17 @@ xdm99.py DOA.dsk -a doa.obj -f DF80 -n DOA3
 
 xdm99.py DOA360.dsk -a doa.obj -f DF80 -n DOA3
 
-xas99.py -R -q -i src/doa.a99 -o doa
+xas99.py -R -q -i src/doa.a99 -o bin/doa
 
-xdm99.py DOA.dsk -a doa -n DOA
-xdm99.py DOA.dsk -a dob -n DOB
-xdm99.py DOA.dsk -a doc -n DOC
-xdm99.py DOA.dsk -a dod -n DOD
+xdm99.py DOA.dsk -a bin/doa -n DOA
+xdm99.py DOA.dsk -a bin/dob -n DOB
+xdm99.py DOA.dsk -a bin/doc -n DOC
+xdm99.py DOA.dsk -a bin/dod -n DOD
 
-xdm99.py DOA360.dsk -a doa -n DOA
-xdm99.py DOA360.dsk -a dob -n DOB
-xdm99.py DOA360.dsk -a doc -n DOC
-xdm99.py DOA360.dsk -a dod -n DOD
+xdm99.py DOA360.dsk -a bin/doa -n DOA
+xdm99.py DOA360.dsk -a bin/dob -n DOB
+xdm99.py DOA360.dsk -a bin/doc -n DOC
+xdm99.py DOA360.dsk -a bin/dod -n DOD
 
 java -jar tools/ea5tocart.jar doa "Dungeons of Asgaard"
 

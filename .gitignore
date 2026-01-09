@@ -3,6 +3,7 @@ i# Created by .ignore support plugin (hsz.mobi)
 /backup/
 /doa.rpk/
 /misc/
+/bin/
 *.bin
 *.obj
 *.lst
@@ -10,7 +11,3 @@ i# Created by .ignore support plugin (hsz.mobi)
 *.dsk
 *.vgm
 todo.txt
-/doa
-/dob
-/doc
-/dod
