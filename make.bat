@@ -28,6 +28,7 @@ xdm99.py DOA360.dsk -a bin/dob -n DOB
 xdm99.py DOA360.dsk -a bin/doc -n DOC
 xdm99.py DOA360.dsk -a bin/dod -n DOD
 
-java -jar tools/ea5tocart.jar doa "Dungeons of Asgaard"
+java -jar tools/ea5tocart.jar bin/doa "Dungeons of Asgaard"
+copy bin\doa8.bin .
 
 :end

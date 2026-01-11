@@ -4552,6 +4552,7 @@ padbuf:
 * Lower memory
 * 
        aorg >2000
+       b    @main
 
 tlegfx:
        copy "tile-graphics.a99"
